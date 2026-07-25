@@ -1,0 +1,550 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  font-family: "Segoe UI", sans-serif;
+  background: #1f2937;
+  color: white;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.header {
+  height: 60px;
+  background: #111827;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  border-bottom: 1px solid #374151;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+}
+
+.toolbox {
+  width: 240px;
+  background: #374151;
+  border-right: 1px solid #4b5563;
+  padding: 15px;
+}
+
+.canvas {
+  flex: 1;
+  position: relative;
+  background: #202833;
+}
+
+.properties {
+  width: 300px;
+  background: #374151;
+  border-left: 1px solid #4b5563;
+  padding: 15px;
+}
+
+.footer {
+  height: 30px;
+  background: #111827;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  border-top: 1px solid #374151;
+}
+
+.react-flow {
+  width: 100%;
+  height: 100%;
+}
+
+.toolbox h3 {
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+
+.toolbox-item {
+
+    display:flex;
+    align-items:center;
+    gap:10px;
+
+    background:#1f2937;
+    padding:12px;
+    margin-bottom:10px;
+
+    border-radius:8px;
+    cursor:grab;
+
+    transition:0.2s;
+}
+
+
+.toolbox-item:hover {
+
+    background:#4b5563;
+
+}
+
+
+.toolbox-item span {
+
+    font-size:22px;
+
+}
+
+
+.toolbox-item p {
+
+    font-size:15px;
+
+}
+.header {
+    height:60px;
+    background:#111827;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:0 20px;
+
+    border-bottom:1px solid #374151;
+}
+
+
+.header h1 {
+    font-size:20px;
+    font-weight:600;
+}
+
+
+.header-right {
+
+    background:#1f2937;
+
+    padding:8px 15px;
+
+    border-radius:8px;
+
+    font-size:14px;
+
+    color:#9ca3af;
+
+}
+.properties {
+
+    width:300px;
+
+    background:#374151;
+
+    border-left:1px solid #4b5563;
+
+    padding:20px;
+
+}
+
+
+.properties h3 {
+
+    margin-bottom:20px;
+
+    font-size:18px;
+
+}
+
+
+.property-section {
+
+    margin-bottom:15px;
+
+}
+
+
+.property-section label {
+
+    display:block;
+
+    margin-bottom:6px;
+
+    font-size:14px;
+
+    color:#d1d5db;
+
+}
+
+
+.property-section input,
+.property-section textarea {
+
+
+    width:100%;
+
+    background:#1f2937;
+
+    border:1px solid #4b5563;
+
+    color:white;
+
+    padding:10px;
+
+    border-radius:6px;
+
+}
+
+
+.property-section textarea {
+
+    height:100px;
+
+    resize:none;
+
+}
+
+
+
+.save-btn {
+
+    width:100%;
+
+    padding:10px;
+
+    background:#2563eb;
+
+    border:none;
+
+    border-radius:6px;
+
+    color:white;
+
+    cursor:pointer;
+
+}
+
+
+.save-btn:hover {
+
+    background:#1d4ed8;
+
+}
+
+.custom-node {
+
+    width:180px;
+
+    background:#111827;
+
+    border:1px solid #4b5563;
+
+    border-radius:10px;
+
+    overflow:hidden;
+
+    color:white;
+
+    box-shadow:0 5px 15px rgba(0,0,0,0.3);
+
+}
+
+
+.node-header {
+
+    background:#2563eb;
+
+    padding:10px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+}
+
+
+.node-header span {
+
+    font-size:22px;
+
+}
+
+
+.node-body {
+
+    padding:12px;
+
+}
+
+
+.node-body p {
+
+    font-size:16px;
+
+    font-weight:bold;
+
+    margin-bottom:5px;
+
+}
+
+
+.node-body small {
+
+    color:#9ca3af;
+
+}
+.canvas {
+    flex: 1;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+
+.graph-wrapper {
+    width: 100%;
+    height: 100%;
+}
+
+
+.react-flow {
+    width: 100%;
+    height: 100%;
+}
+.relationship-box {
+
+    position:absolute;
+
+    top:15px;
+
+    left:50%;
+
+    transform:translateX(-50%);
+
+    z-index:10;
+
+    background:#111827;
+
+    padding:10px 15px;
+
+    border-radius:8px;
+
+    display:flex;
+
+    gap:10px;
+
+    align-items:center;
+
+}
+
+
+.relationship-box select {
+
+    background:#1f2937;
+
+    color:white;
+
+    border:1px solid #4b5563;
+
+    padding:6px;
+
+    border-radius:5px;
+
+}
+.edge-label {
+
+    position:absolute;
+
+    background:#111827;
+
+    color:white;
+
+    padding:6px 12px;
+
+    border-radius:6px;
+
+    font-size:13px;
+
+    cursor:pointer;
+
+    border:1px solid #4b5563;
+
+    z-index:10;
+
+}
+
+
+
+.edge-dropdown {
+
+    position:absolute;
+
+    top:30px;
+
+    left:0;
+
+    background:#1f2937;
+
+    width:130px;
+
+    border-radius:6px;
+
+    overflow:hidden;
+
+}
+
+
+
+.edge-dropdown div {
+
+    padding:8px;
+
+    cursor:pointer;
+
+}
+
+
+
+.edge-dropdown div:hover {
+
+    background:#374151;
+
+}
+.edge-label {
+    pointer-events: all;
+}
+.properties {
+
+    width:300px;
+
+    background:#374151;
+
+    border-left:1px solid #4b5563;
+
+    padding:20px;
+
+    color:white;
+
+}
+
+
+
+.properties h3 {
+
+    margin-bottom:20px;
+
+    font-size:20px;
+
+}
+
+
+
+.empty-text {
+
+    color:#9ca3af;
+
+    font-size:14px;
+
+}
+
+
+
+.property-section {
+
+    margin-bottom:15px;
+
+}
+
+
+
+.property-section label {
+
+    display:block;
+
+    margin-bottom:6px;
+
+    font-size:14px;
+
+    color:#d1d5db;
+
+}
+
+
+
+.property-section input,
+.property-section textarea,
+.property-section select {
+
+
+    width:100%;
+
+    background:#111827;
+
+    color:white;
+
+    border:1px solid #4b5563;
+
+    border-radius:6px;
+
+    padding:10px;
+
+}
+
+
+
+.property-section textarea {
+
+    height:100px;
+
+    resize:none;
+
+}
+
+
+
+.save-btn {
+
+
+    width:100%;
+
+    padding:10px;
+
+
+    background:#2563eb;
+
+
+    border:none;
+
+
+    color:white;
+
+
+    border-radius:6px;
+
+
+    cursor:pointer;
+
+
+}
+
+
+
+.save-btn:hover {
+
+    background:#1d4ed8;
+
+}
