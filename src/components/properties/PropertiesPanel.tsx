@@ -1,24 +1,31 @@
+import { useGraph } from "../../context/GraphContext";
+
+
 interface Props {
 
     node: any;
-
-    setNodes: React.Dispatch<
-        React.SetStateAction<any[]>
-    >;
 
 }
 
 
 
 
-
 export default function PropertiesPanel({
 
-    node,
-
-    setNodes
+    node
 
 }: Props) {
+
+
+
+    const {
+
+        setNodes
+
+    } = useGraph();
+
+
+
 
 
 
@@ -32,7 +39,7 @@ export default function PropertiesPanel({
 
 
                 <h3>
-                    Properties
+                    Entity Profile
                 </h3>
 
 
@@ -53,17 +60,18 @@ export default function PropertiesPanel({
 
 
 
+
+
     const updateNode = (
 
         field: string,
 
-        value: string
+        value: any
 
     ) => {
 
 
         setNodes((nodes) =>
-
 
             nodes.map((item) => {
 
@@ -99,7 +107,6 @@ export default function PropertiesPanel({
                 return item;
 
 
-
             })
 
 
@@ -115,56 +122,19 @@ export default function PropertiesPanel({
 
 
 
+
     return (
+
 
         <aside className="properties">
 
 
 
+
+
             <h3>
-                Properties
+                Entity Profile
             </h3>
-
-
-
-
-
-
-
-            <div className="property-section">
-
-
-                <label>
-                    Entity Type
-                </label>
-
-
-                <input
-
-                    type="text"
-
-                    value={
-                        node.data.type || ""
-                    }
-
-
-                    onChange={(e) =>
-
-                        updateNode(
-
-                            "type",
-
-                            e.target.value
-
-                        )
-
-                    }
-
-                />
-
-
-            </div>
-
 
 
 
@@ -181,8 +151,6 @@ export default function PropertiesPanel({
 
 
                 <input
-
-                    type="text"
 
                     value={
                         node.data.label || ""
@@ -213,22 +181,71 @@ export default function PropertiesPanel({
 
 
 
+
             <div className="property-section">
 
 
                 <label>
-                    Description
+                    Entity Type
                 </label>
 
 
-                <textarea
+                <select
 
-                    placeholder="Notes about entity..."
+                    value={
+                        node.data.type || ""
+                    }
 
-                />
+
+                    onChange={(e) =>
+
+                        updateNode(
+
+                            "type",
+
+                            e.target.value
+
+                        )
+
+                    }
+
+                >
+
+                    <option>
+                        Person
+                    </option>
+
+
+                    <option>
+                        Vehicle
+                    </option>
+
+
+                    <option>
+                        Organization
+                    </option>
+
+
+                    <option>
+                        Location
+                    </option>
+
+
+                    <option>
+                        Phone
+                    </option>
+
+
+                    <option>
+                        Document
+                    </option>
+
+
+                </select>
 
 
             </div>
+
 
 
 
@@ -245,7 +262,26 @@ export default function PropertiesPanel({
                 </label>
 
 
-                <select>
+                <select
+
+                    value={
+                        node.data.risk || "Low"
+                    }
+
+
+                    onChange={(e) =>
+
+                        updateNode(
+
+                            "risk",
+
+                            e.target.value
+
+                        )
+
+                    }
+
+                >
 
 
                     <option value="Low">
@@ -273,7 +309,123 @@ export default function PropertiesPanel({
 
 
 
+
+
+
+            <div className="property-section">
+
+
+                <label>
+                    Description
+                </label>
+
+
+                <textarea
+
+
+                    value={
+                        node.data.description || ""
+                    }
+
+
+                    onChange={(e) =>
+
+                        updateNode(
+
+                            "description",
+
+                            e.target.value
+
+                        )
+
+                    }
+
+
+                    placeholder="Entity notes..."
+
+
+                />
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+            <div className="property-section">
+
+
+                <label>
+                    Tags
+                </label>
+
+
+                <input
+
+
+                    value={
+
+                        node.data.tags || ""
+
+                    }
+
+
+                    onChange={(e) =>
+
+                        updateNode(
+
+                            "tags",
+
+                            e.target.value
+
+                        )
+
+                    }
+
+
+                    placeholder="suspect, witness, VIP..."
+
+
+                />
+
+
+            </div>
+
+
+
+
+
+
+
+
+            <div className="entity-info">
+
+
+                <p>
+                    ID: {node.id}
+                </p>
+
+
+                <p>
+                    Type: {node.data.type}
+                </p>
+
+
+            </div>
+
+
+
+
+
+
+
         </aside>
+
 
     );
 

@@ -548,3 +548,289 @@ body {
     background:#1d4ed8;
 
 }
+.context-menu{
+
+    position:absolute;
+
+    width:180px;
+
+    background:#1e1e1e;
+
+    border:1px solid #444;
+
+    border-radius:8px;
+
+    padding:8px;
+
+    z-index:9999;
+
+}
+
+
+
+.menu-item{
+
+    padding:10px;
+
+    color:white;
+
+    cursor:pointer;
+
+}
+
+
+
+.menu-item:hover{
+
+    background:#333;
+
+}
+
+
+
+.delete:hover{
+
+    background:#7f1d1d;
+
+}
+.risk-high {
+    border:2px solid red;
+}
+
+.risk-medium {
+    border:2px solid orange;
+}
+
+.risk-low {
+    border:2px solid green;
+}
+.custom-node{
+
+    background:#1e1e1e;
+
+    color:white;
+
+    border-radius:10px;
+
+    padding:10px;
+
+    min-width:150px;
+
+}
+
+
+
+.risk-low{
+
+    border:2px solid #22c55e;
+
+}
+
+
+
+.risk-medium{
+
+    border:2px solid #eab308;
+
+}
+
+
+
+.risk-high{
+
+    border:2px solid #ef4444;
+
+}
+
+
+
+
+.node-header{
+
+    display:flex;
+
+    gap:8px;
+
+    align-items:center;
+
+    margin-bottom:8px;
+
+}
+
+
+
+.node-body p{
+
+    margin:0;
+
+    font-weight:bold;
+
+}
+
+
+
+.node-body small{
+
+    opacity:0.7;
+
+}
+.layout {
+    display: grid;
+    grid-template-columns: 260px 1fr 320px;
+    height: calc(100vh - 50px);
+    overflow: hidden;
+}
+
+
+.left-panel {
+    border-right: 1px solid #333;
+    overflow-y: auto;
+}
+
+
+.canvas-area {
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.right-panel {
+    border-left: 1px solid #333;
+    overflow-y: auto;
+}
+
+
+.graph-wrapper {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+}
+.dashboard-layout {
+
+    display: grid;
+
+    grid-template-columns: 280px 1fr 330px;
+
+    height: calc(100vh - 45px);
+
+    width: 100%;
+
+    overflow: hidden;
+
+}
+
+
+
+
+
+.left-sidebar {
+
+    border-right: 1px solid #2b2b2b;
+
+    overflow-y: auto;
+
+}
+
+
+
+
+
+.right-sidebar {
+
+    border-left: 1px solid #2b2b2b;
+
+    overflow-y: auto;
+
+}
+
+
+
+
+
+.graph-area {
+
+    display: flex;
+
+    flex-direction: column;
+
+    height: 100%;
+
+    min-width: 0;
+
+}
+
+
+
+
+
+.graph-wrapper {
+
+    flex: 1;
+
+    width: 100%;
+
+    height: 100%;
+
+}
+
+
+
+
+
+.tabs-container {
+
+    height: 100%;
+
+}
+
+
+
+
+
+.tabs-header {
+
+    display: flex;
+
+    gap: 5px;
+
+    padding: 8px;
+
+    border-bottom: 1px solid #333;
+
+}
+
+
+
+
+
+.tab {
+
+    flex: 1;
+
+    padding: 8px;
+
+    cursor: pointer;
+
+}
+
+
+
+
+
+.tab.active {
+
+    font-weight: bold;
+
+}
+
+
+
+
+
+.tabs-content {
+
+    padding: 10px;
+
+}

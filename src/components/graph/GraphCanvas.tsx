@@ -3,98 +3,21 @@ import {
     Background,
     Controls,
     MiniMap,
-    useNodesState,
-    useEdgesState,
-    addEdge
+    addEdge,
+    applyNodeChanges,
+    applyEdgeChanges,
 } from "@xyflow/react";
 
 import "@xyflow/react/dist/style.css";
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 import CustomNode from "./CustomNode";
 import CustomEdge from "./CustomEdge";
 
+import { useGraph } from "../../context/GraphContext";
 
-
-interface Props {
-
-    setSelectedNode: (node: any) => void;
-    setNodes: React.Dispatch<
-        React.SetStateAction<any[]>
-    >;
-
-    nodes: any[];
-
-}
-
-
-
-
-
-
-const initialNodes = [
-
-    {
-        id: "1",
-
-        position: {
-            x: 100,
-            y: 100
-        },
-
-        data: {
-            label: "Fisteku",
-            type: "Person"
-        },
-
-        type: "custom"
-    },
-
-
-    {
-        id: "2",
-
-        position: {
-            x: 450,
-            y: 250
-        },
-
-        data: {
-            label: "BMW X5",
-            type: "Vehicle"
-        },
-
-        type: "custom"
-    }
-
-];
-
-
-
-
-
-
-
-const initialEdges = [
-
-    {
-        id: "e1-2",
-
-        source: "1",
-
-        target: "2",
-
-        type: "custom",
-
-        data: {
-            label: "Owns"
-        }
-
-    }
-
-];
-
+import ContextMenu from "../ContextMenu";
 
 
 
@@ -105,7 +28,6 @@ const nodeTypes = {
     custom: CustomNode
 
 };
-
 
 
 
@@ -122,29 +44,26 @@ const edgeTypes = {
 
 
 
-
-export default function GraphCanvas({
-
-    nodes,
-
-    setNodes,
-
-    setSelectedNode
-
-}: Props) {
+export default function GraphCanvas() {
 
 
 
+    const {
+
+        nodes,
+
+        setNodes,
+
+        edges,
+
+        setEdges,
+
+        setSelectedNode,
+
+        deleteNode
 
 
-    const [graphNodes, setGraphNodes, onNodesChange] =
-        useNodesState(nodes);
-
-
-
-    const [edges, setEdges, onEdgesChange] =
-
-        useEdgesState(initialEdges);
+    } = useGraph();
 
 
 
@@ -152,9 +71,98 @@ export default function GraphCanvas({
 
 
 
+    const [menu, setMenu] = useState<any>(null);
 
 
-    // krijon relationship të re
+
+
+
+
+
+
+
+    // MOVE NODES
+
+    const onNodesChange = useCallback(
+
+        (changes: any) => {
+
+
+            setNodes((nodes) =>
+
+
+                applyNodeChanges(
+
+                    changes,
+
+                    nodes
+
+                )
+
+
+            );
+
+
+        },
+
+        [
+            setNodes
+        ]
+
+    );
+
+
+
+
+
+
+
+
+
+
+
+    // EDGE CHANGES
+
+    const onEdgesChange = useCallback(
+
+        (changes: any) => {
+
+
+            setEdges((edges) =>
+
+
+                applyEdgeChanges(
+
+                    changes,
+
+                    edges
+
+                )
+
+
+            );
+
+
+        },
+
+        [
+            setEdges
+        ]
+
+    );
+
+
+
+
+
+
+
+
+
+
+
+
+    // CREATE RELATIONSHIP
 
     const onConnect = useCallback(
 
@@ -168,7 +176,9 @@ export default function GraphCanvas({
 
 
                 id:
+
                     `${connection.source}-${connection.target}-${Date.now()}`,
+
 
 
                 type: "custom",
@@ -177,7 +187,9 @@ export default function GraphCanvas({
 
                 data: {
 
+
                     label: "Relationship"
+
 
                 }
 
@@ -187,23 +199,26 @@ export default function GraphCanvas({
 
 
 
+
             setEdges((edges) =>
 
+
                 addEdge(
+
                     newEdge,
+
                     edges
+
                 )
 
-            );
 
+            );
 
 
         },
 
         [
-
             setEdges
-
         ]
 
     );
@@ -216,7 +231,10 @@ export default function GraphCanvas({
 
 
 
-    // kur kalon node mbi canvas
+
+
+
+    // DRAG OVER
 
     const onDragOver = useCallback(
 
@@ -243,7 +261,10 @@ export default function GraphCanvas({
 
 
 
-    // krijon node nga toolbox
+
+
+
+    // DROP NEW NODE
 
     const onDrop = useCallback(
 
@@ -273,6 +294,7 @@ export default function GraphCanvas({
 
 
 
+
             const position = {
 
 
@@ -293,8 +315,7 @@ export default function GraphCanvas({
             const newNode = {
 
 
-                id:
-                    `${Date.now()}`,
+                id: `${Date.now()}`,
 
 
 
@@ -308,7 +329,13 @@ export default function GraphCanvas({
                     label: `New ${type}`,
 
 
-                    type: type
+                    type: type,
+
+
+                    description: "",
+
+
+                    risk: "Low"
 
 
                 },
@@ -316,7 +343,6 @@ export default function GraphCanvas({
 
 
                 type: "custom"
-
 
 
             };
@@ -327,24 +353,23 @@ export default function GraphCanvas({
 
 
 
+
             setNodes((nodes) => [
+
 
                 ...nodes,
 
                 newNode
 
+
             ]);
-
-
 
 
 
         },
 
         [
-
             setNodes
-
         ]
 
     );
@@ -357,18 +382,28 @@ export default function GraphCanvas({
 
 
 
+
+
+
     return (
+
 
 
         <div
 
+
             className="graph-wrapper"
+
 
             onDrop={onDrop}
 
+
             onDragOver={onDragOver}
 
+
+
         >
+
 
 
 
@@ -377,10 +412,13 @@ export default function GraphCanvas({
             <ReactFlow
 
 
-                nodes={graphNodes}
+
+                nodes={nodes}
+
 
 
                 edges={edges}
+
 
 
 
@@ -392,11 +430,15 @@ export default function GraphCanvas({
 
 
 
+
+
                 onNodesChange={onNodesChange}
 
 
 
                 onEdgesChange={onEdgesChange}
+
+
 
 
 
@@ -413,8 +455,46 @@ export default function GraphCanvas({
                     setSelectedNode(node);
 
 
+                    setMenu(null);
+
 
                 }}
+
+
+
+
+
+
+
+
+                onNodeContextMenu={(event, node) => {
+
+
+                    event.preventDefault();
+
+
+
+                    setSelectedNode(node);
+
+
+
+
+                    setMenu({
+
+                        id: node.id,
+
+                        x: event.clientX,
+
+                        y: event.clientY
+
+                    });
+
+
+
+                }}
+
+
+
 
 
 
@@ -427,19 +507,74 @@ export default function GraphCanvas({
 
 
 
+
                 <Background />
 
 
-
                 <Controls />
-
 
 
                 <MiniMap />
 
 
 
+
+
             </ReactFlow>
+
+
+
+
+
+
+
+
+
+            {
+                menu && (
+
+
+                    <ContextMenu
+
+
+                        x={menu.x}
+
+
+                        y={menu.y}
+
+
+
+                        onDelete={() => {
+
+
+                            deleteNode(
+                                menu.id
+                            );
+
+
+                            setMenu(null);
+
+
+                        }}
+
+
+
+
+                        onClose={() => {
+
+
+                            setMenu(null);
+
+
+                        }}
+
+
+                    />
+
+
+                )
+            }
+
 
 
 
