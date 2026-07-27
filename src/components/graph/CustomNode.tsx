@@ -1,4 +1,13 @@
-import { Handle, Position } from "@xyflow/react";
+import {
+    Handle,
+    Position
+} from "@xyflow/react";
+
+
+import {
+    useGraph
+} from "../../context/GraphContext";
+
 
 
 interface NodeData {
@@ -16,6 +25,7 @@ interface NodeData {
 }
 
 
+
 interface Props {
 
     data: NodeData;
@@ -24,7 +34,29 @@ interface Props {
 
 
 
-export default function CustomNode({ data }: Props) {
+
+
+
+
+export default function CustomNode({
+
+    data
+
+}: Props) {
+
+
+
+    const {
+
+        searchTerm
+
+    } = useGraph();
+
+
+
+
+
+
 
 
 
@@ -62,6 +94,10 @@ export default function CustomNode({ data }: Props) {
 
 
 
+
+
+
+
     const icon =
 
         data.icon ||
@@ -76,10 +112,134 @@ export default function CustomNode({ data }: Props) {
 
 
 
+
+
+    const search =
+
+        searchTerm.toLowerCase();
+
+
+
+
+
+
+
+
+    const isMatch =
+
+
+        search === "" ||
+
+
+        data.label
+
+            ?.toLowerCase()
+
+            .includes(search)
+
+        ||
+
+
+        data.type
+
+            ?.toLowerCase()
+
+            .includes(search);
+
+
+
+
+
+
+
+
+
+    const riskClass =
+
+
+        data.risk
+
+            ?.toLowerCase()
+
+        ||
+
+        "low";
+
+
+
+
+
+
+
+
+
     return (
 
 
-        <div className="simple-node">
+
+        <div
+
+
+
+            className={
+
+                `simple-node ${riskClass}`
+
+            }
+
+
+
+            style={{
+
+
+
+
+                opacity:
+
+                    isMatch
+
+                        ? 1
+
+                        : 0.25,
+
+
+
+
+
+                transform:
+
+                    isMatch && searchTerm
+
+                        ? "scale(1.08)"
+
+                        : "scale(1)",
+
+
+
+
+
+                boxShadow:
+
+                    isMatch && searchTerm
+
+                        ?
+
+                        "0 0 20px rgba(255,138,0,.45)"
+
+                        :
+
+                        "none"
+
+
+
+            }}
+
+
+
+        >
+
+
+
 
 
 
@@ -95,6 +255,10 @@ export default function CustomNode({ data }: Props) {
 
 
 
+
+
+
+
             <div className="big-node-icon">
 
                 {icon}
@@ -104,12 +268,16 @@ export default function CustomNode({ data }: Props) {
 
 
 
+
+
+
+
+
             <div className="node-name">
 
                 {data.label}
 
             </div>
-
 
 
 
@@ -129,9 +297,13 @@ export default function CustomNode({ data }: Props) {
 
 
 
+
+
+
         </div>
 
 
     );
+
 
 }

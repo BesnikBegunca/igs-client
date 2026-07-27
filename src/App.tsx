@@ -9,15 +9,15 @@ function App() {
 
   return (
 
-    <GraphProvider>
+    <CaseProvider>
 
-      <CaseProvider>
+      <GraphProvider>
 
         <Dashboard />
 
-      </CaseProvider>
+      </GraphProvider>
 
-    </GraphProvider>
+    </CaseProvider>
 
   );
 

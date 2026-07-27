@@ -1,16 +1,16 @@
-import { useGraph } from "../../context/GraphContext";
-
-
+import {
+    useGraph
+} from "../../context/GraphContext";
 
 
 
 export default function Timeline() {
 
 
+
     const {
 
         events
-
 
     } = useGraph();
 
@@ -18,25 +18,33 @@ export default function Timeline() {
 
 
 
-
     return (
 
-        <aside className="timeline-panel">
+
+        <div className="timeline">
 
 
-            <h3>
 
-                📅 Timeline
 
-            </h3>
+
+            <div className="property-section-title">
+
+                📅 Investigation Timeline
+
+            </div>
+
+
+
+
 
 
 
 
             {
-                events.length === 0 &&
+                (!events || events.length === 0) &&
 
-                <p>
+
+                <p className="empty-text">
 
                     No events yet
 
@@ -50,51 +58,106 @@ export default function Timeline() {
 
 
 
+
+
             {
-                events.map(event => (
+                events?.map(event => (
+
 
 
                     <div
 
-                        className="timeline-card"
-
                         key={event.id}
+
+                        className="timeline-item"
 
                     >
 
 
-                        <strong>
-
-                            {event.title}
-
-                        </strong>
 
 
 
-                        <p>
+                        <div className="timeline-dot">
 
-                            {event.description}
-
-                        </p>
+                        </div>
 
 
 
-                        <small>
 
-                            {
-                                new Date(
+
+
+
+
+
+                        <div className="timeline-content">
+
+
+
+
+
+                            <h4>
+
+                                {event.title || "Event"}
+
+                            </h4>
+
+
+
+
+
+
+                            <p>
+
+                                {
+                                    event.description ||
+                                    "No description"
+                                }
+
+                            </p>
+
+
+
+
+
+
+
+
+
+                            <small>
+
+                                {
 
                                     event.date
 
-                                ).toLocaleString()
+                                        ?
 
-                            }
+                                        new Date(
 
-                        </small>
+                                            event.date
+
+                                        )
+                                            .toLocaleString()
+
+                                        :
+
+                                        "Unknown date"
+
+                                }
+
+                            </small>
+
+
+
+
+
+                        </div>
+
+
 
 
 
                     </div>
+
 
 
                 ))
@@ -105,7 +168,8 @@ export default function Timeline() {
 
 
 
-        </aside>
+        </div>
+
 
     );
 

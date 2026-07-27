@@ -1,7 +1,11 @@
-import { useGraph } from "../../context/GraphContext";
+import {
+    useGraph
+} from "../../context/GraphContext";
+
 import PropertyField from "./PropertyField";
 import PropertyTextarea from "./PropertyTextarea";
 import RelationshipProfile from "./RelationshipProfile";
+import AttachmentUpload from "./AttachmentUpload";
 
 
 interface Props {
@@ -11,6 +15,7 @@ interface Props {
     edge: any;
 
 }
+
 
 
 
@@ -29,7 +34,10 @@ export default function PropertiesPanel({
         setNodes,
 
         setEdges,
-        setSelectedEdge
+
+        setSelectedEdge,
+
+        setSelectedNode
 
     } = useGraph();
 
@@ -38,6 +46,9 @@ export default function PropertiesPanel({
 
 
 
+    // ==========================
+    // RELATIONSHIP PROFILE
+    // ==========================
 
     if (edge && !node) {
 
@@ -57,7 +68,9 @@ export default function PropertiesPanel({
 
                 <RelationshipProfile
 
+
                     edge={edge}
+
 
 
                     updateEdge={(field: string, value: any) => {
@@ -85,43 +98,31 @@ export default function PropertiesPanel({
 
 
 
+
+
                         setSelectedEdge(updatedEdge);
+
+
 
 
 
                         setEdges(prev =>
 
+
                             prev.map(item =>
+
 
                                 item.id === edge.id
 
-                                    ? {
-                                        ...item,
-                                        data: {
-                                            ...item.data,
-                                            [field]: value
-                                        }
-                                    }
+                                    ? updatedEdge
+
                                     : item
+
 
                             )
 
+
                         );
-
-
-                        setSelectedEdge({
-
-                            ...edge,
-
-                            data: {
-
-                                ...edge.data,
-
-                                [field]: value
-
-                            }
-
-                        });
 
 
                     }}
@@ -141,6 +142,9 @@ export default function PropertiesPanel({
 
 
 
+
+
+
     if (!node) {
 
 
@@ -150,7 +154,9 @@ export default function PropertiesPanel({
 
 
                 <h3>
+
                     Entity Profile
+
                 </h3>
 
 
@@ -176,6 +182,11 @@ export default function PropertiesPanel({
 
 
 
+    // ==========================
+    // UPDATE MAIN DATA
+    // ==========================
+
+
     const updateData = (
 
         field: string,
@@ -187,13 +198,14 @@ export default function PropertiesPanel({
 
         setNodes(nodes =>
 
+
             nodes.map(item => {
 
 
                 if (item.id === node.id) {
 
 
-                    return {
+                    const updated = {
 
 
                         ...item,
@@ -211,7 +223,15 @@ export default function PropertiesPanel({
                         }
 
 
-                    }
+                    };
+
+
+
+                    setSelectedNode(updated);
+
+
+
+                    return updated;
 
 
                 }
@@ -221,6 +241,7 @@ export default function PropertiesPanel({
 
 
             })
+
 
         );
 
@@ -233,6 +254,11 @@ export default function PropertiesPanel({
 
 
 
+
+
+    // ==========================
+    // UPDATE DETAILS
+    // ==========================
 
 
     const updateDetail = (
@@ -250,12 +276,10 @@ export default function PropertiesPanel({
             nodes.map(item => {
 
 
-
                 if (item.id === node.id) {
 
 
-
-                    return {
+                    const updated = {
 
 
                         ...item,
@@ -282,15 +306,21 @@ export default function PropertiesPanel({
                         }
 
 
-                    }
+                    };
+
+
+
+                    setSelectedNode(updated);
+
+
+
+                    return updated;
 
 
                 }
 
 
-
                 return item;
-
 
 
             })
@@ -309,13 +339,81 @@ export default function PropertiesPanel({
 
 
 
+
+    // ==========================
+    // ATTACHMENTS
+    // ==========================
+
+
+    const updateAttachments = (
+
+        files: any[]
+
+    ) => {
+
+
+        setNodes(nodes =>
+
+
+            nodes.map(item => {
+
+
+                if (item.id === node.id) {
+
+
+                    const updated = {
+
+
+                        ...item,
+
+
+                        data: {
+
+
+                            ...item.data,
+
+
+                            attachments: files
+
+
+                        }
+
+
+                    };
+
+
+
+                    setSelectedNode(updated);
+
+
+
+                    return updated;
+
+
+                }
+
+
+                return item;
+
+
+            })
+
+
+        );
+
+
+    };
+
+
+
+
+
+
+
+
     return (
 
-
         <aside className="properties">
-
-
-
 
 
             <h3>
@@ -332,10 +430,6 @@ export default function PropertiesPanel({
 
 
 
-
-
-
-
             <PropertyField
 
                 label="Name"
@@ -347,11 +441,8 @@ export default function PropertiesPanel({
                 onChange={(value) =>
 
                     updateData(
-
                         "label",
-
                         value
-
                     )
 
                 }
@@ -362,16 +453,15 @@ export default function PropertiesPanel({
 
 
 
-
-
-
-
             <div className="property-field">
 
 
                 <label>
+
                     Risk Level
+
                 </label>
+
 
 
                 <select
@@ -381,11 +471,8 @@ export default function PropertiesPanel({
                     onChange={(e) =>
 
                         updateData(
-
                             "risk",
-
                             e.target.value
-
                         )
 
                     }
@@ -411,33 +498,18 @@ export default function PropertiesPanel({
                 </select>
 
 
+
             </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
             {
                 node.data.type === "Person" &&
 
                 <>
-
 
                     <div className="property-section-title">
 
                         👤 Person Information
 
                     </div>
-
-
 
 
 
@@ -462,8 +534,6 @@ export default function PropertiesPanel({
 
 
 
-
-
                     <PropertyField
 
                         label="Last Name"
@@ -482,8 +552,6 @@ export default function PropertiesPanel({
                         }
 
                     />
-
-
 
 
 
@@ -508,8 +576,6 @@ export default function PropertiesPanel({
 
 
 
-
-
                     <PropertyField
 
                         label="Age"
@@ -528,8 +594,6 @@ export default function PropertiesPanel({
                         }
 
                     />
-
-
 
 
 
@@ -554,8 +618,6 @@ export default function PropertiesPanel({
 
 
 
-
-
                     <PropertyField
 
                         label="Nationality"
@@ -574,8 +636,6 @@ export default function PropertiesPanel({
                         }
 
                     />
-
-
 
 
 
@@ -600,8 +660,6 @@ export default function PropertiesPanel({
 
 
 
-
-
                     <PropertyField
 
                         label="Email"
@@ -622,13 +680,9 @@ export default function PropertiesPanel({
                     />
 
 
-
                 </>
 
             }
-
-
-
 
 
 
@@ -649,8 +703,6 @@ export default function PropertiesPanel({
                         🏢 Organization Information
 
                     </div>
-
-
 
 
 
@@ -675,8 +727,6 @@ export default function PropertiesPanel({
 
 
 
-
-
                     <PropertyField
 
                         label="Director"
@@ -695,8 +745,6 @@ export default function PropertiesPanel({
                         }
 
                     />
-
-
 
 
 
@@ -721,8 +769,6 @@ export default function PropertiesPanel({
 
 
 
-
-
                     <PropertyField
 
                         label="Website"
@@ -735,29 +781,6 @@ export default function PropertiesPanel({
 
                             updateDetail(
                                 "website",
-                                value
-                            )
-
-                        }
-
-                    />
-
-
-
-
-
-                    <PropertyField
-
-                        label="Contact"
-
-                        value={node.data.details?.contact || ""}
-
-                        placeholder="Phone / Email"
-
-                        onChange={(value) =>
-
-                            updateDetail(
-                                "contact",
                                 value
                             )
 
@@ -781,7 +804,6 @@ export default function PropertiesPanel({
             {
                 node.data.type === "Vehicle" &&
 
-
                 <>
 
 
@@ -790,8 +812,6 @@ export default function PropertiesPanel({
                         🚗 Vehicle Information
 
                     </div>
-
-
 
 
 
@@ -816,8 +836,6 @@ export default function PropertiesPanel({
 
 
 
-
-
                     <PropertyField
 
                         label="Brand"
@@ -836,8 +854,6 @@ export default function PropertiesPanel({
                         }
 
                     />
-
-
 
 
 
@@ -862,8 +878,6 @@ export default function PropertiesPanel({
 
 
 
-
-
                     <PropertyField
 
                         label="Year"
@@ -882,8 +896,6 @@ export default function PropertiesPanel({
                         }
 
                     />
-
-
 
 
 
@@ -908,8 +920,6 @@ export default function PropertiesPanel({
 
 
 
-
-
                     <PropertyField
 
                         label="VIN"
@@ -928,30 +938,6 @@ export default function PropertiesPanel({
                         }
 
                     />
-
-
-
-
-
-                    <PropertyField
-
-                        label="Owner"
-
-                        value={node.data.details?.owner || ""}
-
-                        placeholder="Vehicle owner"
-
-                        onChange={(value) =>
-
-                            updateDetail(
-                                "owner",
-                                value
-                            )
-
-                        }
-
-                    />
-
 
 
                 </>
@@ -993,21 +979,105 @@ export default function PropertiesPanel({
 
 
 
-            <div className="entity-info">
+            <div className="property-section-title">
+
+                📎 Attachments
+
+            </div>
 
 
-                <p>
-                    Type: {node.data.type}
-                </p>
 
 
-                <p>
-                    Category: {node.data.category}
-                </p>
+            <AttachmentUpload
+
+                files={node.data.attachments || []}
+
+                onUpload={updateAttachments}
+
+            />
+
+
+
+
+
+
+            <div className="attachments-box">
+
+
+                {
+
+                    (!node.data.attachments ||
+
+                        node.data.attachments.length === 0)
+
+                    &&
+
+
+                    <p className="empty-text">
+
+                        No attachments
+
+                    </p>
+
+                }
+
+
+
+
+
+                {
+
+                    node.data.attachments?.map((file: any) => (
+
+
+                        <div
+
+                            key={file.id}
+
+                            className="attachment-item"
+
+                        >
+
+                            📄 {file.name}
+
+                        </div>
+
+
+                    ))
+
+                }
+
 
 
             </div>
 
+
+
+
+
+
+
+
+
+            <div className="entity-info">
+
+
+                <p>
+
+                    Type: {node.data.type}
+
+                </p>
+
+
+                <p>
+
+                    Category: {node.data.category}
+
+                </p>
+
+
+
+            </div>
 
 
 

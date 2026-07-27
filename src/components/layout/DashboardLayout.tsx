@@ -1,6 +1,7 @@
 import LeftSidebar from "./LeftSidebar";
 import RightSidebar from "./RightSidebar";
 import ActiveCaseHeader from "../cases/ActiveCaseHeader";
+import Header from "../header/Header";
 
 
 interface Props {
@@ -26,6 +27,9 @@ export default function DashboardLayout({
 
 
             <main className="graph-area">
+
+
+                <Header />
 
 
                 <ActiveCaseHeader />

@@ -17,13 +17,20 @@ export default function RelationshipProperties({
 }: Props) {
 
 
+
     const {
 
         setEdges,
 
-        setSelectedEdge
+        setSelectedEdge,
+
+        nodes,
+
+        addEvent
 
     } = useGraph();
+
+
 
 
 
@@ -33,6 +40,35 @@ export default function RelationshipProperties({
         return null;
 
     }
+
+
+
+
+
+
+    const sourceNode = nodes.find(
+
+        node =>
+
+            node.id === edge.source
+
+    );
+
+
+
+
+
+    const targetNode = nodes.find(
+
+        node =>
+
+            node.id === edge.target
+
+    );
+
+
+
+
 
 
 
@@ -48,25 +84,17 @@ export default function RelationshipProperties({
 
         const updatedEdge = {
 
-
             ...edge,
-
 
             data: {
 
-
                 ...edge.data,
-
 
                 [field]: value
 
-
             }
 
-
         };
-
-
 
 
 
@@ -74,13 +102,9 @@ export default function RelationshipProperties({
 
 
 
-
-
         setEdges(edges =>
 
-
             edges.map(item =>
-
 
                 item.id === edge.id
 
@@ -88,11 +112,28 @@ export default function RelationshipProperties({
 
                     : item
 
-
             )
 
-
         );
+
+
+
+
+        if (field === "relationshipType") {
+
+
+            addEvent({
+
+                title: "Relationship Updated",
+
+                description:
+
+                    `${sourceNode?.data?.label} relationship changed to ${value}`
+
+            });
+
+
+        }
 
 
     };
@@ -103,10 +144,16 @@ export default function RelationshipProperties({
 
 
 
+
+
     return (
 
 
+
         <aside className="properties">
+
+
+
 
 
             <h3>
@@ -114,6 +161,95 @@ export default function RelationshipProperties({
                 🔗 Relationship Profile
 
             </h3>
+
+
+
+
+
+
+
+
+            <div className="relationship-info">
+
+
+
+
+
+                <div className="relationship-card">
+
+
+                    <span>
+
+                        FROM
+
+                    </span>
+
+
+                    <strong>
+
+                        {sourceNode?.data?.icon}
+
+                        {" "}
+
+                        {sourceNode?.data?.label}
+
+                    </strong>
+
+
+                </div>
+
+
+
+
+
+
+
+
+                <div className="relationship-arrow">
+
+                    ↓
+
+                </div>
+
+
+
+
+
+
+
+
+                <div className="relationship-card">
+
+
+                    <span>
+
+                        TO
+
+                    </span>
+
+
+                    <strong>
+
+                        {targetNode?.data?.icon}
+
+                        {" "}
+
+                        {targetNode?.data?.label}
+
+                    </strong>
+
+
+                </div>
+
+
+
+
+
+            </div>
+
+
+
+
 
 
 
@@ -132,7 +268,11 @@ export default function RelationshipProperties({
 
 
 
+
+
+
         </aside>
+
 
 
     );

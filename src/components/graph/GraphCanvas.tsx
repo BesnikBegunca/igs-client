@@ -88,7 +88,8 @@ export default function GraphCanvas() {
         setSelectedEdge,
 
 
-        deleteNode
+        deleteNode,
+        addEvent
 
 
 
@@ -231,25 +232,19 @@ export default function GraphCanvas() {
 
                 data: {
 
-
                     label: "Relationship",
-
 
                     relationshipType: "Related",
 
+                    color: "#94a3b8",
 
                     description: "",
 
-
                     evidence: "",
 
-
-                    date:
-
-                        new Date()
-                            .toISOString()
-                            .split("T")[0]
-
+                    date: new Date()
+                        .toISOString()
+                        .split("T")[0]
 
                 }
 
@@ -262,16 +257,23 @@ export default function GraphCanvas() {
 
             setEdges((edges) =>
 
-
                 addEdge(
-
                     newEdge,
-
                     edges
-
                 )
 
             );
+
+
+            addEvent({
+
+                title: "Relationship Created",
+
+                description:
+
+                    `New relationship created between ${connection.source} and ${connection.target}`
+
+            });
 
 
 
@@ -460,9 +462,7 @@ export default function GraphCanvas() {
 
 
                     description: "",
-
-
-
+                    attachments: [],
 
 
 
@@ -518,6 +518,15 @@ export default function GraphCanvas() {
 
 
             ]);
+            addEvent({
+
+                title: "Entity Created",
+
+                description:
+
+                    `${entity.name} added to investigation`
+
+            });
 
 
 
@@ -613,42 +622,23 @@ export default function GraphCanvas() {
 
                 nodes={nodes}
 
-
-
-
                 edges={edges}
 
-
-
-
-
                 nodeTypes={nodeTypes}
-
-
-
 
                 edgeTypes={edgeTypes}
 
 
+                nodesDraggable={true}
 
+                nodesConnectable={true}
 
-
-
+                elementsSelectable={true}
 
 
                 onNodesChange={onNodesChange}
 
-
-
-
                 onEdgesChange={onEdgesChange}
-
-
-
-
-
-
-
 
                 onConnect={onConnect}
 

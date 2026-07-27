@@ -13,9 +13,7 @@ export interface CaseItem {
 
     id: string;
 
-
     title: string;
-
 
     description: string;
 
@@ -26,9 +24,7 @@ export interface CaseItem {
     | "archived";
 
 
-
     createdAt: string;
-
 
 
     nodes: any[];
@@ -36,6 +32,8 @@ export interface CaseItem {
 
     edges: any[];
 
+
+    events: any[];
 
 }
 
@@ -65,7 +63,10 @@ interface CaseContextType {
 
     (
 
-        data: Omit<CaseItem, "id" | "createdAt" | "nodes" | "edges">
+        data: Omit<
+            CaseItem,
+            "id" | "createdAt" | "nodes" | "edges" | "events"
+        >
 
     ) => void;
 
@@ -268,7 +269,10 @@ export function CaseProvider({
     function addCase(
 
         data:
-            Omit<CaseItem, "id" | "createdAt" | "nodes" | "edges">
+            Omit<
+                CaseItem,
+                "id" | "createdAt" | "nodes" | "edges" | "events"
+            >
 
     ) {
 
@@ -280,12 +284,9 @@ export function CaseProvider({
         const newCase: CaseItem = {
 
 
-
             id:
 
                 crypto.randomUUID(),
-
-
 
 
 
@@ -295,28 +296,21 @@ export function CaseProvider({
 
 
 
-
-
-
             nodes: [],
-
-
 
 
 
             edges: [],
 
 
+            events: [],
 
 
 
             ...data
 
 
-
-
         };
-
 
 
 

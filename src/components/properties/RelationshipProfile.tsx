@@ -1,5 +1,6 @@
 import PropertyField from "./PropertyField";
 import PropertyTextarea from "./PropertyTextarea";
+import { relationships } from "../../data/relationships";
 
 
 interface Props {
@@ -35,26 +36,92 @@ export default function RelationshipProfile({
 
 
 
-            <PropertyField
+            <div className="property-field">
 
-                label="Relationship Type"
+                <label>
+                    Relationship Type
+                </label>
 
-                value={
-                    edge.data?.relationshipType || ""
-                }
 
-                placeholder="Owner / Friend / Connected"
+                <div className="relationship-select">
 
-                onChange={(value) =>
 
-                    updateEdge(
-                        "relationshipType",
-                        value
-                    )
+                    <select
 
-                }
+                        value={
+                            edge.data?.relationshipType || "Related"
+                        }
 
-            />
+                        onChange={(e) =>
+
+                            updateEdge(
+                                "relationshipType",
+                                e.target.value
+                            )
+
+                        }
+
+                    >
+
+                        {
+                            relationships.map(item => (
+
+                                <option
+
+                                    key={item.name}
+
+                                    value={item.name}
+
+                                >
+
+                                    {item.name}
+
+                                </option>
+
+                            ))
+                        }
+
+
+                    </select>
+
+
+
+
+                    <div className="current-relationship-color">
+
+
+                        <span
+
+                            className="relationship-dot"
+
+                            style={{
+
+                                background:
+
+                                    relationships.find(
+
+                                        item =>
+
+                                            item.name ===
+                                            (edge.data?.relationshipType || "Related")
+
+                                    )?.color
+
+                            }}
+
+                        />
+
+
+                        {
+                            edge.data?.relationshipType || "Related"
+                        }
+
+
+                    </div>
+
+
+                </div>
+            </div>
 
 
 

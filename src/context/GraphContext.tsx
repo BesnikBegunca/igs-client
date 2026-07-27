@@ -1,7 +1,8 @@
 import {
     createContext,
     useContext,
-    useState
+    useState,
+    useEffect
 } from "react";
 
 
@@ -15,6 +16,9 @@ import type {
 } from "./CaseContext";
 
 
+import {
+    useCases
+} from "./CaseContext";
 
 
 
@@ -53,7 +57,6 @@ interface GraphContextType {
 
 
 
-
     selectedEdge: any;
 
     setSelectedEdge: React.Dispatch<
@@ -64,11 +67,7 @@ interface GraphContextType {
 
 
 
-
-
-
     selectedCase: CaseItem | null;
-
 
     setSelectedCase: React.Dispatch<
         React.SetStateAction<CaseItem | null>
@@ -78,28 +77,10 @@ interface GraphContextType {
 
 
 
+    openCase: (item: CaseItem) => void;
 
 
-    openCase:
-
-    (
-
-        item: CaseItem
-
-    ) => void;
-
-
-
-
-
-
-
-    clearCase:
-
-    () => void;
-
-
-
+    clearCase: () => void;
 
 
 
@@ -115,30 +96,24 @@ interface GraphContextType {
 
 
 
+    addEvent: (event: any) => void;
 
 
-    addEvent:
 
-    (
 
-        event: any
-
-    ) => void;
+    deleteNode: (id: string) => void;
 
 
 
 
 
+    // SEARCH
 
+    searchTerm: string;
 
-
-    deleteNode:
-
-    (
-
-        id: string
-
-    ) => void;
+    setSearchTerm: React.Dispatch<
+        React.SetStateAction<string>
+    >;
 
 
 
@@ -151,12 +126,9 @@ interface GraphContextType {
 
 
 
-
 const GraphContext =
 
     createContext<GraphContextType | null>(null);
-
-
 
 
 
@@ -180,13 +152,9 @@ export function GraphProvider({
 
 
 
-
-
     const [nodes, setNodes] =
 
         useState<any[]>([]);
-
-
 
 
 
@@ -200,15 +168,9 @@ export function GraphProvider({
 
 
 
-
-
-
     const [selectedNode, setSelectedNode] =
 
         useState<any>(null);
-
-
-
 
 
 
@@ -222,9 +184,6 @@ export function GraphProvider({
 
 
 
-
-
-
     const [selectedCase, setSelectedCase] =
 
         useState<CaseItem | null>(null);
@@ -232,6 +191,33 @@ export function GraphProvider({
 
 
 
+
+
+    const {
+
+        updateCase
+
+    } = useCases();
+
+
+
+
+
+
+
+    const [events, setEvents] =
+
+        useState<any[]>([]);
+
+
+
+
+
+    // SEARCH STATE
+
+    const [searchTerm, setSearchTerm] =
+
+        useState<string>("");
 
 
 
@@ -271,17 +257,23 @@ export function GraphProvider({
 
 
 
+        setEvents(
+
+            item.events ?? []
+
+        );
+
+
+
         setSelectedNode(null);
 
 
         setSelectedEdge(null);
 
 
+        setSearchTerm("");
 
     };
-
-
-
 
 
 
@@ -305,12 +297,16 @@ export function GraphProvider({
         setEdges([]);
 
 
+        setEvents([]);
+
+
         setSelectedNode(null);
 
 
         setSelectedEdge(null);
 
 
+        setSearchTerm("");
 
     };
 
@@ -322,24 +318,7 @@ export function GraphProvider({
 
 
 
-
-
-
-
-
-    // TIMELINE EVENTS
-
-    const [events, setEvents] =
-
-        useState<any[]>([]);
-
-
-
-
-
-
-
-
+    // ADD EVENT
 
     const addEvent = (
 
@@ -348,11 +327,11 @@ export function GraphProvider({
     ) => {
 
 
-
         setEvents(prev => [
 
 
             {
+
 
                 id:
 
@@ -376,13 +355,59 @@ export function GraphProvider({
         ]);
 
 
-
     };
 
 
 
 
 
+
+
+
+
+    useEffect(() => {
+
+
+        if (!selectedCase)
+
+            return;
+
+
+
+        updateCase(
+
+
+            selectedCase.id,
+
+
+            {
+
+
+                nodes,
+
+                edges,
+
+                events
+
+
+            }
+
+
+        );
+
+
+
+    }, [
+
+        nodes,
+
+        edges,
+
+        events,
+
+        selectedCase
+
+    ]);
 
 
 
@@ -400,9 +425,6 @@ export function GraphProvider({
 
     ) => {
 
-
-
-        // remove node
 
         setNodes(prev =>
 
@@ -422,9 +444,6 @@ export function GraphProvider({
 
 
 
-
-        // remove connected relationships
-
         setEdges(prev =>
 
 
@@ -432,11 +451,9 @@ export function GraphProvider({
 
                 edge =>
 
-
                     edge.source !== id &&
 
                     edge.target !== id
-
 
             )
 
@@ -447,20 +464,21 @@ export function GraphProvider({
 
 
 
-
-
-
         addEvent({
 
+
             title: "Entity Deleted",
+
+
+            type: "delete",
+
 
             description:
 
                 `Entity ${id} removed from graph`
 
+
         });
-
-
 
 
 
@@ -475,8 +493,6 @@ export function GraphProvider({
 
 
         }
-
-
 
 
 
@@ -497,10 +513,7 @@ export function GraphProvider({
         }
 
 
-
     };
-
-
 
 
 
@@ -558,7 +571,6 @@ export function GraphProvider({
                 openCase,
 
 
-
                 clearCase,
 
 
@@ -573,7 +585,15 @@ export function GraphProvider({
 
 
 
-                deleteNode
+                deleteNode,
+
+
+
+                // SEARCH
+
+                searchTerm,
+
+                setSearchTerm
 
 
 
@@ -587,19 +607,12 @@ export function GraphProvider({
             {children}
 
 
-
         </GraphContext.Provider>
-
 
 
     );
 
-
 }
-
-
-
-
 
 
 
@@ -612,10 +625,10 @@ export function GraphProvider({
 export function useGraph() {
 
 
+
     const context =
 
         useContext(GraphContext);
-
 
 
 
@@ -634,11 +647,7 @@ export function useGraph() {
 
 
 
-
-
-
     return context;
-
 
 
 }

@@ -405,7 +405,7 @@ export default function LeftSidebar() {
 
 
 
-            <div className="search-box">
+            <div className="sidebar-search">
 
 
                 🔍
