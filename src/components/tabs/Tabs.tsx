@@ -28,7 +28,6 @@ interface Props {
 
 
 
-
 export default function Tabs({
 
     tabs,
@@ -42,6 +41,7 @@ export default function Tabs({
 
 
     return (
+
 
         <div className="tabs-container">
 
@@ -64,9 +64,9 @@ export default function Tabs({
 
                                 activeTab === tab.id
 
-                                    ? "tab active"
+                                    ? "tab-button active"
 
-                                    : "tab"
+                                    : "tab-button"
 
                             }
 
@@ -74,12 +74,7 @@ export default function Tabs({
 
                             onClick={() =>
 
-
-                                setActiveTab(
-
-                                    tab.id
-
-                                )
+                                setActiveTab(tab.id)
 
                             }
 
@@ -87,13 +82,21 @@ export default function Tabs({
                         >
 
 
-                            {tab.icon}
 
-                            <span>
+                            <span className="tab-icon">
+
+                                {tab.icon}
+
+                            </span>
+
+
+
+                            <span className="tab-label">
 
                                 {tab.label}
 
                             </span>
+
 
 
                         </button>
@@ -111,6 +114,8 @@ export default function Tabs({
 
 
 
+
+
             <div className="tabs-content">
 
 
@@ -120,17 +125,24 @@ export default function Tabs({
 
                         activeTab === tab.id && (
 
+
                             <div
 
                                 key={tab.id}
 
+                                className="tab-panel"
+
                             >
+
 
                                 {tab.content}
 
+
                             </div>
 
+
                         )
+
 
                     )
                 }
@@ -141,7 +153,9 @@ export default function Tabs({
 
 
 
+
         </div>
+
 
     );
 

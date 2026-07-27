@@ -7,6 +7,10 @@ interface NodeData {
 
     type?: string;
 
+    icon?: string;
+
+    category?: string;
+
     risk?: string;
 
 }
@@ -20,16 +24,7 @@ interface Props {
 
 
 
-
-
-
-export default function CustomNode({
-
-    data
-
-}: Props) {
-
-
+export default function CustomNode({ data }: Props) {
 
 
 
@@ -44,15 +39,21 @@ export default function CustomNode({
 
         Phone: "📱",
 
-        Drug: "💊",
+        Device: "💻",
 
-        Weapon: "🔫",
-
-        Money: "💰",
+        Email: "📧",
 
         Organization: "🏢",
 
-        Document: "📄"
+        Object: "🏠",
+
+        Document: "📄",
+
+        Evidence: "📸",
+
+        Money: "💰",
+
+        Drug: "💊"
 
 
     };
@@ -61,25 +62,13 @@ export default function CustomNode({
 
 
 
+    const icon =
 
+        data.icon ||
 
+        icons[data.type || "Person"] ||
 
-    const riskClass =
-
-        data.risk === "High"
-
-            ? "risk-high"
-
-            :
-
-            data.risk === "Medium"
-
-                ? "risk-medium"
-
-                :
-
-                "risk-low";
-
+        "❓";
 
 
 
@@ -90,9 +79,7 @@ export default function CustomNode({
     return (
 
 
-
-        <div className={`custom-node ${riskClass}`}>
-
+        <div className="simple-node">
 
 
 
@@ -108,60 +95,23 @@ export default function CustomNode({
 
 
 
+            <div className="big-node-icon">
 
-
-            <div className="node-header">
-
-
-                <span>
-
-                    {
-                        icons[data.type || "Person"]
-                    }
-
-                </span>
-
-
-
-                <strong>
-
-                    {
-                        data.type || "Person"
-                    }
-
-                </strong>
-
+                {icon}
 
             </div>
 
 
 
 
+            <div className="node-name">
 
-
-
-            <div className="node-body">
-
-
-                <p>
-
-                    {
-                        data.label
-                    }
-
-                </p>
-
-
-
-                <small>
-
-                    Risk: {data.risk || "Low"}
-
-                </small>
-
-
+                {data.label}
 
             </div>
+
+
+
 
 
 
@@ -180,7 +130,6 @@ export default function CustomNode({
 
 
         </div>
-
 
 
     );

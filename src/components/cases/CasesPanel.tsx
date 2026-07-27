@@ -1,17 +1,22 @@
-import { useState } from "react";
+import {
+    useState
+} from "react";
+
 
 import {
-    getCases,
-    saveNewCase,
-    deleteCase
-} from "../../services/storageService";
+    useCases
+} from "../../context/CaseContext";
 
-import type {
-    CaseData
-} from "../../services/storageService";
 
-import { useGraph } from "../../context/GraphContext";
+import {
+    useGraph
+} from "../../context/GraphContext";
 
+
+import CaseCard from "./CaseCard";
+
+
+import CreateCaseModal from "./CreateCaseModal";
 
 
 
@@ -24,16 +29,18 @@ export default function CasesPanel() {
 
     const {
 
-        nodes,
+        cases,
 
-        edges,
+        deleteCase
 
-        setNodes,
+    } = useCases();
 
-        setEdges,
 
-        setSelectedCase
 
+
+    const {
+
+        openCase
 
     } = useGraph();
 
@@ -41,191 +48,34 @@ export default function CasesPanel() {
 
 
 
+    const [search, setSearch] = useState("");
 
 
 
-
-    const [cases, setCases] = useState<CaseData[]>(
-
-        getCases()
-
-    );
-
-
-
-
-
-
-    const [caseName, setCaseName] = useState("");
+    const [showCreate, setShowCreate] = useState(false);
 
 
 
 
 
 
+    const filteredCases =
+
+        cases.filter(c =>
 
 
+            (c.title ?? "")
 
-    const createCase = () => {
+                .toLowerCase()
 
+                .includes(
 
+                    search.toLowerCase()
 
-        if (!caseName.trim()) {
+                )
 
-            return;
-
-        }
-
-
-
-
-
-
-
-        const newCase: CaseData = {
-
-
-
-            id: Date.now().toString(),
-
-
-
-            name: caseName,
-
-
-
-            nodes,
-
-
-
-            edges,
-
-
-
-            createdAt: new Date().toISOString(),
-
-
-
-            status: "Open"
-
-
-
-        };
-
-
-
-
-
-
-
-
-        saveNewCase(
-
-            newCase
 
         );
-
-
-
-
-
-
-        setCases(
-
-            getCases()
-
-        );
-
-
-
-
-
-
-        setCaseName("");
-
-
-
-    };
-
-
-
-
-
-
-
-
-
-    const removeCase = (
-
-        id: string
-
-    ) => {
-
-
-
-        deleteCase(id);
-
-
-
-
-        setCases(
-
-            getCases()
-
-        );
-
-
-
-    };
-
-
-
-
-
-
-
-
-
-    const openCase = (
-
-        item: CaseData
-
-    ) => {
-
-
-
-        setNodes(
-
-            item.nodes
-
-        );
-
-
-
-
-        setEdges(
-
-            item.edges
-
-        );
-
-
-
-
-
-        setSelectedCase(
-
-            item
-
-        );
-
-
-
-    };
-
-
-
-
 
 
 
@@ -238,223 +88,48 @@ export default function CasesPanel() {
 
 
 
-        <aside className="cases-panel">
+        <div className="cases-panel">
 
 
 
 
 
+            <div className="cases-header">
 
-            <h3>
 
-                📁 Cases
+                <input
 
-            </h3>
+                    placeholder="Search cases..."
 
+                    value={search}
 
+                    onChange={e =>
 
+                        setSearch(
+                            e.target.value
+                        )
 
+                    }
 
+                />
 
 
 
 
-            <input
 
+                <button
 
-                placeholder="Case name..."
+                    onClick={() =>
 
+                        setShowCreate(true)
 
-                value={caseName}
+                    }
 
+                >
 
+                    +
 
-                onChange={(e) =>
-
-                    setCaseName(
-
-                        e.target.value
-
-                    )
-
-                }
-
-
-            />
-
-
-
-
-
-
-
-
-
-            <button
-
-                onClick={createCase}
-
-            >
-
-                ➕ New Case
-
-            </button>
-
-
-
-
-
-
-
-
-
-            <div className="case-list">
-
-
-
-
-
-                {
-
-                    cases.map((item) => (
-
-
-
-
-                        <div
-
-
-                            className="case-card"
-
-
-                            key={item.id}
-
-
-
-                        >
-
-
-
-
-
-                            <h4>
-
-                                {item.name}
-
-                            </h4>
-
-
-
-
-
-
-
-                            <p>
-
-                                Status: {item.status}
-
-                            </p>
-
-
-
-
-
-
-
-                            <small>
-
-                                {
-                                    new Date(
-
-                                        item.createdAt
-
-                                    ).toLocaleDateString()
-
-                                }
-
-                            </small>
-
-
-
-
-
-
-
-
-
-                            <div>
-
-
-
-                                <button
-
-
-                                    onClick={() =>
-
-
-                                        openCase(item)
-
-                                    }
-
-
-                                >
-
-                                    Open
-
-                                </button>
-
-
-
-
-
-
-
-
-
-                                <button
-
-
-                                    onClick={() =>
-
-
-                                        removeCase(
-
-                                            item.id
-
-                                        )
-
-                                    }
-
-
-                                >
-
-                                    Delete
-
-                                </button>
-
-
-
-
-
-                            </div>
-
-
-
-
-
-
-
-
-                        </div>
-
-
-
-
-                    ))
-
-                }
-
-
+                </button>
 
 
 
@@ -466,9 +141,79 @@ export default function CasesPanel() {
 
 
 
-        </aside>
+            <div className="cases-list">
+
+
+                {
+
+                    filteredCases.length === 0
+
+                        ?
+
+                        <p className="empty-text">
+
+                            No cases found
+
+                        </p>
+
+
+                        :
+
+                        filteredCases.map(c => (
+
+
+                            <CaseCard
+
+                                key={c.id}
+
+                                data={c}
+
+                                onDelete={deleteCase}
+
+                                onOpen={openCase}
+
+
+                            />
+
+
+                        ))
+
+
+                }
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+            {
+
+                showCreate &&
+
+
+                <CreateCaseModal
+
+                    close={() => setShowCreate(false)}
+
+                />
+
+
+            }
+
+
+
+        </div>
+
 
 
     );
+
+
 
 }

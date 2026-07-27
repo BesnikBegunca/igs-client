@@ -1,45 +1,35 @@
 import GraphCanvas from "../components/graph/GraphCanvas";
 
-import SaveLoad from "../components/common/SaveLoad";
-
-import CaseHeader from "../components/cases/CaseHeader";
-
 import DashboardLayout from "../components/layout/DashboardLayout";
 
+import {
+    ReactFlowProvider
+} from "@xyflow/react";
 
 
 
 export default function Dashboard() {
 
 
-
     return (
-
 
 
         <div className="app">
 
 
-
-            <SaveLoad />
-
+            <ReactFlowProvider>
 
 
+                <DashboardLayout>
 
 
-            <DashboardLayout>
+                    <GraphCanvas />
 
 
-
-                <CaseHeader />
-
+                </DashboardLayout>
 
 
-                <GraphCanvas />
-
-
-
-            </DashboardLayout>
+            </ReactFlowProvider>
 
 
 

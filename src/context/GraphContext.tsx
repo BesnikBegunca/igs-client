@@ -1,10 +1,20 @@
 import {
     createContext,
     useContext,
-    useState,
+    useState
 } from "react";
 
-import type { ReactNode } from "react";
+
+import type {
+    ReactNode
+} from "react";
+
+
+import type {
+    CaseItem
+} from "./CaseContext";
+
+
 
 
 
@@ -13,12 +23,12 @@ import type { ReactNode } from "react";
 interface GraphContextType {
 
 
-
     nodes: any[];
 
     setNodes: React.Dispatch<
         React.SetStateAction<any[]>
     >;
+
 
 
 
@@ -32,6 +42,7 @@ interface GraphContextType {
 
 
 
+
     selectedNode: any;
 
     setSelectedNode: React.Dispatch<
@@ -41,11 +52,55 @@ interface GraphContextType {
 
 
 
-    selectedCase: any;
 
-    setSelectedCase: React.Dispatch<
+
+    selectedEdge: any;
+
+    setSelectedEdge: React.Dispatch<
         React.SetStateAction<any>
     >;
+
+
+
+
+
+
+
+
+    selectedCase: CaseItem | null;
+
+
+    setSelectedCase: React.Dispatch<
+        React.SetStateAction<CaseItem | null>
+    >;
+
+
+
+
+
+
+
+    openCase:
+
+    (
+
+        item: CaseItem
+
+    ) => void;
+
+
+
+
+
+
+
+    clearCase:
+
+    () => void;
+
+
+
+
 
 
 
@@ -59,7 +114,12 @@ interface GraphContextType {
 
 
 
-    addEvent: (
+
+
+
+    addEvent:
+
+    (
 
         event: any
 
@@ -69,11 +129,17 @@ interface GraphContextType {
 
 
 
-    deleteNode: (
+
+
+
+    deleteNode:
+
+    (
 
         id: string
 
     ) => void;
+
 
 
 }
@@ -98,9 +164,11 @@ const GraphContext =
 
 
 
+
+
 export function GraphProvider({
 
-    children,
+    children
 
 }: {
 
@@ -114,111 +182,19 @@ export function GraphProvider({
 
 
 
+    const [nodes, setNodes] =
 
-    const [nodes, setNodes] = useState<any[]>([
+        useState<any[]>([]);
 
 
 
-        {
 
-            id: "1",
 
-            position: {
-                x: 100,
-                y: 100
-            },
 
 
-            data: {
+    const [edges, setEdges] =
 
-                label: "Fisteku",
-
-                type: "Person",
-
-                description: "",
-
-                risk: "Low"
-
-            },
-
-
-            type: "custom"
-
-
-        },
-
-
-
-
-
-        {
-
-            id: "2",
-
-            position: {
-                x: 450,
-                y: 250
-            },
-
-
-            data: {
-
-                label: "BMW X5",
-
-                type: "Vehicle",
-
-                description: "",
-
-                risk: "Low"
-
-            },
-
-
-            type: "custom"
-
-
-        }
-
-
-
-    ]);
-
-
-
-
-
-
-
-
-
-    const [edges, setEdges] = useState<any[]>([
-
-
-
-        {
-
-            id: "e1-2",
-
-            source: "1",
-
-            target: "2",
-
-            type: "custom",
-
-
-            data: {
-
-                label: "Owns"
-
-            }
-
-
-        }
-
-
-
-    ]);
-
+        useState<any[]>([]);
 
 
 
@@ -238,9 +214,111 @@ export function GraphProvider({
 
 
 
-    const [selectedCase, setSelectedCase] =
+    const [selectedEdge, setSelectedEdge] =
 
         useState<any>(null);
+
+
+
+
+
+
+
+
+    const [selectedCase, setSelectedCase] =
+
+        useState<CaseItem | null>(null);
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // OPEN CASE
+
+    const openCase = (
+
+        item: CaseItem
+
+    ) => {
+
+
+
+        setSelectedCase(item);
+
+
+
+        setNodes(
+
+            item.nodes ?? []
+
+        );
+
+
+
+        setEdges(
+
+            item.edges ?? []
+
+        );
+
+
+
+        setSelectedNode(null);
+
+
+        setSelectedEdge(null);
+
+
+
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+    // CLEAR CASE
+
+    const clearCase = () => {
+
+
+        setSelectedCase(null);
+
+
+        setNodes([]);
+
+
+        setEdges([]);
+
+
+        setSelectedNode(null);
+
+
+        setSelectedEdge(null);
+
+
+
+    };
+
+
+
+
+
+
 
 
 
@@ -263,8 +341,6 @@ export function GraphProvider({
 
 
 
-    // ADD TIMELINE EVENT
-
     const addEvent = (
 
         event: any
@@ -272,24 +348,33 @@ export function GraphProvider({
     ) => {
 
 
-        setEvents((events) => [
+
+        setEvents(prev => [
 
 
             {
 
-                id: Date.now().toString(),
+                id:
 
-                date: new Date().toISOString(),
+                    Date.now().toString(),
+
+
+                date:
+
+                    new Date().toISOString(),
+
 
                 ...event
+
 
             },
 
 
-            ...events
+            ...prev
 
 
         ]);
+
 
 
     };
@@ -302,7 +387,12 @@ export function GraphProvider({
 
 
 
-    // DELETE NODE + RELATIONSHIPS
+
+
+
+
+
+    // DELETE NODE
 
     const deleteNode = (
 
@@ -312,12 +402,16 @@ export function GraphProvider({
 
 
 
-        setNodes((nodes) =>
+        // remove node
+
+        setNodes(prev =>
 
 
-            nodes.filter(
+            prev.filter(
 
-                node => node.id !== id
+                node =>
+
+                    node.id !== id
 
             )
 
@@ -329,17 +423,20 @@ export function GraphProvider({
 
 
 
+        // remove connected relationships
 
-        setEdges((edges) =>
+        setEdges(prev =>
 
 
-            edges.filter(
+            prev.filter(
 
                 edge =>
+
 
                     edge.source !== id &&
 
                     edge.target !== id
+
 
             )
 
@@ -355,16 +452,14 @@ export function GraphProvider({
 
         addEvent({
 
-
             title: "Entity Deleted",
-
 
             description:
 
                 `Entity ${id} removed from graph`
 
-
         });
+
 
 
 
@@ -382,7 +477,31 @@ export function GraphProvider({
         }
 
 
+
+
+
+
+
+        if (
+
+            selectedEdge?.source === id ||
+
+            selectedEdge?.target === id
+
+        ) {
+
+
+            setSelectedEdge(null);
+
+
+        }
+
+
+
     };
+
+
+
 
 
 
@@ -400,6 +519,7 @@ export function GraphProvider({
 
 
         <GraphContext.Provider
+
 
             value={{
 
@@ -423,9 +543,23 @@ export function GraphProvider({
 
 
 
+                selectedEdge,
+
+                setSelectedEdge,
+
+
+
                 selectedCase,
 
                 setSelectedCase,
+
+
+
+                openCase,
+
+
+
+                clearCase,
 
 
 
@@ -445,18 +579,27 @@ export function GraphProvider({
 
             }}
 
+
+
         >
 
 
             {children}
 
 
+
         </GraphContext.Provider>
+
 
 
     );
 
+
 }
+
+
+
+
 
 
 
@@ -469,13 +612,9 @@ export function GraphProvider({
 export function useGraph() {
 
 
+    const context =
 
-    const context = useContext(
-
-        GraphContext
-
-    );
-
+        useContext(GraphContext);
 
 
 
@@ -499,6 +638,7 @@ export function useGraph() {
 
 
     return context;
+
 
 
 }

@@ -1,19 +1,13 @@
-import type { ReactNode } from "react";
-
 import LeftSidebar from "./LeftSidebar";
 import RightSidebar from "./RightSidebar";
-
-
+import ActiveCaseHeader from "../cases/ActiveCaseHeader";
 
 
 interface Props {
 
-    children: ReactNode;
+    children: React.ReactNode;
 
 }
-
-
-
 
 
 export default function DashboardLayout({
@@ -23,39 +17,35 @@ export default function DashboardLayout({
 }: Props) {
 
 
-
     return (
 
-
-
         <div className="dashboard-layout">
-
 
 
             <LeftSidebar />
 
 
-
-
-
             <main className="graph-area">
 
 
-                {children}
+                <ActiveCaseHeader />
+
+
+                <div className="graph-content">
+
+                    {children}
+
+                </div>
 
 
             </main>
 
 
 
-
-
             <RightSidebar />
 
 
-
         </div>
-
 
     );
 

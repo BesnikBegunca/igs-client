@@ -1,18 +1,24 @@
 import { useGraph } from "../../context/GraphContext";
+import PropertyField from "./PropertyField";
+import PropertyTextarea from "./PropertyTextarea";
+import RelationshipProfile from "./RelationshipProfile";
 
 
 interface Props {
 
     node: any;
 
-}
+    edge: any;
 
+}
 
 
 
 export default function PropertiesPanel({
 
-    node
+    node,
+
+    edge
 
 }: Props) {
 
@@ -20,11 +26,116 @@ export default function PropertiesPanel({
 
     const {
 
-        setNodes
+        setNodes,
+
+        setEdges,
+        setSelectedEdge
 
     } = useGraph();
 
 
+
+
+
+
+
+    if (edge && !node) {
+
+
+        return (
+
+            <aside className="properties">
+
+
+                <h3>
+
+                    🔗 Relationship Profile
+
+                </h3>
+
+
+
+                <RelationshipProfile
+
+                    edge={edge}
+
+
+                    updateEdge={(field: string, value: any) => {
+
+
+                        const updatedEdge = {
+
+
+                            ...edge,
+
+
+                            data: {
+
+
+                                ...edge.data,
+
+
+                                [field]: value
+
+
+                            }
+
+
+                        };
+
+
+
+                        setSelectedEdge(updatedEdge);
+
+
+
+                        setEdges(prev =>
+
+                            prev.map(item =>
+
+                                item.id === edge.id
+
+                                    ? {
+                                        ...item,
+                                        data: {
+                                            ...item.data,
+                                            [field]: value
+                                        }
+                                    }
+                                    : item
+
+                            )
+
+                        );
+
+
+                        setSelectedEdge({
+
+                            ...edge,
+
+                            data: {
+
+                                ...edge.data,
+
+                                [field]: value
+
+                            }
+
+                        });
+
+
+                    }}
+
+
+                />
+
+
+            </aside>
+
+        );
+
+
+    }
 
 
 
@@ -44,13 +155,16 @@ export default function PropertiesPanel({
 
 
                 <p className="empty-text">
+
                     Select an entity from graph
+
                 </p>
 
 
             </aside>
 
         );
+
 
     }
 
@@ -62,7 +176,7 @@ export default function PropertiesPanel({
 
 
 
-    const updateNode = (
+    const updateData = (
 
         field: string,
 
@@ -71,9 +185,9 @@ export default function PropertiesPanel({
     ) => {
 
 
-        setNodes((nodes) =>
+        setNodes(nodes =>
 
-            nodes.map((item) => {
+            nodes.map(item => {
 
 
                 if (item.id === node.id) {
@@ -97,7 +211,78 @@ export default function PropertiesPanel({
                         }
 
 
-                    };
+                    }
+
+
+                }
+
+
+                return item;
+
+
+            })
+
+        );
+
+
+    };
+
+
+
+
+
+
+
+
+
+    const updateDetail = (
+
+        field: string,
+
+        value: string
+
+    ) => {
+
+
+        setNodes(nodes =>
+
+
+            nodes.map(item => {
+
+
+
+                if (item.id === node.id) {
+
+
+
+                    return {
+
+
+                        ...item,
+
+
+                        data: {
+
+
+                            ...item.data,
+
+
+                            details: {
+
+
+                                ...item.data.details,
+
+
+                                [field]: value
+
+
+                            }
+
+
+                        }
+
+
+                    }
 
 
                 }
@@ -105,6 +290,7 @@ export default function PropertiesPanel({
 
 
                 return item;
+
 
 
             })
@@ -133,7 +319,13 @@ export default function PropertiesPanel({
 
 
             <h3>
+
+                {node.data.icon}
+
+                {" "}
+
                 Entity Profile
+
             </h3>
 
 
@@ -142,37 +334,29 @@ export default function PropertiesPanel({
 
 
 
-            <div className="property-section">
 
 
-                <label>
-                    Name
-                </label>
+            <PropertyField
 
+                label="Name"
 
-                <input
+                value={node.data.label || ""}
 
-                    value={
-                        node.data.label || ""
-                    }
+                placeholder="Entity name"
 
+                onChange={(value) =>
 
-                    onChange={(e) =>
+                    updateData(
 
-                        updateNode(
+                        "label",
 
-                            "label",
+                        value
 
-                            e.target.value
+                    )
 
-                        )
+                }
 
-                    }
-
-                />
-
-
-            </div>
+            />
 
 
 
@@ -182,79 +366,7 @@ export default function PropertiesPanel({
 
 
 
-            <div className="property-section">
-
-
-                <label>
-                    Entity Type
-                </label>
-
-
-                <select
-
-                    value={
-                        node.data.type || ""
-                    }
-
-
-                    onChange={(e) =>
-
-                        updateNode(
-
-                            "type",
-
-                            e.target.value
-
-                        )
-
-                    }
-
-                >
-
-                    <option>
-                        Person
-                    </option>
-
-
-                    <option>
-                        Vehicle
-                    </option>
-
-
-                    <option>
-                        Organization
-                    </option>
-
-
-                    <option>
-                        Location
-                    </option>
-
-
-                    <option>
-                        Phone
-                    </option>
-
-
-                    <option>
-                        Document
-                    </option>
-
-
-                </select>
-
-
-            </div>
-
-
-
-
-
-
-
-
-
-            <div className="property-section">
+            <div className="property-field">
 
 
                 <label>
@@ -264,14 +376,11 @@ export default function PropertiesPanel({
 
                 <select
 
-                    value={
-                        node.data.risk || "Low"
-                    }
-
+                    value={node.data.risk || "Low"}
 
                     onChange={(e) =>
 
-                        updateNode(
+                        updateData(
 
                             "risk",
 
@@ -284,17 +393,17 @@ export default function PropertiesPanel({
                 >
 
 
-                    <option value="Low">
+                    <option>
                         Low
                     </option>
 
 
-                    <option value="Medium">
+                    <option>
                         Medium
                     </option>
 
 
-                    <option value="High">
+                    <option>
                         High
                     </option>
 
@@ -312,89 +421,570 @@ export default function PropertiesPanel({
 
 
 
-            <div className="property-section">
 
 
-                <label>
-                    Description
-                </label>
 
 
-                <textarea
+            {
+                node.data.type === "Person" &&
+
+                <>
 
 
-                    value={
-                        node.data.description || ""
-                    }
+                    <div className="property-section-title">
 
+                        👤 Person Information
 
-                    onChange={(e) =>
-
-                        updateNode(
-
-                            "description",
-
-                            e.target.value
-
-                        )
-
-                    }
-
-
-                    placeholder="Entity notes..."
-
-
-                />
-
-
-            </div>
+                    </div>
 
 
 
 
 
+                    <PropertyField
+
+                        label="First Name"
+
+                        value={node.data.details?.firstName || ""}
+
+                        placeholder="John"
+
+                        onChange={(value) =>
+
+                            updateDetail(
+                                "firstName",
+                                value
+                            )
+
+                        }
+
+                    />
 
 
 
 
-            <div className="property-section">
+
+                    <PropertyField
+
+                        label="Last Name"
+
+                        value={node.data.details?.lastName || ""}
+
+                        placeholder="Smith"
+
+                        onChange={(value) =>
+
+                            updateDetail(
+                                "lastName",
+                                value
+                            )
+
+                        }
+
+                    />
 
 
-                <label>
-                    Tags
-                </label>
 
 
-                <input
+
+                    <PropertyField
+
+                        label="Gender"
+
+                        value={node.data.details?.gender || ""}
+
+                        placeholder="Male / Female"
+
+                        onChange={(value) =>
+
+                            updateDetail(
+                                "gender",
+                                value
+                            )
+
+                        }
+
+                    />
 
 
-                    value={
-
-                        node.data.tags || ""
-
-                    }
 
 
-                    onChange={(e) =>
 
-                        updateNode(
+                    <PropertyField
 
-                            "tags",
+                        label="Age"
 
-                            e.target.value
+                        value={node.data.details?.age || ""}
 
-                        )
+                        placeholder="25"
 
-                    }
+                        onChange={(value) =>
+
+                            updateDetail(
+                                "age",
+                                value
+                            )
+
+                        }
+
+                    />
 
 
-                    placeholder="suspect, witness, VIP..."
 
 
-                />
+
+                    <PropertyField
+
+                        label="Occupation"
+
+                        value={node.data.details?.occupation || ""}
+
+                        placeholder="Police Officer"
+
+                        onChange={(value) =>
+
+                            updateDetail(
+                                "occupation",
+                                value
+                            )
+
+                        }
+
+                    />
 
 
-            </div>
+
+
+
+                    <PropertyField
+
+                        label="Nationality"
+
+                        value={node.data.details?.nationality || ""}
+
+                        placeholder="Kosovo"
+
+                        onChange={(value) =>
+
+                            updateDetail(
+                                "nationality",
+                                value
+                            )
+
+                        }
+
+                    />
+
+
+
+
+
+                    <PropertyField
+
+                        label="Phone"
+
+                        value={node.data.details?.phone || ""}
+
+                        placeholder="+383 44 xxx xxx"
+
+                        onChange={(value) =>
+
+                            updateDetail(
+                                "phone",
+                                value
+                            )
+
+                        }
+
+                    />
+
+
+
+
+
+                    <PropertyField
+
+                        label="Email"
+
+                        value={node.data.details?.email || ""}
+
+                        placeholder="email@example.com"
+
+                        onChange={(value) =>
+
+                            updateDetail(
+                                "email",
+                                value
+                            )
+
+                        }
+
+                    />
+
+
+
+                </>
+
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+            {
+                node.data.type === "Organization" &&
+
+                <>
+
+
+                    <div className="property-section-title">
+
+                        🏢 Organization Information
+
+                    </div>
+
+
+
+
+
+                    <PropertyField
+
+                        label="Category"
+
+                        value={node.data.details?.category || ""}
+
+                        placeholder="Police / Government / Company"
+
+                        onChange={(value) =>
+
+                            updateDetail(
+                                "category",
+                                value
+                            )
+
+                        }
+
+                    />
+
+
+
+
+
+                    <PropertyField
+
+                        label="Director"
+
+                        value={node.data.details?.director || ""}
+
+                        placeholder="Organization director"
+
+                        onChange={(value) =>
+
+                            updateDetail(
+                                "director",
+                                value
+                            )
+
+                        }
+
+                    />
+
+
+
+
+
+                    <PropertyField
+
+                        label="Address"
+
+                        value={node.data.details?.address || ""}
+
+                        placeholder="Address"
+
+                        onChange={(value) =>
+
+                            updateDetail(
+                                "address",
+                                value
+                            )
+
+                        }
+
+                    />
+
+
+
+
+
+                    <PropertyField
+
+                        label="Website"
+
+                        value={node.data.details?.website || ""}
+
+                        placeholder="https://"
+
+                        onChange={(value) =>
+
+                            updateDetail(
+                                "website",
+                                value
+                            )
+
+                        }
+
+                    />
+
+
+
+
+
+                    <PropertyField
+
+                        label="Contact"
+
+                        value={node.data.details?.contact || ""}
+
+                        placeholder="Phone / Email"
+
+                        onChange={(value) =>
+
+                            updateDetail(
+                                "contact",
+                                value
+                            )
+
+                        }
+
+                    />
+
+
+                </>
+
+            }
+
+
+
+
+
+
+
+
+
+            {
+                node.data.type === "Vehicle" &&
+
+
+                <>
+
+
+                    <div className="property-section-title">
+
+                        🚗 Vehicle Information
+
+                    </div>
+
+
+
+
+
+                    <PropertyField
+
+                        label="Plate Number"
+
+                        value={node.data.details?.plate || ""}
+
+                        placeholder="01-ABC-123"
+
+                        onChange={(value) =>
+
+                            updateDetail(
+                                "plate",
+                                value
+                            )
+
+                        }
+
+                    />
+
+
+
+
+
+                    <PropertyField
+
+                        label="Brand"
+
+                        value={node.data.details?.brand || ""}
+
+                        placeholder="BMW"
+
+                        onChange={(value) =>
+
+                            updateDetail(
+                                "brand",
+                                value
+                            )
+
+                        }
+
+                    />
+
+
+
+
+
+                    <PropertyField
+
+                        label="Model"
+
+                        value={node.data.details?.model || ""}
+
+                        placeholder="X5"
+
+                        onChange={(value) =>
+
+                            updateDetail(
+                                "model",
+                                value
+                            )
+
+                        }
+
+                    />
+
+
+
+
+
+                    <PropertyField
+
+                        label="Year"
+
+                        value={node.data.details?.year || ""}
+
+                        placeholder="2024"
+
+                        onChange={(value) =>
+
+                            updateDetail(
+                                "year",
+                                value
+                            )
+
+                        }
+
+                    />
+
+
+
+
+
+                    <PropertyField
+
+                        label="Color"
+
+                        value={node.data.details?.color || ""}
+
+                        placeholder="Black"
+
+                        onChange={(value) =>
+
+                            updateDetail(
+                                "color",
+                                value
+                            )
+
+                        }
+
+                    />
+
+
+
+
+
+                    <PropertyField
+
+                        label="VIN"
+
+                        value={node.data.details?.vin || ""}
+
+                        placeholder="Vehicle identification number"
+
+                        onChange={(value) =>
+
+                            updateDetail(
+                                "vin",
+                                value
+                            )
+
+                        }
+
+                    />
+
+
+
+
+
+                    <PropertyField
+
+                        label="Owner"
+
+                        value={node.data.details?.owner || ""}
+
+                        placeholder="Vehicle owner"
+
+                        onChange={(value) =>
+
+                            updateDetail(
+                                "owner",
+                                value
+                            )
+
+                        }
+
+                    />
+
+
+
+                </>
+
+            }
+
+
+
+
+
+
+
+
+
+            <PropertyTextarea
+
+                label="Description"
+
+                value={node.data.description || ""}
+
+                placeholder="Add investigation notes..."
+
+                onChange={(value) =>
+
+                    updateData(
+                        "description",
+                        value
+                    )
+
+                }
+
+            />
+
 
 
 
@@ -407,12 +997,12 @@ export default function PropertiesPanel({
 
 
                 <p>
-                    ID: {node.id}
+                    Type: {node.data.type}
                 </p>
 
 
                 <p>
-                    Type: {node.data.type}
+                    Category: {node.data.category}
                 </p>
 
 
@@ -422,11 +1012,10 @@ export default function PropertiesPanel({
 
 
 
-
-
         </aside>
 
 
     );
+
 
 }
