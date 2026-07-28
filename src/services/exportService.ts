@@ -3,13 +3,22 @@ import { saveAs } from "file-saver";
 
 
 
+
+
 export function exportInvestigationExcel(
     nodes: any[],
     edges: any[]
 ) {
 
 
+
     const workbook = XLSX.utils.book_new();
+
+
+
+
+
+
 
 
 
@@ -17,24 +26,45 @@ export function exportInvestigationExcel(
         ENTITIES SHEET
     */
 
+
+
     const entities = nodes.map(node => ({
 
-        ID: node.id,
+
+        ID:
+            node.id,
+
 
         Name:
             node.data.label,
 
+
         Type:
             node.data.type,
 
+
+        Icon:
+            String(node.data.icon || ""),
+
+
         Category:
-            node.data.category,
+            node.data.category || "",
+
 
         Risk:
-            node.data.risk,
+            node.data.risk || "Low",
+
 
         Description:
             node.data.description || "",
+
+
+        PositionX:
+            node.position.x,
+
+
+        PositionY:
+            node.position.y,
 
 
         Created:
@@ -46,11 +76,18 @@ export function exportInvestigationExcel(
 
 
 
+
+
+
     const entitySheet =
 
         XLSX.utils.json_to_sheet(
+
             entities
+
         );
+
+
 
 
 
@@ -71,23 +108,38 @@ export function exportInvestigationExcel(
 
 
 
+
+
+
+
     /*
         RELATIONSHIPS SHEET
     */
 
 
+
+
+
     const relationships = edges.map(edge => ({
 
+
+
         ID:
+
             edge.id,
 
 
+
         Source:
+
             edge.source,
 
 
+
         Target:
+
             edge.target,
+
 
 
         Relationship:
@@ -113,7 +165,11 @@ export function exportInvestigationExcel(
             edge.data?.date || ""
 
 
+
     }));
+
+
+
 
 
 
@@ -127,6 +183,7 @@ export function exportInvestigationExcel(
             relationships
 
         );
+
 
 
 
@@ -149,49 +206,71 @@ export function exportInvestigationExcel(
 
 
 
+
+
+
+
     /*
         DETAILS SHEET
     */
+
+
+
 
 
     const details: any[] = [];
 
 
 
+
+
     nodes.forEach(node => {
+
 
 
         Object.entries(
 
             node.data.details || {}
 
-        ).forEach(([key, value]) => {
+        )
+
+            .forEach(([key, value]) => {
 
 
-            details.push({
 
-                Entity:
-
-                    node.data.label,
+                details.push({
 
 
-                Field:
 
-                    key,
+                    Entity:
+
+                        node.data.label,
 
 
-                Value:
 
-                    value
+                    Field:
+
+                        key,
+
+
+
+                    Value:
+
+                        value
+
+
+
+                });
+
 
 
             });
 
 
-        });
-
 
     });
+
+
 
 
 
@@ -204,6 +283,10 @@ export function exportInvestigationExcel(
             details
 
         );
+
+
+
+
 
 
 
@@ -224,9 +307,16 @@ export function exportInvestigationExcel(
 
 
 
+
+
+
+
     /*
         DOWNLOAD
     */
+
+
+
 
 
     const excelBuffer =
@@ -237,9 +327,12 @@ export function exportInvestigationExcel(
 
             {
 
+
                 bookType: "xlsx",
 
+
                 type: "array"
+
 
             }
 
@@ -249,7 +342,11 @@ export function exportInvestigationExcel(
 
 
 
+
+
+
     const blob = new Blob(
+
 
         [
 
@@ -257,26 +354,37 @@ export function exportInvestigationExcel(
 
         ],
 
+
         {
+
 
             type:
 
                 "application/octet-stream"
 
+
         }
 
+
     );
+
+
+
 
 
 
 
     saveAs(
 
+
         blob,
+
 
         `IGS_Investigation_${Date.now()}.xlsx`
 
+
     );
+
 
 
 }

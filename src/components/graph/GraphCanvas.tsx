@@ -12,9 +12,9 @@ import "@xyflow/react/dist/style.css";
 
 import {
     useCallback,
-    useState
+    useState,
+    useEffect
 } from "react";
-
 
 import {
     useReactFlow
@@ -38,13 +38,11 @@ import ContextMenu from "../ContextMenu";
 
 
 
-
 const nodeTypes = {
 
     custom: CustomNode
 
 };
-
 
 
 
@@ -68,34 +66,28 @@ export default function GraphCanvas() {
 
 
 
-
     const {
 
-
         nodes,
-
         setNodes,
 
-
         edges,
-
         setEdges,
 
+        selectedNode,
+        selectedEdge,
 
         setSelectedNode,
-
-
         setSelectedEdge,
 
-
         deleteNode,
-        addEvent
+        deleteEdge,
 
+        addEvent,
 
+        searchTerm
 
     } = useGraph();
-
-
 
 
 
@@ -111,7 +103,11 @@ export default function GraphCanvas() {
 
     const {
 
-        screenToFlowPosition
+        screenToFlowPosition,
+
+        fitView,
+
+        setCenter
 
     } = useReactFlow();
 
@@ -122,17 +118,172 @@ export default function GraphCanvas() {
 
 
 
+    useEffect(() => {
+
+
+        if (!searchTerm.trim()) {
+
+
+            fitView({
+
+                duration: 500,
+
+                padding: 0.2
+
+            });
+
+
+            return;
+
+        }
 
 
 
-    // MOVE NODES
+
+        const node = nodes.find(n => {
+
+
+            return (
+
+                n.data.label
+                    ?.toLowerCase()
+                    .includes(searchTerm.toLowerCase())
+
+                ||
+
+                n.data.type
+                    ?.toLowerCase()
+                    .includes(searchTerm.toLowerCase())
+
+            );
+
+
+        });
+
+
+
+
+        if (!node)
+            return;
+
+
+
+
+        setCenter(
+
+            node.position.x,
+
+            node.position.y,
+
+            {
+
+                zoom: 1.6,
+
+                duration: 700
+
+            }
+
+        );
+
+
+
+    }, [
+
+        searchTerm,
+
+        nodes,
+
+        fitView,
+
+        setCenter
+
+    ]);
+
+
+
+
+
+
+
+
+
+    // DELETE SELECTED EDGE
+
+    useEffect(() => {
+
+
+        const handleKey = (e: KeyboardEvent) => {
+
+
+            if (e.key !== "Delete")
+                return;
+
+
+
+
+            if (selectedEdge) {
+
+
+                deleteEdge(selectedEdge.id);
+
+
+                setSelectedEdge(null);
+
+
+                return;
+
+            }
+
+
+
+        };
+
+
+
+        window.addEventListener(
+            "keydown",
+            handleKey
+        );
+
+
+
+        return () =>
+
+
+            window.removeEventListener(
+                "keydown",
+                handleKey
+            );
+
+
+
+    }, [
+
+        selectedEdge,
+
+        deleteEdge,
+
+        setSelectedEdge
+
+    ]);
+
+
+
+
+
+
+
+
+
+
+
 
     const onNodesChange = useCallback(
 
         (changes: any) => {
 
 
-            setNodes((nodes) =>
+            setNodes(nodes =>
 
 
                 applyNodeChanges(
@@ -164,14 +315,12 @@ export default function GraphCanvas() {
 
 
 
-    // MOVE / DELETE EDGES
-
     const onEdgesChange = useCallback(
 
         (changes: any) => {
 
 
-            setEdges((edges) =>
+            setEdges(edges =>
 
 
                 applyEdgeChanges(
@@ -205,9 +354,6 @@ export default function GraphCanvas() {
 
 
 
-    // CREATE RELATIONSHIP
-
-    // CREATE RELATIONSHIP
 
     const onConnect = useCallback(
 
@@ -232,6 +378,7 @@ export default function GraphCanvas() {
 
                 data: {
 
+
                     label: "Relationship",
 
                     relationshipType: "Related",
@@ -242,9 +389,13 @@ export default function GraphCanvas() {
 
                     evidence: "",
 
-                    date: new Date()
-                        .toISOString()
-                        .split("T")[0]
+                    date:
+
+                        new Date()
+
+                            .toISOString()
+
+                            .split("T")[0]
 
                 }
 
@@ -254,24 +405,33 @@ export default function GraphCanvas() {
 
 
 
+            setEdges(edges =>
 
-            setEdges((edges) =>
 
                 addEdge(
+
                     newEdge,
+
                     edges
+
                 )
 
             );
 
 
+
+
+
             addEvent({
 
+
                 title: "Relationship Created",
+
 
                 description:
 
                     `New relationship created between ${connection.source} and ${connection.target}`
+
 
             });
 
@@ -281,7 +441,9 @@ export default function GraphCanvas() {
 
         [
 
-            setEdges
+            setEdges,
+
+            addEvent
 
         ]
 
@@ -297,8 +459,6 @@ export default function GraphCanvas() {
 
 
 
-
-    // DRAG OVER CANVAS
 
     const onDragOver = useCallback(
 
@@ -328,9 +488,6 @@ export default function GraphCanvas() {
 
 
 
-
-    // CREATE NEW NODE
-
     const onDrop = useCallback(
 
         (event: React.DragEvent) => {
@@ -350,19 +507,14 @@ export default function GraphCanvas() {
 
 
 
-
             if (!rawData)
-
                 return;
 
 
 
 
 
-
             let entity;
-
-
 
 
 
@@ -399,22 +551,13 @@ export default function GraphCanvas() {
 
 
 
-
-
-
             const position = screenToFlowPosition({
-
 
                 x: event.clientX,
 
-
                 y: event.clientY
 
-
             });
-
-
-
 
 
 
@@ -424,11 +567,9 @@ export default function GraphCanvas() {
             const newNode = {
 
 
-
                 id:
 
                     Date.now().toString(),
-
 
 
 
@@ -436,34 +577,26 @@ export default function GraphCanvas() {
 
 
 
-
                 type: "custom",
-
 
 
 
                 data: {
 
 
-
                     label: entity.name,
-
 
                     type: entity.type,
 
-
                     icon: entity.icon,
-
 
                     category: entity.category,
 
-
                     risk: "Low",
 
-
                     description: "",
-                    attachments: [],
 
+                    attachments: [],
 
 
                     details: {
@@ -493,9 +626,7 @@ export default function GraphCanvas() {
                     }
 
 
-
                 }
-
 
 
             };
@@ -504,20 +635,17 @@ export default function GraphCanvas() {
 
 
 
-
-
-
             setNodes(nodes => [
-
 
                 ...nodes,
 
-
                 newNode
 
-
-
             ]);
+
+
+
+
             addEvent({
 
                 title: "Entity Created",
@@ -530,14 +658,15 @@ export default function GraphCanvas() {
 
 
 
-
         },
 
         [
 
             screenToFlowPosition,
 
-            setNodes
+            setNodes,
+
+            addEvent
 
         ]
 
@@ -555,25 +684,16 @@ export default function GraphCanvas() {
 
 
 
-
     return (
-
-
 
 
         <div
 
 
-
-
             className="graph-wrapper"
 
 
-
-
             onDrop={onDrop}
-
-
 
 
             onDragOver={onDragOver}
@@ -603,13 +723,7 @@ export default function GraphCanvas() {
 
 
 
-
-
         >
-
-
-
-
 
 
 
@@ -618,31 +732,39 @@ export default function GraphCanvas() {
             <ReactFlow
 
 
-
-
                 nodes={nodes}
+
 
                 edges={edges}
 
+
                 nodeTypes={nodeTypes}
+
 
                 edgeTypes={edgeTypes}
 
 
+
                 nodesDraggable={true}
 
+
                 nodesConnectable={true}
+
 
                 elementsSelectable={true}
 
 
+                edgesFocusable={true}
+
+
+
                 onNodesChange={onNodesChange}
+
 
                 onEdgesChange={onEdgesChange}
 
+
                 onConnect={onConnect}
-
-
 
 
 
@@ -652,23 +774,16 @@ export default function GraphCanvas() {
                 onNodeClick={(event, node) => {
 
 
-
                     setSelectedNode(node);
-
 
 
                     setSelectedEdge(null);
 
 
-
                     setMenu(null);
 
 
-
                 }}
-
-
-
 
 
 
@@ -678,17 +793,16 @@ export default function GraphCanvas() {
                 onEdgeClick={(event, edge) => {
 
 
-
                     setSelectedEdge(edge);
-
 
 
                     setSelectedNode(null);
 
 
+                    setMenu(null);
+
 
                 }}
-
 
 
 
@@ -700,11 +814,7 @@ export default function GraphCanvas() {
                 onNodeContextMenu={(event, node) => {
 
 
-
                     event.preventDefault();
-
-
-
 
 
 
@@ -714,41 +824,49 @@ export default function GraphCanvas() {
 
 
 
-
-
-
                     setMenu({
-
-
 
 
                         id: node.id,
 
 
-
-
                         x: event.clientX,
 
 
-
-
                         y: event.clientY
-
-
 
 
                     });
 
 
 
+                }}
+                onEdgeContextMenu={(event, edge) => {
+
+
+                    event.preventDefault();
+
+
+                    setSelectedEdge(edge);
+
+
+                    setSelectedNode(null);
+
+
+                    setMenu({
+
+                        id: edge.id,
+
+                        type: "edge",
+
+                        x: event.clientX,
+
+                        y: event.clientY
+
+                    });
+
 
                 }}
-
-
-
-
-
-
 
 
 
@@ -756,38 +874,21 @@ export default function GraphCanvas() {
 
 
 
-
             >
-
-
-
-
-
 
 
 
                 <Background />
 
 
-
                 <Controls />
-
 
 
                 <MiniMap />
 
 
 
-
-
-
-
-
             </ReactFlow>
-
-
-
-
 
 
 
@@ -805,29 +906,36 @@ export default function GraphCanvas() {
                     <ContextMenu
 
 
-
-
                         x={menu.x}
-
-
-
 
                         y={menu.y}
 
 
-
-
+                        type={menu.type || "node"}
 
 
                         onDelete={() => {
 
 
 
-                            deleteNode(
+                            if (menu.type === "edge") {
 
-                                menu.id
 
-                            );
+                                deleteEdge(menu.id);
+
+                                setSelectedEdge(null);
+
+
+                            }
+                            else {
+
+
+                                deleteNode(menu.id);
+
+
+                            }
+
+
 
 
                             setMenu(null);
@@ -838,16 +946,10 @@ export default function GraphCanvas() {
 
 
 
-
-
-
-
                         onClose={() => {
 
 
-
                             setMenu(null);
-
 
 
                         }}
@@ -860,11 +962,8 @@ export default function GraphCanvas() {
 
                 )
 
+
             }
-
-
-
-
 
 
 
@@ -873,8 +972,7 @@ export default function GraphCanvas() {
         </div>
 
 
-
-
     );
+
 
 }

@@ -18,6 +18,12 @@ import {
 } from "../../services/exportService";
 
 
+import {
+    importInvestigationExcel
+} from "../../services/importService";
+
+
+
 
 
 
@@ -44,7 +50,6 @@ export default function Header() {
 
 
     } = useGraph();
-
 
 
 
@@ -105,9 +110,7 @@ export default function Header() {
 
             {
 
-                type:
-
-                    "application/json"
+                type: "application/json"
 
             }
 
@@ -132,15 +135,11 @@ export default function Header() {
 
 
 
-        link.download =
-
-            "IGS_Backup.json";
+        link.download = "IGS_Backup.json";
 
 
 
         link.click();
-
-
 
 
 
@@ -165,7 +164,7 @@ export default function Header() {
 
     // IMPORT JSON BACKUP
 
-    const handleImport = () => {
+    const handleImportJSON = () => {
 
 
 
@@ -184,20 +183,15 @@ export default function Header() {
 
 
 
-
         input.onchange = (event: any) => {
-
 
 
             const file = event.target.files[0];
 
 
-
             if (!file)
 
                 return;
-
-
 
 
 
@@ -209,10 +203,7 @@ export default function Header() {
 
 
 
-
-
             reader.onload = () => {
-
 
 
                 try {
@@ -230,14 +221,11 @@ export default function Header() {
 
 
 
-
                     setNodes(
 
                         data.entities || []
 
                     );
-
-
 
 
 
@@ -255,32 +243,29 @@ export default function Header() {
 
 
 
-
                     alert(
 
-                        "Investigation loaded successfully"
-
-                    );
-
-
-
-
-                }
-
-
-                catch (error) {
-
-
-
-                    alert(
-
-                        "Invalid investigation file"
+                        "JSON investigation loaded successfully"
 
                     );
 
 
 
                 }
+
+
+                catch {
+
+
+                    alert(
+
+                        "Invalid JSON file"
+
+                    );
+
+
+                }
+
 
 
             };
@@ -290,9 +275,146 @@ export default function Header() {
 
 
 
-
-
             reader.readAsText(file);
+
+
+
+        };
+
+
+
+
+
+        input.click();
+
+
+
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // IMPORT EXCEL
+
+    const handleImportExcel = () => {
+
+
+
+        const input = document.createElement("input");
+
+
+
+        input.type = "file";
+
+
+        input.accept = ".xlsx,.xls";
+
+
+
+
+
+
+
+
+        input.onchange = async (event: any) => {
+
+
+
+            const file = event.target.files[0];
+
+
+
+            if (!file)
+
+                return;
+
+
+
+
+
+
+
+            try {
+
+
+
+                const result = await importInvestigationExcel(
+
+                    file
+
+                );
+
+
+
+
+
+
+
+                setNodes(
+
+                    result.nodes || []
+
+                );
+
+
+
+
+                setEdges(
+
+                    result.edges || []
+
+                );
+
+
+
+
+
+                setSearchTerm("");
+
+
+
+
+
+
+
+                alert(
+
+                    "Excel investigation loaded successfully"
+
+                );
+
+
+
+
+            }
+
+
+            catch (error) {
+
+
+
+                console.error(error);
+
+
+
+                alert(
+
+                    "Invalid Excel investigation file"
+
+                );
+
+
+
+            }
 
 
 
@@ -349,7 +471,6 @@ export default function Header() {
 
 
 
-
     return (
 
 
@@ -363,12 +484,7 @@ export default function Header() {
 
 
 
-            {/* BRAND */}
-
-
-
             <div className="header-left">
-
 
 
                 <div className="logo">
@@ -380,7 +496,6 @@ export default function Header() {
                 </div>
 
 
-
             </div>
 
 
@@ -388,15 +503,6 @@ export default function Header() {
 
 
 
-
-
-
-
-
-
-
-
-            {/* SEARCH */}
 
 
 
@@ -411,16 +517,11 @@ export default function Header() {
                 <input
 
 
-
-
                     type="text"
 
 
 
-
                     value={searchTerm}
-
-
 
 
 
@@ -436,16 +537,12 @@ export default function Header() {
 
 
 
-
-
-                    placeholder=
-
-                    "Search entities, relationships..."
-
+                    placeholder="Search entities, relationships..."
 
 
 
                 />
+
 
 
             </div>
@@ -459,13 +556,6 @@ export default function Header() {
 
 
 
-
-
-
-
-
-
-            {/* ACTION BUTTONS */}
 
 
 
@@ -478,25 +568,18 @@ export default function Header() {
 
 
 
+
                 <button
 
-
                     className="header-btn"
-
 
                     onClick={handleSave}
 
-
                 >
-
-
 
                     <FiSave />
 
-
                     Save
-
-
 
                 </button>
 
@@ -510,23 +593,15 @@ export default function Header() {
 
                 <button
 
-
                     className="header-btn"
 
-
-                    onClick={handleImport}
-
+                    onClick={handleImportJSON}
 
                 >
-
-
 
                     <FiUpload />
 
-
-                    Load
-
-
+                    Load JSON
 
                 </button>
 
@@ -539,54 +614,16 @@ export default function Header() {
 
 
                 <button
-
-
-                    className="header-btn export"
-
-
-                    onClick={handleExcelExport}
-
-
-                >
-
-
-
-                    <FiFileText />
-
-
-                    Excel
-
-
-
-                </button>
-
-
-
-
-
-
-
-
-
-                <button
-
 
                     className="header-btn"
 
-
-                    onClick={handleExcelExport}
-
+                    onClick={handleImportExcel}
 
                 >
 
+                    <FiUpload />
 
-
-                    <FiDownload />
-
-
-                    Export
-
-
+                    Load Excel
 
                 </button>
 
@@ -600,22 +637,64 @@ export default function Header() {
 
                 <button
 
+                    className="header-btn export"
 
-                    className="icon-btn"
-
-
-                    title="Settings"
-
+                    onClick={handleExcelExport}
 
                 >
 
+                    <FiFileText />
+
+                    Excel
+
+                </button>
+
+
+
+
+
+
+
+
+
+                <button
+
+                    className="header-btn"
+
+                    onClick={handleExcelExport}
+
+                >
+
+                    <FiDownload />
+
+                    Export
+
+                </button>
+
+
+
+
+
+
+
+
+
+                <button
+
+                    className="icon-btn"
+
+                    title="Settings"
+
+                >
 
 
                     <FiSettings />
 
 
-
                 </button>
+
+
+
 
 
 
@@ -628,10 +707,10 @@ export default function Header() {
 
 
 
+
         </header>
 
 
     );
-
 
 }

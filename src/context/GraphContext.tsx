@@ -102,6 +102,7 @@ interface GraphContextType {
 
 
     deleteNode: (id: string) => void;
+    deleteEdge: (id: string) => void;
 
 
 
@@ -114,6 +115,8 @@ interface GraphContextType {
     setSearchTerm: React.Dispatch<
         React.SetStateAction<string>
     >;
+
+
 
 
 
@@ -514,6 +517,29 @@ export function GraphProvider({
 
 
     };
+    const deleteEdge = (id: string) => {
+
+        setEdges(prev =>
+            prev.filter(edge => edge.id !== id)
+        );
+
+        addEvent({
+
+            title: "Relationship Deleted",
+
+            type: "delete",
+
+            description: `Relationship ${id} removed`
+
+        });
+
+        if (selectedEdge?.id === id) {
+
+            setSelectedEdge(null);
+
+        }
+
+    };
 
 
 
@@ -593,7 +619,9 @@ export function GraphProvider({
 
                 searchTerm,
 
-                setSearchTerm
+                setSearchTerm,
+
+                deleteEdge
 
 
 

@@ -8,7 +8,15 @@ import {
 
 
 
-export default function Dashboard() {
+interface Props {
+
+    onBack?: () => void;
+
+}
+
+
+
+export default function Dashboard({ onBack }: Props) {
 
 
     return (
@@ -37,5 +45,6 @@ export default function Dashboard() {
 
 
     );
+
 
 }

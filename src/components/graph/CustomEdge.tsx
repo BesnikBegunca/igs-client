@@ -16,7 +16,9 @@ import {
 
 
 
+
 export default function CustomEdge(props: any) {
+
 
 
     const {
@@ -41,16 +43,27 @@ export default function CustomEdge(props: any) {
 
 
 
+
+
     const {
+
         setEdges,
+
         addEvent
+
+
     } = useGraph();
 
 
 
 
 
+
+
     const [open, setOpen] = useState(false);
+
+
+
 
 
 
@@ -122,12 +135,19 @@ export default function CustomEdge(props: any) {
 
 
 
+
+
     const [
+
         edgePath,
+
         labelX,
+
         labelY
 
+
     ] = getBezierPath({
+
 
         sourceX,
 
@@ -135,13 +155,17 @@ export default function CustomEdge(props: any) {
 
         sourcePosition,
 
+
         targetX,
 
         targetY,
 
         targetPosition
 
+
     });
+
+
 
 
 
@@ -157,10 +181,12 @@ export default function CustomEdge(props: any) {
         (value: string) => {
 
 
+
             setEdges(edges =>
 
 
                 edges.map(edge =>
+
 
 
                     edge.id === id
@@ -170,16 +196,21 @@ export default function CustomEdge(props: any) {
 
                         {
 
+
                             ...edge,
 
 
                             data: {
 
+
                                 ...edge.data,
+
 
                                 relationshipType: value
 
+
                             }
+
 
                         }
 
@@ -189,23 +220,38 @@ export default function CustomEdge(props: any) {
                         edge
 
 
+
                 )
+
 
 
             );
 
 
 
+
+
+
             addEvent({
+
 
                 title: "Relationship Updated",
 
+
                 description:
+
                     `Relationship changed to ${value}`
+
 
             });
 
 
+
+
+
+
+
+            // mbyll dropdown pas zgjedhjes
 
             setOpen(false);
 
@@ -233,11 +279,12 @@ export default function CustomEdge(props: any) {
 
 
 
+
+
+
     const label =
 
-        data?.relationshipType ||
-
-        "Related";
+        data?.relationshipType || "Related";
 
 
 
@@ -247,16 +294,17 @@ export default function CustomEdge(props: any) {
 
 
 
-    const getRelationshipColor = (
 
-        type: string
 
-    ) => {
+
+    const getRelationshipColor = (type: string) => {
 
 
         const relation = relationships.find(
 
+
             item => item.name === type
+
 
         );
 
@@ -275,15 +323,19 @@ export default function CustomEdge(props: any) {
 
 
 
-    return (
 
+
+
+    return (
 
         <>
 
 
             <BaseEdge
 
+
                 id={id}
+
 
                 path={edgePath}
 
@@ -299,7 +351,12 @@ export default function CustomEdge(props: any) {
 
                 }}
 
+
             />
+
+
+
+
 
 
 
@@ -330,25 +387,39 @@ export default function CustomEdge(props: any) {
 
 
 
-                    onClick={(e) => {
-
-
-                        e.stopPropagation();
-
-
-                        setOpen(prev => !prev);
-
-
-                    }}
-
-
-
                 >
 
 
 
 
-                    {label}
+
+
+
+                    <div
+
+
+                        onClick={(e) => {
+
+
+                            e.stopPropagation();
+
+
+                            setOpen(prev => !prev);
+
+
+                        }}
+
+
+                    >
+
+
+                        {label}
+
+
+                    </div>
+
+
+
 
 
 
@@ -360,18 +431,21 @@ export default function CustomEdge(props: any) {
                         open && (
 
 
+
                             <div
 
 
                                 className="edge-dropdown"
 
 
-                                onClick={(e) =>
+                                onClick={(e) => {
 
 
-                                    e.stopPropagation()
+                                    e.stopPropagation();
 
-                                }
+
+                                }}
+
 
 
                             >
@@ -381,7 +455,9 @@ export default function CustomEdge(props: any) {
 
                                 {
 
+
                                     relationships.map(item => (
+
 
 
                                         <div
@@ -393,20 +469,27 @@ export default function CustomEdge(props: any) {
                                             className="edge-option"
 
 
-                                            onClick={() =>
+
+                                            onClick={(e) => {
+
+
+                                                e.stopPropagation();
+
 
 
                                                 updateRelationship(
 
                                                     item.name
 
-                                                )
+                                                );
 
 
-                                            }
+
+                                            }}
 
 
                                         >
+
 
 
 
@@ -425,8 +508,8 @@ export default function CustomEdge(props: any) {
                                                 }}
 
 
-
                                             />
+
 
 
 
@@ -437,9 +520,13 @@ export default function CustomEdge(props: any) {
                                         </div>
 
 
+
+
                                     ))
 
+
                                 }
+
 
 
 
@@ -447,9 +534,12 @@ export default function CustomEdge(props: any) {
                             </div>
 
 
+
                         )
 
                     }
+
+
 
 
 
@@ -462,10 +552,12 @@ export default function CustomEdge(props: any) {
 
 
 
+
         </>
 
 
     );
+
 
 
 }
