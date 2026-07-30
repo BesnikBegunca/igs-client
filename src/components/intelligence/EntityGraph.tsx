@@ -18,6 +18,8 @@ import "@xyflow/react/dist/style.css";
 
 
 
+
+
 interface Props {
 
 
@@ -33,7 +35,13 @@ interface Props {
     onClose: () => void;
 
 
+    onSelectEntity: (entity: any) => void;
+
+
 }
+
+
+
 
 
 
@@ -45,15 +53,25 @@ interface Props {
 
 export default function EntityGraph({
 
+
     entity,
+
 
     nodes,
 
+
     edges,
 
-    onClose
+
+    onClose,
+
+
+    onSelectEntity
+
+
 
 }: Props) {
+
 
 
 
@@ -68,24 +86,33 @@ export default function EntityGraph({
 
 
 
+
     /*
         GET CONNECTIONS
     */
 
 
+
     const graphEdges = edges.filter(
+
 
 
         (edge: any) =>
 
 
+
             String(edge.source) === entityId ||
+
 
 
             String(edge.target) === entityId
 
 
+
     );
+
+
+
 
 
 
@@ -100,10 +127,12 @@ export default function EntityGraph({
     */
 
 
+
     const nodeIds = new Set<string>();
 
 
     nodeIds.add(entityId);
+
 
 
 
@@ -128,7 +157,9 @@ export default function EntityGraph({
         );
 
 
+
     });
+
 
 
 
@@ -148,11 +179,15 @@ export default function EntityGraph({
     */
 
 
+
     const graphNodes = nodes
+
 
         .filter(
 
+
             (node: any) =>
+
 
                 nodeIds.has(
 
@@ -160,10 +195,14 @@ export default function EntityGraph({
 
                 )
 
+
         )
 
 
+
         .map(
+
+
 
             (node: any, index: number) => {
 
@@ -171,14 +210,16 @@ export default function EntityGraph({
 
                 const isMain =
 
+
                     String(node.id) === entityId;
 
 
 
 
-                const otherIndex =
 
-                    index - 1;
+
+                const otherIndex = index - 1;
+
 
 
 
@@ -197,18 +238,23 @@ export default function EntityGraph({
 
 
 
-
                     position: {
+
+
 
 
 
 
                         x:
 
+
+
                             isMain
 
 
+
                                 ?
+
 
 
                                 450
@@ -229,10 +275,13 @@ export default function EntityGraph({
                         y:
 
 
+
                             isMain
 
 
+
                                 ?
+
 
 
                                 100
@@ -247,6 +296,8 @@ export default function EntityGraph({
 
 
 
+
+
                     },
 
 
@@ -256,6 +307,7 @@ export default function EntityGraph({
 
 
                     data: {
+
 
 
                         label:
@@ -275,7 +327,6 @@ export default function EntityGraph({
 
                         original:
 
-
                             node.data
 
 
@@ -293,7 +344,11 @@ export default function EntityGraph({
 
 
 
+
+
                         width: 180,
+
+
 
 
 
@@ -301,10 +356,13 @@ export default function EntityGraph({
                         background:
 
 
+
                             isMain
 
 
+
                                 ?
+
 
 
                                 "#2563eb"
@@ -336,7 +394,9 @@ export default function EntityGraph({
                             isMain
 
 
+
                                 ?
+
 
 
                                 "2px solid #60a5fa"
@@ -376,11 +436,15 @@ export default function EntityGraph({
 
 
 
+
                         fontWeight: 700
 
 
 
+
+
                     }
+
 
 
 
@@ -390,6 +454,7 @@ export default function EntityGraph({
 
 
             }
+
 
         );
 
@@ -411,75 +476,77 @@ export default function EntityGraph({
     */
 
 
+
     const finalEdges = graphEdges.map(
 
 
-        (edge: any) => ({
+
+        (edge: any) => (
+
+
+
+
+            {
+
+
+
+                id:
+
+                    String(edge.id),
+
+
+
+
+
+                source:
+
+                    String(edge.source),
+
+
+
+
+
+                target:
+
+                    String(edge.target),
+
+
+
+
+
+                label:
+
+
+                    edge.data?.relationshipType || "Related",
+
+
+
+
+
+                animated: true,
 
 
 
 
 
 
-            id:
-
-                String(edge.id),
+                style: {
 
 
+                    strokeWidth: 2
 
 
+                }
 
-
-            source:
-
-
-                String(edge.source),
-
-
-
-
-
-
-            target:
-
-
-                String(edge.target),
-
-
-
-
-
-
-
-            label:
-
-
-                edge.data?.relationshipType || "Related",
-
-
-
-
-
-
-            animated: true,
-
-
-
-
-
-            style: {
-
-
-                strokeWidth: 2
 
 
             }
 
 
 
+        )
 
 
-        })
 
     );
 
@@ -497,7 +564,6 @@ export default function EntityGraph({
 
 
     return (
-
 
 
 
@@ -533,11 +599,12 @@ export default function EntityGraph({
                 >
 
 
+
                     <FiX />
 
 
-                </button>
 
+                </button>
 
 
 
@@ -568,13 +635,14 @@ export default function EntityGraph({
                     <p>
 
 
-
                         {
+
 
                             entity.data?.label
 
 
                         }
+
 
                         {" "}network analysis
 
@@ -609,7 +677,10 @@ export default function EntityGraph({
 
 
 
+
+
                         nodes={graphNodes}
+
 
 
 
@@ -617,19 +688,78 @@ export default function EntityGraph({
 
 
 
+
+
                         fitView
+
+
+
 
 
 
                         fitViewOptions={{
 
+
                             padding: 0.3
+
 
                         }}
 
 
 
+
+
+
+                        onNodeClick={(_, node) => {
+
+
+
+
+
+
+                            const selected = nodes.find(
+
+
+
+                                (item: any) =>
+
+
+
+                                    String(item.id) === String(node.id)
+
+
+
+                            );
+
+
+
+
+
+
+                            if (selected) {
+
+
+
+                                onSelectEntity(selected);
+
+
+
+                            }
+
+
+
+
+
+                        }}
+
+
+
+
+
+
+
                     >
+
 
 
 
@@ -647,6 +777,7 @@ export default function EntityGraph({
 
 
 
+
                     </ReactFlow>
 
 
@@ -654,7 +785,9 @@ export default function EntityGraph({
 
 
 
+
                 </div>
+
 
 
 
@@ -671,8 +804,8 @@ export default function EntityGraph({
 
 
 
-
         </div>
+
 
 
 

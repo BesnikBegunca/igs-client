@@ -8,6 +8,7 @@ import {
 
 
 
+
 interface Props {
 
     onBack?: () => void;
@@ -16,7 +17,10 @@ interface Props {
 
 
 
+
+
 export default function Dashboard({ onBack }: Props) {
+
 
 
     return (
@@ -40,8 +44,8 @@ export default function Dashboard({ onBack }: Props) {
             </ReactFlowProvider>
 
 
-
         </div>
+
 
 
     );

@@ -3,21 +3,37 @@ import {
     FiLink,
     FiFolder,
     FiUsers,
-    FiActivity
+    FiBell
 } from "react-icons/fi";
 
 
 import {
+    generateReport
+}
+    from "../../utils/reportGenerator";
+
+
+import {
     useState
-} from "react";
+}
+    from "react";
 
 
 import {
     useCases
-} from "../../context/CaseContext";
+}
+    from "../../context/CaseContext";
+
+
+import {
+    useMonitor
+}
+    from "../../context/MonitorContext";
 
 
 import EntityGraph from "./EntityGraph";
+
+
 
 
 
@@ -54,11 +70,25 @@ export default function EntityProfile({
 
 
 
+
     const {
 
         cases
 
     } = useCases();
+
+
+
+
+
+    const {
+
+        monitoredEntities,
+
+        toggleMonitor
+
+    } = useMonitor();
+
 
 
 
@@ -77,9 +107,20 @@ export default function EntityProfile({
 
 
 
-    /*
-        COLLECT ALL GRAPH DATA
-    */
+    const isMonitoring = monitoredEntities.some(
+
+        (item: any) =>
+
+            item.id === entityId
+
+    );
+
+
+
+
+
+
+
 
 
     const allNodes = (cases || [])
@@ -113,12 +154,6 @@ export default function EntityProfile({
 
 
 
-
-    /*
-        CONNECTIONS
-    */
-
-
     const connections = allEdges.filter(
 
         (edge: any) =>
@@ -134,12 +169,6 @@ export default function EntityProfile({
 
 
 
-
-
-
-    /*
-        CONNECTED ENTITIES
-    */
 
 
     const connectedEntities = connections.map(
@@ -161,7 +190,6 @@ export default function EntityProfile({
 
 
 
-
             const node = allNodes.find(
 
                 (n: any) =>
@@ -169,8 +197,6 @@ export default function EntityProfile({
                     n.id === connectedId
 
             );
-
-
 
 
 
@@ -183,7 +209,6 @@ export default function EntityProfile({
                     edge.data?.relationshipType || "Related"
 
             };
-
 
 
         }
@@ -203,12 +228,6 @@ export default function EntityProfile({
 
 
 
-
-
-
-    /*
-        RELATED CASES
-    */
 
 
     const relatedCases = (cases || [])
@@ -235,13 +254,6 @@ export default function EntityProfile({
 
 
 
-
-
-    /*
-        RELATION STATISTICS
-    */
-
-
     const relationStats: any = {};
 
 
@@ -259,10 +271,10 @@ export default function EntityProfile({
 
 
 
-
             relationStats[type] =
 
                 (relationStats[type] || 0) + 1;
+
 
 
         }
@@ -277,13 +289,11 @@ export default function EntityProfile({
 
 
 
+
     return (
 
 
-
         <div className="entity-overlay">
-
-
 
 
 
@@ -313,24 +323,18 @@ export default function EntityProfile({
 
 
 
-
                 <div className="entity-main">
-
 
 
                     <div className="big-icon">
 
                         {
 
-                            entity.data?.icon ||
-
-                            "❓"
+                            entity.data?.icon || "❓"
 
                         }
 
                     </div>
-
-
 
 
 
@@ -341,31 +345,26 @@ export default function EntityProfile({
 
                             {
 
-                                entity.data?.label ||
-
-                                "Unknown"
+                                entity.data?.label || "Unknown"
 
                             }
 
                         </h1>
 
 
-
                         <span>
 
                             {
 
-                                entity.data?.type ||
-
-                                "Entity"
+                                entity.data?.type || "Entity"
 
                             }
 
                         </span>
 
 
-                    </div>
 
+                    </div>
 
 
                 </div>
@@ -387,6 +386,106 @@ export default function EntityProfile({
                 >
 
                     🔗 Generate Connection Graph
+
+                </button>
+
+
+
+
+
+
+
+
+
+                <button
+
+                    className="report-btn"
+
+                    onClick={() =>
+
+
+                        generateReport(
+
+                            entity,
+
+                            {
+
+                                cases:
+
+                                    relatedCases.length,
+
+
+                                connections:
+
+                                    connections.length,
+
+
+                                relations:
+
+                                    relationStats
+
+
+                            }
+
+                        )
+
+                    }
+
+                >
+
+                    📄 Generate Intelligence Report
+
+                </button>
+
+
+
+
+
+
+
+
+                <button
+
+
+                    className={
+
+                        isMonitoring
+
+                            ?
+
+                            "monitor-active"
+
+                            :
+
+                            "monitor-btn"
+
+                    }
+
+
+
+                    onClick={() => toggleMonitor(entity)}
+
+
+                >
+
+
+                    <FiBell />
+
+
+                    {
+
+                        isMonitoring
+
+                            ?
+
+                            "Monitoring"
+
+                            :
+
+                            "Monitor Entity"
+
+                    }
+
 
                 </button>
 
@@ -423,9 +522,6 @@ export default function EntityProfile({
 
 
 
-
-
-
                     <div>
 
                         <FiLink />
@@ -443,8 +539,6 @@ export default function EntityProfile({
                         </small>
 
                     </div>
-
-
 
 
 
@@ -480,8 +574,8 @@ export default function EntityProfile({
 
 
 
-                <section>
 
+                <section>
 
                     <h3>
 
@@ -490,56 +584,41 @@ export default function EntityProfile({
                     </h3>
 
 
-
                     <div className="case-grid">
 
 
                         {
 
-                            relatedCases.length === 0
-
-                                ?
-
-                                <p>
-
-                                    No cases found
-
-                                </p>
+                            relatedCases.map((item: any) => (
 
 
-                                :
+                                <div
+
+                                    className="info-card"
+
+                                    key={item.id}
+
+                                >
+
+                                    📂
+
+                                    {" "}
+
+                                    {
+
+                                        item.name ||
+
+                                        item.title ||
+
+                                        "Investigation"
+
+                                    }
 
 
-                                relatedCases.map((item: any) => (
+                                </div>
 
 
-                                    <div
-
-                                        className="info-card"
-
-                                        key={item.id}
-
-                                    >
-
-                                        📂
-
-                                        {" "}
-
-                                        {
-
-                                            item.name ||
-
-                                            item.title ||
-
-                                            "Investigation"
-
-                                        }
-
-
-                                    </div>
-
-
-                                ))
+                            ))
 
                         }
 
@@ -569,121 +648,83 @@ export default function EntityProfile({
 
 
 
-
-
                     {
 
+                        connectedEntities.map(
 
-                        connectedEntities.length === 0
-
-
-                            ?
+                            (item: any, index: number) => (
 
 
-                            <p>
+                                <div
 
-                                No connections found
+                                    className="connection-card"
 
-                            </p>
+                                    key={index}
 
+                                    onClick={() => onSelectEntity(item.node)}
 
-
-                            :
-
-
-
-                            connectedEntities.map(
-
-                                (item: any, index: number) => (
+                                >
 
 
-                                    <div
-
-                                        className="connection-card"
-
-                                        key={index}
-
-                                        onClick={() =>
+                                    <div>
 
 
-                                            onSelectEntity(
-
-                                                item.node
-
-                                            )
-
-                                        }
-
-                                    >
-
-
-
-
-                                        <div>
-
-
-                                            <span>
-
-                                                {
-
-                                                    item.node.data?.icon ||
-
-                                                    "❓"
-
-                                                }
-
-                                            </span>
-
-
-
-                                            <b>
-
-                                                {
-
-                                                    item.node.data?.label
-
-                                                }
-
-                                            </b>
-
-
-
-                                            <small>
-
-                                                {
-
-                                                    item.node.data?.type
-
-                                                }
-
-                                            </small>
-
-
-
-                                        </div>
-
-
-
-
-
-                                        <strong>
+                                        <span>
 
                                             {
 
-                                                item.relationship
+                                                item.node.data?.icon || "❓"
 
                                             }
 
-                                        </strong>
+                                        </span>
 
+
+                                        <b>
+
+                                            {
+
+                                                item.node.data?.label
+
+                                            }
+
+                                        </b>
+
+
+                                        <small>
+
+                                            {
+
+                                                item.node.data?.type
+
+                                            }
+
+                                        </small>
 
 
                                     </div>
 
 
-                                )
+
+
+                                    <strong>
+
+                                        {
+
+                                            item.relationship
+
+                                        }
+
+                                    </strong>
+
+
+                                </div>
+
 
                             )
+
+                        )
+
 
 
                     }
@@ -713,47 +754,38 @@ export default function EntityProfile({
 
                     {
 
+                        Object.entries(relationStats)
 
-                        Object.entries(
-
-                            relationStats
-
-                        )
-
-                            .map(
-
-                                ([key, value]: any) => (
+                            .map(([key, value]: any) => (
 
 
-                                    <div
+                                <div
 
-                                        className="detail-row"
+                                    className="detail-row"
 
-                                        key={key}
+                                    key={key}
 
-                                    >
-
-                                        <b>
-
-                                            {key}
-
-                                        </b>
+                                >
 
 
-                                        <span>
+                                    <b>
 
-                                            {value}
+                                        {key}
 
-                                        </span>
-
-
-                                    </div>
+                                    </b>
 
 
-                                )
+                                    <span>
+
+                                        {value}
+
+                                    </span>
 
 
-                            )
+                                </div>
+
+
+                            ))
 
 
                     }
@@ -772,56 +804,6 @@ export default function EntityProfile({
 
                 <section>
 
-
-                    <h3>
-
-                        ⚠️ Risk
-
-                    </h3>
-
-
-
-
-                    <div className="detail-row">
-
-
-                        <b>
-
-                            Level
-
-                        </b>
-
-
-                        <span>
-
-                            {
-
-                                entity.data?.risk ||
-
-                                "Low"
-
-                            }
-
-                        </span>
-
-
-                    </div>
-
-
-
-                </section>
-
-
-
-
-
-
-
-
-
-                <section>
-
-
                     <h3>
 
                         👤 Details
@@ -832,46 +814,41 @@ export default function EntityProfile({
 
                     {
 
-
                         Object.entries(
 
                             entity.data?.details || {}
 
                         )
 
-                            .map(
-
-                                ([key, value]: any) => (
+                            .map(([key, value]: any) => (
 
 
-                                    <div
+                                <div
 
-                                        className="detail-row"
+                                    className="detail-row"
 
-                                        key={key}
+                                    key={key}
 
-                                    >
+                                >
 
-                                        <b>
+                                    <b>
 
-                                            {key}
+                                        {key}
 
-                                        </b>
-
-
-                                        <span>
-
-                                            {String(value)}
-
-                                        </span>
+                                    </b>
 
 
-                                    </div>
+                                    <span>
+
+                                        {String(value)}
+
+                                    </span>
 
 
-                                )
+                                </div>
 
-                            )
+
+                            ))
 
 
                     }
@@ -890,10 +867,13 @@ export default function EntityProfile({
 
                 {
 
-                    showGraph && (
+                    showGraph &&
+
+                    (
 
 
                         <EntityGraph
+
 
                             entity={entity}
 
@@ -903,10 +883,23 @@ export default function EntityProfile({
 
                             onClose={() => setShowGraph(false)}
 
+
+                            onSelectEntity={(item: any) => {
+
+
+                                setShowGraph(false);
+
+                                onSelectEntity(item);
+
+
+                            }}
+
+
                         />
 
 
                     )
+
 
                 }
 
@@ -914,10 +907,7 @@ export default function EntityProfile({
 
 
 
-
-
             </div>
-
 
 
         </div>

@@ -23,6 +23,10 @@ import {
 } from "../../services/importService";
 
 
+import AlertNotification from "../intelligence/AlertNotification";
+
+
+
 
 
 
@@ -30,7 +34,6 @@ import {
 
 
 export default function Header() {
-
 
 
 
@@ -59,8 +62,6 @@ export default function Header() {
 
 
 
-
-
     // SAVE JSON BACKUP
 
     const handleSave = () => {
@@ -79,6 +80,7 @@ export default function Header() {
             exportedAt:
 
                 new Date()
+
                     .toISOString()
 
 
@@ -91,7 +93,6 @@ export default function Header() {
 
 
         const blob = new Blob(
-
 
             [
 
@@ -107,16 +108,13 @@ export default function Header() {
 
             ],
 
-
             {
 
                 type: "application/json"
 
             }
 
-
         );
-
 
 
 
@@ -161,15 +159,13 @@ export default function Header() {
 
 
 
-
-    // IMPORT JSON BACKUP
+    // IMPORT JSON
 
     const handleImportJSON = () => {
 
 
 
         const input = document.createElement("input");
-
 
 
         input.type = "file";
@@ -182,11 +178,11 @@ export default function Header() {
 
 
 
-
         input.onchange = (event: any) => {
 
 
             const file = event.target.files[0];
+
 
 
             if (!file)
@@ -197,8 +193,8 @@ export default function Header() {
 
 
 
-            const reader = new FileReader();
 
+            const reader = new FileReader();
 
 
 
@@ -215,8 +211,6 @@ export default function Header() {
                         reader.result as string
 
                     );
-
-
 
 
 
@@ -242,12 +236,12 @@ export default function Header() {
 
 
 
-
                     alert(
 
                         "JSON investigation loaded successfully"
 
                     );
+
 
 
 
@@ -267,9 +261,7 @@ export default function Header() {
                 }
 
 
-
             };
-
 
 
 
@@ -312,13 +304,10 @@ export default function Header() {
         const input = document.createElement("input");
 
 
-
         input.type = "file";
 
 
         input.accept = ".xlsx,.xls";
-
-
 
 
 
@@ -357,13 +346,12 @@ export default function Header() {
 
 
 
-
-
                 setNodes(
 
                     result.nodes || []
 
                 );
+
 
 
 
@@ -385,13 +373,11 @@ export default function Header() {
 
 
 
-
                 alert(
 
                     "Excel investigation loaded successfully"
 
                 );
-
 
 
 
@@ -413,13 +399,11 @@ export default function Header() {
                 );
 
 
-
             }
 
 
 
         };
-
 
 
 
@@ -471,13 +455,13 @@ export default function Header() {
 
 
 
+
     return (
 
 
 
 
         <header className="header">
-
 
 
 
@@ -517,7 +501,9 @@ export default function Header() {
                 <input
 
 
+
                     type="text"
+
 
 
 
@@ -525,7 +511,9 @@ export default function Header() {
 
 
 
+
                     onChange={(e) =>
+
 
                         setSearchTerm(
 
@@ -558,10 +546,32 @@ export default function Header() {
 
 
 
-
             <div className="header-actions">
 
 
+
+
+
+                <AlertNotification
+
+
+                    onSelectEntity={(entity) => {
+
+
+                        console.log(
+
+                            "Alert entity:",
+
+                            entity
+
+                        );
+
+
+                    }}
+
+
+
+                />
 
 
 
@@ -590,7 +600,6 @@ export default function Header() {
 
 
 
-
                 <button
 
                     className="header-btn"
@@ -604,8 +613,6 @@ export default function Header() {
                     Load JSON
 
                 </button>
-
-
 
 
 
@@ -633,8 +640,6 @@ export default function Header() {
 
 
 
-
-
                 <button
 
                     className="header-btn export"
@@ -648,8 +653,6 @@ export default function Header() {
                     Excel
 
                 </button>
-
-
 
 
 
@@ -677,8 +680,6 @@ export default function Header() {
 
 
 
-
-
                 <button
 
                     className="icon-btn"
@@ -687,12 +688,9 @@ export default function Header() {
 
                 >
 
-
                     <FiSettings />
 
-
                 </button>
-
 
 
 

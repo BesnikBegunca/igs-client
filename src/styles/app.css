@@ -5317,3 +5317,2254 @@ section h3{
 
 
 }
+/* =========================
+   GENERATE GRAPH BUTTON
+========================= */
+
+.generate-graph-btn {
+
+    width:100%;
+
+    margin:20px 0;
+
+    padding:14px 20px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:10px;
+
+
+    background:
+        linear-gradient(
+            135deg,
+            #2563eb,
+            #1d4ed8
+        );
+
+
+    color:white;
+
+
+    border:none;
+
+
+    border-radius:14px;
+
+
+    font-size:15px;
+
+
+    font-weight:700;
+
+
+    letter-spacing:.3px;
+
+
+    cursor:pointer;
+
+
+    transition:
+        .25s ease;
+
+
+    box-shadow:
+
+        0 8px 25px rgba(
+            37,
+            99,
+            235,
+            .35
+        );
+
+}
+
+
+
+
+.generate-graph-btn:hover {
+
+
+    transform:
+
+        translateY(-3px);
+
+
+    background:
+
+        linear-gradient(
+            135deg,
+            #3b82f6,
+            #2563eb
+        );
+
+
+    box-shadow:
+
+        0 12px 35px rgba(
+            37,
+            99,
+            235,
+            .55
+        );
+
+
+}
+
+
+
+
+
+.generate-graph-btn:active {
+
+
+    transform:
+
+        translateY(0);
+
+
+}
+
+
+
+
+
+.generate-graph-btn::before {
+
+
+    content:"🔗";
+
+
+    font-size:20px;
+
+
+    display:flex;
+
+
+    align-items:center;
+
+
+}
+/* =========================
+   INTELLIGENCE REPORT BUTTON
+========================= */
+
+.report-btn {
+
+    width:100%;
+
+    margin-top:12px;
+
+    padding:14px 20px;
+
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:10px;
+
+
+
+    background:
+
+        linear-gradient(
+            135deg,
+            #059669,
+            #047857
+        );
+
+
+    color:white;
+
+
+    border:none;
+
+
+    border-radius:14px;
+
+
+    font-size:15px;
+
+
+    font-weight:700;
+
+
+    letter-spacing:.3px;
+
+
+    cursor:pointer;
+
+
+    transition:.25s ease;
+
+
+
+    box-shadow:
+
+        0 8px 25px rgba(
+            5,
+            150,
+            105,
+            .35
+        );
+
+}
+
+
+
+
+.report-btn:hover {
+
+
+    transform:
+
+        translateY(-3px);
+
+
+
+    background:
+
+
+        linear-gradient(
+            135deg,
+            #10b981,
+            #059669
+        );
+
+
+
+    box-shadow:
+
+
+        0 12px 35px rgba(
+            5,
+            150,
+            105,
+            .55
+        );
+
+
+}
+
+
+
+
+
+.report-btn:active {
+
+
+    transform:
+
+        translateY(0);
+
+
+}
+
+
+
+
+.report-btn::before {
+
+
+    content:"📄";
+
+
+    font-size:20px;
+
+
+    display:flex;
+
+    align-items:center;
+
+
+}
+/* =========================
+   FIX IGS TITLE CUTTING
+========================= */
+
+.landing-container h1 {
+
+    margin:20px 0;
+
+    line-height:1.2;
+
+    padding:10px 0;
+
+    overflow:visible;
+
+}
+
+
+
+.landing-container h2 {
+
+    line-height:1.3;
+
+    margin-top:10px;
+
+}
+
+
+
+/* remove possible height crop */
+
+.landing-container {
+
+    overflow:visible;
+
+}
+.alert-panel{
+
+    width:350px;
+
+    background:#0f172a;
+
+    border:1px solid #1e293b;
+
+    border-radius:16px;
+
+    padding:20px;
+
+    color:white;
+
+}
+
+
+
+.alert-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:20px;
+
+}
+
+
+
+.alert-header h2{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    font-size:18px;
+
+}
+
+
+
+.alert-header span{
+
+    background:#ef4444;
+
+    padding:5px 12px;
+
+    border-radius:20px;
+
+    font-weight:bold;
+
+}
+
+
+
+.alert-list{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:12px;
+
+}
+
+
+
+.alert-card{
+
+
+    display:flex;
+
+    gap:12px;
+
+    padding:15px;
+
+    border-radius:12px;
+
+    background:#111827;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+}
+
+
+
+.alert-card:hover{
+
+    transform:translateY(-2px);
+
+}
+
+
+
+.alert-card svg{
+
+    color:#ef4444;
+
+    font-size:22px;
+
+}
+
+
+
+.alert-card.unread{
+
+    border:1px solid #ef4444;
+
+}
+
+
+
+.alert-card p{
+
+    margin:5px 0;
+
+    color:#cbd5e1;
+
+}
+
+
+
+.alert-card small{
+
+    color:#94a3b8;
+
+}
+
+
+
+.no-alert{
+
+    text-align:center;
+
+    color:#94a3b8;
+
+}
+.dashboard-content{
+
+    width:100%;
+
+    height:100%;
+
+    display:flex;
+
+}
+
+
+
+.graph-area{
+
+    flex:1;
+
+    height:100%;
+
+}
+
+
+
+.alert-area{
+
+    width:360px;
+
+    padding:20px;
+
+    overflow-y:auto;
+
+}
+.alert-notification{
+
+position:fixed;
+
+top:20px;
+
+right:30px;
+
+z-index:9999;
+
+}
+
+
+
+.bell-btn{
+
+width:50px;
+
+height:50px;
+
+border-radius:50%;
+
+border:none;
+
+background:#111827;
+
+color:white;
+
+font-size:22px;
+
+cursor:pointer;
+
+position:relative;
+
+}
+
+
+
+.bell-btn span{
+
+position:absolute;
+
+top:-5px;
+
+right:-5px;
+
+background:#ef4444;
+
+color:white;
+
+width:22px;
+
+height:22px;
+
+border-radius:50%;
+
+font-size:12px;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+}
+
+
+
+
+.alert-dropdown{
+
+position:absolute;
+
+right:0;
+
+top:60px;
+
+width:350px;
+
+background:#0f172a;
+
+border:1px solid #334155;
+
+border-radius:16px;
+
+padding:15px;
+
+color:white;
+
+box-shadow:0 20px 40px rgba(0,0,0,.4);
+
+}
+
+
+
+
+.alert-item{
+
+display:flex;
+
+gap:12px;
+
+padding:12px;
+
+border-radius:10px;
+
+margin-top:10px;
+
+background:#111827;
+
+cursor:pointer;
+
+}
+
+
+
+.alert-item.new{
+
+border-left:4px solid #ef4444;
+
+}
+
+
+
+
+.alert-item svg{
+
+color:#ef4444;
+
+font-size:22px;
+
+}
+
+
+
+
+.alert-item p{
+
+margin:5px 0;
+
+color:#cbd5e1;
+
+}
+
+
+.alert-item small{
+
+color:#94a3b8;
+
+}
+.alert-wrapper{
+
+    position:relative;
+
+    display:flex;
+
+    align-items:center;
+
+}
+
+
+
+
+.alert-button{
+
+
+    width:42px;
+
+    height:42px;
+
+    border-radius:10px;
+
+    border:1px solid #334155;
+
+    background:#111827;
+
+    color:white;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:20px;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+}
+
+
+
+.alert-button:hover{
+
+    background:#1e293b;
+
+    transform:translateY(-2px);
+
+}
+
+
+
+.alert-badge{
+
+
+    position:absolute;
+
+    top:-6px;
+
+    right:-6px;
+
+
+    background:#ef4444;
+
+    color:white;
+
+    width:20px;
+
+    height:20px;
+
+    border-radius:50%;
+
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+
+    font-size:11px;
+
+    font-weight:bold;
+
+}
+
+
+
+
+
+.alert-menu{
+
+
+    position:absolute;
+
+
+    top:50px;
+
+    right:0;
+
+
+    width:350px;
+
+
+    background:#0f172a;
+
+
+    border:1px solid #334155;
+
+
+    border-radius:14px;
+
+
+    padding:15px;
+
+
+    z-index:99999;
+
+
+    box-shadow:0 20px 40px rgba(0,0,0,.5);
+
+
+}
+
+
+
+
+.alert-menu h3{
+
+    margin:0 0 15px;
+
+    color:white;
+
+}
+
+
+
+
+.alert-item{
+
+
+    display:flex;
+
+    gap:12px;
+
+    padding:12px;
+
+
+    background:#111827;
+
+    border-radius:10px;
+
+
+    cursor:pointer;
+
+
+    margin-bottom:10px;
+
+
+}
+
+
+
+
+.alert-item.active{
+
+
+    border-left:4px solid #ef4444;
+
+
+}
+
+
+
+
+.alert-item svg{
+
+
+    color:#ef4444;
+
+    font-size:22px;
+
+
+}
+
+
+
+
+.alert-item p{
+
+
+    margin:5px 0;
+
+    color:#cbd5e1;
+
+
+}
+
+
+
+.alert-item small{
+
+
+    color:#94a3b8;
+
+
+}
+
+/* =====================================================
+   IGS INTELLIGENCE LEFT SIDEBAR
+   PALANTIR / GOTHAM STYLE
+===================================================== */
+
+
+.intel-sidebar {
+
+    width:280px;
+
+    height:100%;
+
+    background:
+        linear-gradient(
+            180deg,
+            #07111f,
+            #0b1628
+        );
+
+    border-right:1px solid rgba(56,189,248,.15);
+
+    padding:18px;
+
+    color:#e2e8f0;
+
+    overflow-y:auto;
+
+    position:relative;
+
+}
+
+
+
+/* subtle grid effect */
+
+.intel-sidebar::before {
+
+    content:"";
+
+    position:absolute;
+
+    inset:0;
+
+    background-image:
+
+        linear-gradient(
+            rgba(56,189,248,.03) 1px,
+            transparent 1px
+        ),
+
+        linear-gradient(
+            90deg,
+            rgba(56,189,248,.03) 1px,
+            transparent 1px
+        );
+
+    background-size:25px 25px;
+
+    pointer-events:none;
+
+}
+
+
+
+
+
+/* HEADER */
+
+.intel-header {
+
+    position:relative;
+
+    z-index:1;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:14px;
+
+    padding-bottom:18px;
+
+    border-bottom:
+
+        1px solid rgba(255,255,255,.08);
+
+}
+
+
+
+.intel-header .brand {
+
+
+    width:48px;
+
+    height:48px;
+
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+
+    background:
+
+        linear-gradient(
+            135deg,
+            #2563eb,
+            #06b6d4
+        );
+
+
+    border-radius:12px;
+
+
+    font-weight:900;
+
+    font-size:20px;
+
+
+    color:white;
+
+
+    box-shadow:
+
+        0 0 25px rgba(37,99,235,.45);
+
+
+}
+
+
+
+.intel-header h3 {
+
+
+    margin:0;
+
+    font-size:15px;
+
+    letter-spacing:1px;
+
+    color:white;
+
+
+}
+
+
+
+.intel-header span {
+
+
+    font-size:10px;
+
+    color:#64748b;
+
+    letter-spacing:2px;
+
+
+}
+
+
+
+
+
+/* SEARCH */
+
+
+.sidebar-search {
+
+
+    margin:20px 0;
+
+
+    height:42px;
+
+
+    display:flex;
+
+    align-items:center;
+
+
+    gap:10px;
+
+
+    padding:0 14px;
+
+
+    background:#0f1b30;
+
+
+    border:
+
+        1px solid rgba(255,255,255,.08);
+
+
+    border-radius:10px;
+
+
+    color:#38bdf8;
+
+
+}
+
+
+
+.sidebar-search input {
+
+
+    flex:1;
+
+
+    background:none;
+
+    border:none;
+
+    outline:none;
+
+
+    color:white;
+
+
+    font-size:13px;
+
+
+}
+
+
+
+.sidebar-search input::placeholder {
+
+    color:#64748b;
+
+}
+
+
+
+
+
+/* SECTION TITLE */
+
+
+.intel-sidebar h4 {
+
+
+    margin:
+
+        20px 0 12px;
+
+
+    font-size:11px;
+
+
+    letter-spacing:2px;
+
+
+    color:#38bdf8;
+
+
+    font-weight:700;
+
+
+}
+
+
+
+
+
+/* CATEGORY */
+
+
+.entity-item {
+
+
+    height:42px;
+
+
+    display:flex;
+
+
+    align-items:center;
+
+
+    gap:12px;
+
+
+    padding:0 12px;
+
+
+    margin-bottom:6px;
+
+
+    background:
+
+
+        rgba(15,23,42,.7);
+
+
+    border:
+
+        1px solid rgba(255,255,255,.05);
+
+
+    border-radius:10px;
+
+
+    cursor:pointer;
+
+
+    transition:.25s;
+
+
+}
+
+
+
+.entity-item span:first-child {
+
+
+    font-size:20px;
+
+}
+
+
+
+.entity-item span:nth-child(2){
+
+    flex:1;
+
+    font-size:13px;
+
+    font-weight:600;
+
+}
+
+
+
+.entity-item b {
+
+
+    font-size:11px;
+
+    color:#64748b;
+
+
+}
+
+
+
+
+
+.entity-item:hover {
+
+
+    background:#16263f;
+
+
+    border-color:#2563eb;
+
+
+    transform:translateX(4px);
+
+
+}
+
+
+
+
+
+/* CHILD ITEMS */
+
+
+.sub-entities {
+
+
+    margin-left:14px;
+
+
+    padding-left:15px;
+
+
+    border-left:
+
+        1px solid rgba(56,189,248,.25);
+
+
+    animation:
+
+        slideDown .25s ease;
+
+
+}
+
+
+
+@keyframes slideDown {
+
+
+    from {
+
+        opacity:0;
+
+        transform:translateY(-5px);
+
+    }
+
+
+    to {
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+
+}
+
+
+
+
+.entity-child {
+
+
+    height:38px;
+
+
+    display:flex;
+
+
+    align-items:center;
+
+
+    gap:10px;
+
+
+    padding:0 10px;
+
+
+    margin:5px 0;
+
+
+    border-radius:8px;
+
+
+    color:#94a3b8;
+
+
+    cursor:grab;
+
+
+    transition:.2s;
+
+
+}
+
+
+
+.entity-child span:first-child {
+
+
+    font-size:17px;
+
+
+}
+
+
+
+.entity-child span:last-child {
+
+
+    font-size:12px;
+
+}
+
+
+
+
+
+.entity-child:hover {
+
+
+    background:
+
+        rgba(37,99,235,.18);
+
+
+    color:white;
+
+
+    transform:translateX(5px);
+
+
+}
+
+
+
+
+
+/* GRAPH INTELLIGENCE PANEL */
+
+
+.graph-info {
+
+
+    margin-top:25px;
+
+
+    padding:15px;
+
+
+    background:
+
+        linear-gradient(
+            145deg,
+            #0f1b30,
+            #091425
+        );
+
+
+    border:
+
+        1px solid rgba(56,189,248,.15);
+
+
+    border-radius:14px;
+
+
+}
+
+
+
+.graph-info h4 {
+
+
+    margin-top:0;
+
+}
+
+
+
+
+
+.graph-info div {
+
+
+    display:flex;
+
+
+    justify-content:space-between;
+
+
+    align-items:center;
+
+
+    padding:12px 0;
+
+
+    border-bottom:
+
+        1px solid rgba(255,255,255,.05);
+
+
+}
+
+
+
+.graph-info div:last-child {
+
+
+    border-bottom:none;
+
+
+}
+
+
+
+.graph-info span {
+
+
+    color:#64748b;
+
+
+    font-size:12px;
+
+
+    text-transform:uppercase;
+
+
+    letter-spacing:1px;
+
+
+}
+
+
+
+.graph-info strong {
+
+
+    color:#38bdf8;
+
+
+    font-size:20px;
+
+
+    font-weight:800;
+
+
+}
+
+
+
+
+
+/* SCROLLBAR */
+
+
+.intel-sidebar::-webkit-scrollbar {
+
+
+    width:5px;
+
+
+}
+
+
+
+.intel-sidebar::-webkit-scrollbar-thumb {
+
+
+    background:#1e40af;
+
+
+    border-radius:10px;
+
+
+}
+
+
+.intel-sidebar::-webkit-scrollbar-track {
+
+
+    background:#07111f;
+
+
+}
+/* =====================================================
+   IGS RIGHT SIDEBAR
+   PALANTIR GOTHAM INTELLIGENCE PANEL
+===================================================== */
+
+
+.right-sidebar {
+
+
+    width:340px;
+
+
+    height:100%;
+
+
+    background:
+
+        linear-gradient(
+            180deg,
+            #081321,
+            #0b172a
+        );
+
+
+    border-left:
+
+        1px solid rgba(56,189,248,.15);
+
+
+    padding:16px;
+
+
+    color:#e2e8f0;
+
+
+    overflow-y:auto;
+
+
+    position:relative;
+
+
+}
+
+
+
+
+.right-sidebar::before {
+
+
+    content:"";
+
+
+    position:absolute;
+
+
+    inset:0;
+
+
+    background-image:
+
+
+        linear-gradient(
+            rgba(56,189,248,.025) 1px,
+            transparent 1px
+        ),
+
+
+        linear-gradient(
+            90deg,
+            rgba(56,189,248,.025) 1px,
+            transparent 1px
+        );
+
+
+    background-size:22px 22px;
+
+
+    pointer-events:none;
+
+
+}
+
+
+
+
+
+/* =========================
+        TABS
+========================= */
+
+
+.tabs {
+
+
+    position:relative;
+
+    z-index:2;
+
+
+}
+
+
+
+
+.tabs-header {
+
+
+    display:flex;
+
+
+    gap:6px;
+
+
+    padding:5px;
+
+
+    background:#07111f;
+
+
+    border:
+
+        1px solid rgba(255,255,255,.08);
+
+
+    border-radius:14px;
+
+
+    margin-bottom:18px;
+
+
+}
+
+
+
+
+
+.tab-button {
+
+
+    flex:1;
+
+
+    height:38px;
+
+
+    border:none;
+
+
+    background:transparent;
+
+
+    color:#64748b;
+
+
+    border-radius:10px;
+
+
+    cursor:pointer;
+
+
+    font-size:12px;
+
+
+    font-weight:700;
+
+
+    letter-spacing:.5px;
+
+
+    transition:.25s;
+
+
+}
+
+
+
+
+
+.tab-button:hover {
+
+
+    color:white;
+
+
+    background:
+
+        rgba(37,99,235,.15);
+
+
+}
+
+
+
+
+.tab-button.active {
+
+
+    color:white;
+
+
+    background:
+
+
+        linear-gradient(
+            135deg,
+            #2563eb,
+            #0891b2
+        );
+
+
+    box-shadow:
+
+
+        0 0 20px rgba(37,99,235,.35);
+
+
+}
+
+
+
+
+
+
+
+/* =========================
+       PANEL CONTENT
+========================= */
+
+
+.properties-panel,
+.timeline,
+.cases-panel {
+
+
+    animation:
+
+        panelIn .3s ease;
+
+
+}
+
+
+
+@keyframes panelIn {
+
+
+    from {
+
+        opacity:0;
+
+        transform:translateX(10px);
+
+    }
+
+
+    to {
+
+        opacity:1;
+
+        transform:translateX(0);
+
+    }
+
+
+}
+
+
+
+
+
+
+
+/* =========================
+       ACTIVE CASE
+========================= */
+
+
+.active-case {
+
+
+    padding:18px;
+
+
+    margin-bottom:18px;
+
+
+    background:
+
+
+        linear-gradient(
+            145deg,
+            #101f38,
+            #0b1628
+        );
+
+
+    border-radius:16px;
+
+
+    border:
+
+        1px solid rgba(56,189,248,.25);
+
+
+    position:relative;
+
+
+    overflow:hidden;
+
+
+}
+
+
+
+
+.active-case::before {
+
+
+    content:"";
+
+
+    position:absolute;
+
+
+    top:0;
+
+
+    left:0;
+
+
+    height:3px;
+
+
+    width:100%;
+
+
+    background:
+
+
+        linear-gradient(
+            90deg,
+            #2563eb,
+            #06b6d4
+        );
+
+
+}
+
+
+
+
+
+
+.active-case h4 {
+
+
+    margin:0 0 12px;
+
+
+    font-size:11px;
+
+
+    letter-spacing:2px;
+
+
+    color:#38bdf8;
+
+
+    text-transform:uppercase;
+
+
+}
+
+
+
+
+
+.active-case strong {
+
+
+    display:block;
+
+
+    color:white;
+
+
+    font-size:18px;
+
+
+    margin-bottom:10px;
+
+
+}
+
+
+
+
+
+.active-case span {
+
+
+    display:inline-flex;
+
+
+    padding:5px 12px;
+
+
+    border-radius:20px;
+
+
+    background:
+
+
+        rgba(34,197,94,.15);
+
+
+    color:#4ade80;
+
+
+    font-size:12px;
+
+
+    border:
+
+
+        1px solid rgba(34,197,94,.25);
+
+
+}
+
+
+
+
+
+
+
+/* =========================
+       CARDS INSIDE
+========================= */
+
+
+.right-sidebar section,
+.case-card,
+.property-card {
+
+
+    background:
+
+
+        rgba(15,23,42,.75);
+
+
+    border:
+
+
+        1px solid rgba(255,255,255,.07);
+
+
+    border-radius:14px;
+
+
+    padding:14px;
+
+
+    margin-bottom:12px;
+
+
+    transition:.25s;
+
+
+}
+
+
+
+
+.right-sidebar section:hover,
+.case-card:hover,
+.property-card:hover {
+
+
+    border-color:
+
+        rgba(56,189,248,.35);
+
+
+    transform:translateY(-2px);
+
+
+}
+
+
+
+
+
+
+
+/* =========================
+       TIMELINE
+========================= */
+
+
+.timeline-item {
+
+
+    position:relative;
+
+
+    padding-left:25px;
+
+
+    margin-bottom:18px;
+
+
+}
+
+
+
+
+.timeline-item::before {
+
+
+    content:"";
+
+
+    position:absolute;
+
+
+    left:5px;
+
+
+    top:5px;
+
+
+    width:10px;
+
+
+    height:10px;
+
+
+    border-radius:50%;
+
+
+    background:#38bdf8;
+
+
+    box-shadow:
+
+
+        0 0 15px #38bdf8;
+
+
+}
+
+
+
+
+
+.timeline-item::after {
+
+
+    content:"";
+
+
+    position:absolute;
+
+
+    left:9px;
+
+
+    top:18px;
+
+
+    height:calc(100% - 5px);
+
+
+    width:1px;
+
+
+    background:
+
+        rgba(56,189,248,.25);
+
+
+}
+
+
+
+
+
+/* =========================
+       EMPTY STATE
+========================= */
+
+
+.empty-state {
+
+
+    text-align:center;
+
+
+    padding:40px 20px;
+
+
+    color:#64748b;
+
+
+}
+
+
+
+
+.empty-state span {
+
+
+    font-size:40px;
+
+
+    opacity:.5;
+
+
+}
+
+
+
+
+
+
+
+/* =========================
+       SCROLLBAR
+========================= */
+
+
+.right-sidebar::-webkit-scrollbar {
+
+
+    width:5px;
+
+
+}
+
+
+
+.right-sidebar::-webkit-scrollbar-thumb {
+
+
+    background:#1d4ed8;
+
+
+    border-radius:10px;
+
+
+}
+
+
+
+.right-sidebar::-webkit-scrollbar-track {
+
+
+    background:#07111f;
+
+
+}
+.kosovo-map {
+
+
+    width:100%;
+
+    height:100%;
+
+    border-radius:16px;
+
+    overflow:hidden;
+
+
+    border:
+
+    1px solid rgba(56,189,248,.25);
+
+
+}
+/* ==========================
+   IGS KOSOVO INTELLIGENCE MAP
+========================== */
+
+
+.kosovo-map {
+
+
+    width:100%;
+
+
+    height:100%;
+
+
+    border-radius:18px;
+
+
+    overflow:hidden;
+
+
+    border:
+
+        1px solid rgba(56,189,248,.25);
+
+
+    box-shadow:
+
+
+        0 0 30px rgba(14,165,233,.15);
+
+
+}
+
+
+
+/* dark map feeling */
+
+
+.leaflet-container {
+
+
+    background:#07111f;
+
+
+}
+
+
+
+.leaflet-control-zoom a {
+
+
+    background:#0f172a !important;
+
+
+    color:white !important;
+
+
+    border-color:#1e40af !important;
+
+
+}
+
+
+.leaflet-popup-content-wrapper {
+
+
+    background:#0f172a;
+
+
+    color:white;
+
+
+    border:1px solid rgba(56,189,248,.3);
+
+
+}
+
+
+
+.leaflet-popup-tip {
+
+
+    background:#0f172a;
+
+
+}

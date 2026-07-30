@@ -382,8 +382,7 @@ export default function LandingPage({
 
 
 
-
-
+                
                 <h1>
 
                     IGS
