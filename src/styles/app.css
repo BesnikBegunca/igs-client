@@ -7719,3 +7719,1943 @@ color:#94a3b8;
     }
 
 }
+/* =========================================================
+   MONITOR BUTTON
+========================================================= */
+
+.monitor-btn,
+.monitor-active {
+
+    width: 100%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 10px;
+
+    padding: 12px 18px;
+
+    margin-top: 14px;
+
+    border-radius: 10px;
+
+    font-family: "Segoe UI", sans-serif;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    letter-spacing: 0.3px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.25s ease,
+        border 0.25s ease,
+        color 0.25s ease,
+        box-shadow 0.25s ease,
+        transform 0.2s ease;
+
+}
+
+
+/* =========================================================
+   NORMAL
+========================================================= */
+
+.monitor-btn {
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(30, 41, 59, 0.95),
+            rgba(15, 23, 42, 0.98)
+        );
+
+    border:
+        1px solid rgba(148, 163, 184, 0.25);
+
+    color:
+        #cbd5e1;
+
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.25);
+
+}
+
+
+/* =========================================================
+   ICON
+========================================================= */
+
+.monitor-btn svg,
+.monitor-active svg {
+
+    width: 17px;
+
+    height: 17px;
+
+    flex-shrink: 0;
+
+    transition:
+        transform 0.25s ease;
+
+}
+
+
+/* =========================================================
+   HOVER
+========================================================= */
+
+.monitor-btn:hover {
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(51, 65, 85, 0.98),
+            rgba(30, 41, 59, 0.98)
+        );
+
+    border-color:
+        rgba(248, 113, 113, 0.55);
+
+    color:
+        #fca5a5;
+
+    box-shadow:
+        0 0 18px rgba(239, 68, 68, 0.15);
+
+    transform:
+        translateY(-1px);
+
+}
+
+
+.monitor-btn:hover svg {
+
+    transform:
+        scale(1.1);
+
+}
+
+
+/* =========================================================
+   ACTIVE / MONITORING
+========================================================= */
+
+.monitor-active {
+
+    position: relative;
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(127, 29, 29, 0.95),
+            rgba(69, 10, 10, 0.98)
+        );
+
+    border:
+        1px solid rgba(239, 68, 68, 0.65);
+
+    color:
+        #fca5a5;
+
+    box-shadow:
+        0 0 18px rgba(239, 68, 68, 0.18),
+        inset 0 0 15px rgba(239, 68, 68, 0.05);
+
+}
+
+
+/* =========================================================
+   ACTIVE GLOW
+========================================================= */
+
+.monitor-active::before {
+
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+
+    left: -100%;
+
+    width: 60%;
+
+    height: 100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.08),
+            transparent
+        );
+
+    transform:
+        skewX(-20deg);
+
+    animation:
+        monitorScan 3s infinite;
+
+}
+
+
+@keyframes monitorScan {
+
+    0% {
+
+        left: -100%;
+
+    }
+
+    45% {
+
+        left: 130%;
+
+    }
+
+    100% {
+
+        left: 130%;
+
+    }
+
+}
+
+
+/* =========================================================
+   ACTIVE ICON
+========================================================= */
+
+.monitor-active svg {
+
+    color:
+        #ef4444;
+
+    filter:
+        drop-shadow(
+            0 0 5px
+            rgba(239, 68, 68, 0.7)
+        );
+
+}
+
+
+/* =========================================================
+   ACTIVE HOVER
+========================================================= */
+
+.monitor-active:hover {
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(153, 27, 27, 0.98),
+            rgba(69, 10, 10, 1)
+        );
+
+    border-color:
+        #ef4444;
+
+    color:
+        #fecaca;
+
+    box-shadow:
+        0 0 25px rgba(239, 68, 68, 0.28);
+
+    transform:
+        translateY(-1px);
+
+}
+
+
+.monitor-active:hover svg {
+
+    transform:
+        scale(1.12);
+
+}
+
+
+/* =========================================================
+   CLICK
+========================================================= */
+
+.monitor-btn:active,
+.monitor-active:active {
+
+    transform:
+        scale(0.98);
+
+}
+
+
+/* =========================================================
+   FOCUS
+========================================================= */
+
+.monitor-btn:focus-visible,
+.monitor-active:focus-visible {
+
+    outline:
+        2px solid rgba(239, 68, 68, 0.6);
+
+    outline-offset:
+        3px;
+
+}
+/* =========================================================
+   LANDING PAGE — DARK INTELLIGENCE STYLE
+========================================================= */
+
+.landing-page {
+
+    width: 100%;
+    height: 100vh;
+
+    min-height: 700px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background:
+        radial-gradient(
+            circle at 50% 35%,
+            rgba(255,255,255,0.045),
+            transparent 35%
+        ),
+        #080808;
+
+    color: #f5f5f5;
+
+    overflow: hidden;
+
+    position: relative;
+
+}
+
+
+/* =========================================================
+   SUBTLE BACKGROUND GRID
+========================================================= */
+
+.landing-page::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background-image:
+        linear-gradient(
+            rgba(255,255,255,0.025) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,0.025) 1px,
+            transparent 1px
+        );
+
+    background-size: 45px 45px;
+
+    mask-image:
+        radial-gradient(
+            ellipse at center,
+            black 20%,
+            transparent 75%
+        );
+
+    pointer-events: none;
+
+}
+
+
+/* =========================================================
+   CONTAINER
+========================================================= */
+
+.landing-container {
+
+    width: 100%;
+
+    max-width: 900px;
+
+    padding: 50px 30px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    text-align: center;
+
+    position: relative;
+
+    z-index: 2;
+
+}
+
+
+/* =========================================================
+   LOGO
+========================================================= */
+
+.landing-logo {
+
+    width: 78px;
+
+    height: 78px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 20px;
+
+    background: #111111;
+
+    border: 1px solid #2d2d2d;
+
+    box-shadow:
+        0 0 0 1px rgba(255,255,255,0.02),
+        0 15px 40px rgba(0,0,0,0.6);
+
+    font-size: 38px;
+
+    margin-bottom: 22px;
+
+    transition: 0.3s ease;
+
+}
+
+
+.landing-logo:hover {
+
+    transform: translateY(-3px);
+
+    border-color: #555;
+
+    box-shadow:
+        0 0 25px rgba(255,255,255,0.08),
+        0 15px 40px rgba(0,0,0,0.7);
+
+}
+
+
+/* =========================================================
+   TITLE
+========================================================= */
+
+.landing-container h1 {
+
+    margin: 0;
+
+    font-size: 64px;
+
+    line-height: 1;
+
+    font-weight: 800;
+
+    letter-spacing: 8px;
+
+    color: #ffffff;
+
+    text-shadow:
+        0 0 30px rgba(255,255,255,0.08);
+
+}
+
+
+/* =========================================================
+   SUBTITLE
+========================================================= */
+
+.landing-container h2 {
+
+    margin:
+
+        14px
+
+        0
+
+        12px;
+
+    font-size: 18px;
+
+    font-weight: 500;
+
+    letter-spacing: 3px;
+
+    text-transform: uppercase;
+
+    color: #a3a3a3;
+
+}
+
+
+/* =========================================================
+   DESCRIPTION
+========================================================= */
+
+.landing-description {
+
+    max-width: 600px;
+
+    margin:
+
+        0
+
+        0
+
+        30px;
+
+    font-size: 15px;
+
+    line-height: 1.7;
+
+    color: #737373;
+
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+.landing-search {
+
+    width: 100%;
+
+    max-width: 650px;
+
+    height: 58px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    padding:
+
+        0
+
+        20px;
+
+    background: rgba(17,17,17,0.92);
+
+    border:
+
+        1px solid #2a2a2a;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 15px 45px rgba(0,0,0,0.45);
+
+    transition:
+        border 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+
+}
+
+
+.landing-search:focus-within {
+
+    border-color: #555;
+
+    background: #121212;
+
+    box-shadow:
+        0 0 0 3px rgba(255,255,255,0.035),
+        0 20px 50px rgba(0,0,0,0.6);
+
+}
+
+
+.landing-search svg {
+
+    flex-shrink: 0;
+
+    font-size: 20px;
+
+    color: #737373;
+
+}
+
+
+.landing-search input {
+
+    width: 100%;
+
+    height: 100%;
+
+    border: none;
+
+    outline: none;
+
+    background: transparent;
+
+    color: #ffffff;
+
+    font-size: 15px;
+
+}
+
+
+.landing-search input::placeholder {
+
+    color: #555;
+
+}
+
+
+/* =========================================================
+   SEARCH RESULTS
+========================================================= */
+
+.landing-results {
+
+    width: 100%;
+
+    max-width: 650px;
+
+    margin-top: 10px;
+
+    padding: 6px;
+
+    background: #101010;
+
+    border: 1px solid #292929;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 20px 50px rgba(0,0,0,0.65);
+
+    max-height: 350px;
+
+    overflow-y: auto;
+
+}
+
+
+/* =========================================================
+   RESULT
+========================================================= */
+
+.landing-result {
+
+    width: 100%;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    padding: 13px 14px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    text-align: left;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+
+}
+
+
+.landing-result:hover {
+
+    background: #1b1b1b;
+
+    transform: translateX(3px);
+
+}
+
+
+/* =========================================================
+   RESULT ICON
+========================================================= */
+
+.result-icon {
+
+    width: 42px;
+
+    height: 42px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 9px;
+
+    background: #181818;
+
+    border: 1px solid #303030;
+
+    font-size: 20px;
+
+}
+
+
+/* =========================================================
+   RESULT TEXT
+========================================================= */
+
+.landing-result strong {
+
+    display: block;
+
+    color: #f5f5f5;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+}
+
+
+.landing-result small {
+
+    display: block;
+
+    margin-top: 4px;
+
+    color: #666;
+
+    font-size: 11px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1px;
+
+}
+
+
+/* =========================================================
+   EMPTY RESULT
+========================================================= */
+
+.empty-result {
+
+    padding: 25px;
+
+    color: #666;
+
+    font-size: 14px;
+
+}
+
+
+/* =========================================================
+   CONSOLE BUTTON
+========================================================= */
+
+.console-btn {
+
+    margin-top: 28px;
+
+    height: 52px;
+
+    padding:
+
+        0
+
+        24px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 12px;
+
+    border:
+
+        1px solid #3a3a3a;
+
+    border-radius: 10px;
+
+    background: #f5f5f5;
+
+    color: #080808;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+
+}
+
+
+.console-btn svg {
+
+    font-size: 18px;
+
+}
+
+
+.console-btn:hover {
+
+    background: #ffffff;
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 10px 30px rgba(255,255,255,0.08);
+
+}
+
+
+.console-btn:active {
+
+    transform: translateY(0);
+
+}
+
+
+/* =========================================================
+   FEATURES
+========================================================= */
+
+.landing-features {
+
+    width: 100%;
+
+    max-width: 700px;
+
+    margin-top: 55px;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 14px;
+
+}
+
+
+/* =========================================================
+   FEATURE CARD
+========================================================= */
+
+.feature-card {
+
+    min-height: 145px;
+
+    padding: 24px 18px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background:
+        linear-gradient(
+            145deg,
+            #141414,
+            #0e0e0e
+        );
+
+    border:
+
+        1px solid #252525;
+
+    border-radius: 12px;
+
+    transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        background 0.25s ease,
+        box-shadow 0.25s ease;
+
+}
+
+
+.feature-card:hover {
+
+    transform: translateY(-5px);
+
+    border-color: #3d3d3d;
+
+    background: #171717;
+
+    box-shadow:
+        0 15px 40px rgba(0,0,0,0.5);
+
+}
+
+
+/* =========================================================
+   FEATURE ICON
+========================================================= */
+
+.feature-card svg {
+
+    font-size: 25px;
+
+    color: #d4d4d4;
+
+    margin-bottom: 13px;
+
+}
+
+
+/* =========================================================
+   FEATURE TITLE
+========================================================= */
+
+.feature-card h3 {
+
+    margin: 0 0 7px;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    color: #eeeeee;
+
+}
+
+
+/* =========================================================
+   FEATURE DESCRIPTION
+========================================================= */
+
+.feature-card p {
+
+    margin: 0;
+
+    font-size: 12px;
+
+    color: #666;
+
+}
+
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+.landing-results::-webkit-scrollbar {
+
+    width: 5px;
+
+}
+
+
+.landing-results::-webkit-scrollbar-track {
+
+    background: transparent;
+
+}
+
+
+.landing-results::-webkit-scrollbar-thumb {
+
+    background: #333;
+
+    border-radius: 10px;
+
+}
+
+
+.landing-results::-webkit-scrollbar-thumb:hover {
+
+    background: #444;
+
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 700px) {
+
+    .landing-container {
+
+        padding: 35px 20px;
+
+    }
+
+
+    .landing-container h1 {
+
+        font-size: 48px;
+
+        letter-spacing: 6px;
+
+    }
+
+
+    .landing-container h2 {
+
+        font-size: 14px;
+
+        letter-spacing: 2px;
+
+    }
+
+
+    .landing-description {
+
+        font-size: 14px;
+
+    }
+
+
+    .landing-features {
+
+        grid-template-columns: 1fr;
+
+        max-width: 400px;
+
+        margin-top: 35px;
+
+    }
+
+
+    .feature-card {
+
+        min-height: 110px;
+
+    }
+
+}
+
+
+@media (max-height: 750px) {
+
+    .landing-container {
+
+        padding-top: 20px;
+
+        padding-bottom: 20px;
+
+    }
+
+
+    .landing-logo {
+
+        width: 60px;
+
+        height: 60px;
+
+        font-size: 30px;
+
+        margin-bottom: 14px;
+
+    }
+
+
+    .landing-container h1 {
+
+        font-size: 48px;
+
+    }
+
+
+    .landing-description {
+
+        margin-bottom: 20px;
+
+    }
+
+
+    .landing-features {
+
+        margin-top: 30px;
+
+    }
+
+}
+/* =========================================================
+   IGS CONSOLE — BLACK & WHITE DARK MODE
+   Override theme
+========================================================= */
+
+.app,
+.dashboard-layout {
+    background:#080808;
+    color:#f5f5f5;
+}
+
+
+/* =========================================================
+   SIDEBARS
+========================================================= */
+
+.left-sidebar,
+.right-sidebar,
+.intel-sidebar {
+    background:#0b0b0b !important;
+    color:#f5f5f5;
+    border-color:#292929 !important;
+}
+
+
+/* =========================================================
+   GRAPH AREA
+========================================================= */
+
+.graph-area,
+.graph-wrapper {
+    background:#080808 !important;
+}
+
+
+.react-flow {
+    background:#080808 !important;
+}
+
+
+/* React Flow grid */
+
+.react-flow__background {
+    background:#080808 !important;
+}
+
+.react-flow__controls {
+    background:#111111 !important;
+    border:1px solid #2d2d2d !important;
+    box-shadow:0 10px 30px rgba(0,0,0,.6);
+}
+
+.react-flow__controls-button {
+    background:#111111 !important;
+    border-bottom:1px solid #2d2d2d !important;
+    color:#f5f5f5 !important;
+}
+
+.react-flow__controls-button:hover {
+    background:#1b1b1b !important;
+}
+
+.react-flow__controls-button svg {
+    fill:#f5f5f5 !important;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.header {
+    background:#0b0b0b !important;
+    border-bottom:1px solid #292929 !important;
+    color:#f5f5f5;
+}
+
+
+.header-search-box {
+    background:#111111 !important;
+    border:1px solid #2d2d2d !important;
+    color:#a3a3a3;
+}
+
+
+.header-search-box input {
+    color:#f5f5f5 !important;
+}
+
+
+.header-search-box input::placeholder {
+    color:#666666 !important;
+}
+
+
+/* =========================================================
+   LEFT SEARCH
+========================================================= */
+
+.sidebar-search {
+    background:#111111 !important;
+    border:1px solid #292929 !important;
+    color:#a3a3a3;
+}
+
+
+.sidebar-search input {
+    color:#f5f5f5 !important;
+}
+
+
+.sidebar-search input::placeholder {
+    color:#666666 !important;
+}
+
+
+/* =========================================================
+   INTELLIGENCE SIDEBAR
+========================================================= */
+
+.intel-sidebar {
+    background:#0b0b0b !important;
+    border-right:1px solid #292929 !important;
+}
+
+
+.intel-sidebar::before {
+    background-image:
+        linear-gradient(
+            rgba(255,255,255,.018) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,.018) 1px,
+            transparent 1px
+        ) !important;
+}
+
+
+.intel-header {
+    border-bottom:1px solid #292929 !important;
+}
+
+
+.intel-header .brand {
+    background:#111111 !important;
+    border:1px solid #2d2d2d;
+    box-shadow:0 0 25px rgba(255,255,255,.06);
+}
+
+
+.intel-header h3 {
+    color:#ffffff !important;
+}
+
+
+.intel-header span {
+    color:#666666 !important;
+}
+
+
+.intel-sidebar h4 {
+    color:#f5f5f5 !important;
+}
+
+
+/* =========================================================
+   ENTITY ITEMS
+========================================================= */
+
+.entity-item {
+    background:#111111 !important;
+    border:1px solid #292929 !important;
+}
+
+
+.entity-item:hover {
+    background:#1b1b1b !important;
+    border-color:#444444 !important;
+}
+
+
+.entity-item span,
+.entity-item b {
+    color:#f5f5f5;
+}
+
+
+/* =========================================================
+   GENERAL CARDS
+========================================================= */
+
+.info-card,
+.connection-card,
+.detail-card,
+.stat-card,
+.feature-card {
+    background:#111111 !important;
+    border-color:#292929 !important;
+    color:#f5f5f5;
+}
+
+
+.info-card:hover,
+.connection-card:hover,
+.detail-card:hover,
+.stat-card:hover {
+    background:#181818 !important;
+    border-color:#444444 !important;
+}
+
+
+/* =========================================================
+   TEXT
+========================================================= */
+
+.dashboard-layout h1,
+.dashboard-layout h2,
+.dashboard-layout h3,
+.dashboard-layout h4,
+.dashboard-layout h5,
+.dashboard-layout h6 {
+    color:#f5f5f5;
+}
+
+
+.dashboard-layout p {
+    color:#a3a3a3;
+}
+
+
+.dashboard-layout small {
+    color:#666666;
+}
+
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+.dashboard-layout button {
+    transition:
+        background .2s ease,
+        border-color .2s ease,
+        transform .2s ease,
+        box-shadow .2s ease;
+}
+
+
+.dashboard-layout button:not(.monitor-active):hover {
+    background:#1b1b1b;
+}
+
+
+/* =========================================================
+   SCROLLBARS
+========================================================= */
+
+.left-sidebar::-webkit-scrollbar,
+.right-sidebar::-webkit-scrollbar,
+.intel-sidebar::-webkit-scrollbar,
+.entity-profile::-webkit-scrollbar {
+    width:6px;
+}
+
+
+.left-sidebar::-webkit-scrollbar-track,
+.right-sidebar::-webkit-scrollbar-track,
+.intel-sidebar::-webkit-scrollbar-track,
+.entity-profile::-webkit-scrollbar-track {
+    background:#080808;
+}
+
+
+.left-sidebar::-webkit-scrollbar-thumb,
+.right-sidebar::-webkit-scrollbar-thumb,
+.intel-sidebar::-webkit-scrollbar-thumb,
+.entity-profile::-webkit-scrollbar-thumb {
+    background:#2d2d2d;
+    border-radius:10px;
+}
+
+
+.left-sidebar::-webkit-scrollbar-thumb:hover,
+.right-sidebar::-webkit-scrollbar-thumb:hover,
+.intel-sidebar::-webkit-scrollbar-thumb:hover,
+.entity-profile::-webkit-scrollbar-thumb:hover {
+    background:#444444;
+}
+
+
+/* =========================================================
+   REACT FLOW MINI MAP
+========================================================= */
+
+.react-flow__minimap {
+    background:#111111 !important;
+    border:1px solid #2d2d2d !important;
+}
+
+
+.react-flow__minimap-mask {
+    fill:rgba(255,255,255,.08) !important;
+}
+
+
+/* =========================================================
+   SELECTION
+========================================================= */
+
+.react-flow__node.selected {
+    box-shadow:
+        0 0 0 1px #ffffff,
+        0 0 25px rgba(255,255,255,.12);
+}
+
+
+/* =========================================================
+   EDGE
+========================================================= */
+
+.react-flow__edge-path {
+    stroke:#777777;
+}
+
+
+.react-flow__edge.selected .react-flow__edge-path {
+    stroke:#ffffff;
+}
+
+
+/* =========================================================
+   INPUTS / SELECTS
+========================================================= */
+
+.dashboard-layout input,
+.dashboard-layout textarea,
+.dashboard-layout select {
+    background:#111111 !important;
+    color:#f5f5f5 !important;
+    border:1px solid #292929 !important;
+}
+
+
+.dashboard-layout input::placeholder,
+.dashboard-layout textarea::placeholder {
+    color:#666666 !important;
+}
+
+
+.dashboard-layout input:focus,
+.dashboard-layout textarea:focus,
+.dashboard-layout select:focus {
+    border-color:#555555 !important;
+    outline:none;
+}
+
+
+/* =========================================================
+   CONSOLE MAIN BORDER
+========================================================= */
+
+.dashboard-layout > * {
+    border-color:#292929 !important;
+}
+
+
+/* =========================================================
+   REMOVE OLD BLUE/CYAN GLOW
+========================================================= */
+
+.intel-header .brand,
+.intel-sidebar h4,
+.sidebar-search svg {
+    color:#f5f5f5 !important;
+}
+
+
+.intel-header .brand {
+    color:#ffffff !important;
+}
+
+
+/* =========================================================
+   BLACK & WHITE FINAL POLISH
+========================================================= */
+
+.dashboard-layout {
+    --console-bg:#080808;
+    --console-panel:#0b0b0b;
+    --console-card:#111111;
+    --console-border:#292929;
+    --console-border-light:#444444;
+    --console-text:#f5f5f5;
+    --console-muted:#a3a3a3;
+    --console-dim:#666666;
+}
+/* =========================================================
+   IGS — GLOBAL DARK BLACK THEME
+   LEFT SIDEBAR + RIGHT SIDEBAR + ENTITY PROFILE
+========================================================= */
+
+
+/* =========================================================
+   MAIN SIDEBARS
+========================================================= */
+
+.left-sidebar,
+.right-sidebar {
+    background:#080808 !important;
+    color:#f5f5f5 !important;
+    border-color:#292929 !important;
+}
+
+
+/* LEFT SIDEBAR */
+
+.left-sidebar {
+    box-shadow:
+        inset -1px 0 0 rgba(255,255,255,.04);
+}
+
+
+/* RIGHT SIDEBAR */
+
+.right-sidebar {
+    box-shadow:
+        inset 1px 0 0 rgba(255,255,255,.04);
+}
+
+
+/* =========================================================
+   SIDEBAR HEADERS
+========================================================= */
+
+.left-sidebar h1,
+.left-sidebar h2,
+.left-sidebar h3,
+.left-sidebar h4,
+.left-sidebar h5,
+.left-sidebar h6,
+
+.right-sidebar h1,
+.right-sidebar h2,
+.right-sidebar h3,
+.right-sidebar h4,
+.right-sidebar h5,
+.right-sidebar h6 {
+    color:#f5f5f5 !important;
+}
+
+
+/* =========================================================
+   SIDEBAR TEXT
+========================================================= */
+
+.left-sidebar p,
+.right-sidebar p {
+    color:#a3a3a3 !important;
+}
+
+
+.left-sidebar small,
+.right-sidebar small {
+    color:#666666 !important;
+}
+
+
+/* =========================================================
+   SIDEBAR CARDS
+========================================================= */
+
+.left-sidebar section,
+.right-sidebar section,
+.left-sidebar .case-card,
+.right-sidebar .case-card,
+.left-sidebar .property-card,
+.right-sidebar .property-card {
+    background:#111111 !important;
+    border-color:#292929 !important;
+    color:#f5f5f5 !important;
+}
+
+
+/* =========================================================
+   SIDEBAR CARD HOVER
+========================================================= */
+
+.left-sidebar section:hover,
+.right-sidebar section:hover,
+.left-sidebar .case-card:hover,
+.right-sidebar .case-card:hover,
+.left-sidebar .property-card:hover,
+.right-sidebar .property-card:hover {
+    background:#181818 !important;
+    border-color:#444444 !important;
+}
+
+
+/* =========================================================
+   SIDEBAR INPUTS
+========================================================= */
+
+.left-sidebar input,
+.right-sidebar input,
+.left-sidebar textarea,
+.right-sidebar textarea,
+.left-sidebar select,
+.right-sidebar select {
+    background:#111111 !important;
+    color:#f5f5f5 !important;
+    border:1px solid #292929 !important;
+}
+
+
+.left-sidebar input::placeholder,
+.right-sidebar input::placeholder,
+.left-sidebar textarea::placeholder,
+.right-sidebar textarea::placeholder {
+    color:#666666 !important;
+}
+
+
+.left-sidebar input:focus,
+.right-sidebar input:focus,
+.left-sidebar textarea:focus,
+.right-sidebar textarea:focus,
+.left-sidebar select:focus,
+.right-sidebar select:focus {
+    outline:none !important;
+    border-color:#555555 !important;
+}
+
+
+/* =========================================================
+   SIDEBAR BUTTONS
+========================================================= */
+
+.left-sidebar button,
+.right-sidebar button {
+    background:#111111 !important;
+    color:#f5f5f5 !important;
+    border-color:#292929 !important;
+}
+
+
+.left-sidebar button:hover,
+.right-sidebar button:hover {
+    background:#1c1c1c !important;
+    border-color:#444444 !important;
+}
+
+
+/* =========================================================
+   ENTITY PROFILE OVERLAY
+========================================================= */
+
+.entity-overlay {
+    position:fixed;
+    inset:0;
+
+    background:
+        rgba(0,0,0,.82) !important;
+
+    backdrop-filter:
+        blur(6px);
+
+    -webkit-backdrop-filter:
+        blur(6px);
+
+    z-index:9999;
+}
+
+
+/* =========================================================
+   ENTITY PROFILE
+========================================================= */
+
+.entity-profile {
+    background:#0b0b0b !important;
+
+    color:#f5f5f5 !important;
+
+    border:
+        1px solid #292929 !important;
+
+    box-shadow:
+        0 25px 80px rgba(0,0,0,.75),
+        0 0 0 1px rgba(255,255,255,.025);
+
+}
+
+
+/* =========================================================
+   ENTITY PROFILE TEXT
+========================================================= */
+
+.entity-profile h1,
+.entity-profile h2,
+.entity-profile h3,
+.entity-profile h4,
+.entity-profile h5,
+.entity-profile h6 {
+    color:#f5f5f5 !important;
+}
+
+
+.entity-profile p {
+    color:#a3a3a3 !important;
+}
+
+
+.entity-profile span {
+    color:#a3a3a3;
+}
+
+
+/* =========================================================
+   ENTITY PROFILE SECTIONS
+========================================================= */
+
+.entity-profile section {
+    background:#111111 !important;
+
+    border:
+        1px solid #292929 !important;
+
+    color:#f5f5f5 !important;
+}
+
+
+/* =========================================================
+   ENTITY PROFILE CARDS
+========================================================= */
+
+.entity-profile .info-card,
+.entity-profile .connection-card,
+.entity-profile .detail-row {
+    background:#111111 !important;
+
+    border-color:#292929 !important;
+
+    color:#f5f5f5 !important;
+}
+
+
+.entity-profile .info-card:hover,
+.entity-profile .connection-card:hover {
+    background:#181818 !important;
+
+    border-color:#444444 !important;
+}
+
+
+/* =========================================================
+   ENTITY PROFILE CLOSE BUTTON
+========================================================= */
+
+.entity-profile .profile-close {
+    background:#111111 !important;
+
+    color:#f5f5f5 !important;
+
+    border:
+        1px solid #292929 !important;
+}
+
+
+.entity-profile .profile-close:hover {
+    background:#1c1c1c !important;
+
+    border-color:#555555 !important;
+
+    color:#ffffff !important;
+}
+
+
+/* =========================================================
+   ENTITY PROFILE ICON
+========================================================= */
+
+.entity-profile .big-icon {
+    background:#111111 !important;
+
+    border:
+        1px solid #292929 !important;
+
+    box-shadow:
+        0 10px 30px rgba(0,0,0,.5);
+}
+
+
+/* =========================================================
+   ENTITY PROFILE BUTTONS
+========================================================= */
+
+.entity-profile button {
+    color:#f5f5f5;
+}
+
+
+.entity-profile .generate-graph-btn,
+.entity-profile .report-btn {
+    background:#111111 !important;
+
+    color:#f5f5f5 !important;
+
+    border:
+        1px solid #292929 !important;
+}
+
+
+.entity-profile .generate-graph-btn:hover,
+.entity-profile .report-btn:hover {
+    background:#1c1c1c !important;
+
+    border-color:#444444 !important;
+}
+
+
+/* =========================================================
+   MONITOR BUTTON — BLACK/WHITE
+========================================================= */
+
+.entity-profile .monitor-btn {
+    background:#111111 !important;
+
+    color:#f5f5f5 !important;
+
+    border:
+        1px solid #292929 !important;
+
+    box-shadow:none !important;
+}
+
+
+.entity-profile .monitor-btn:hover {
+    background:#1c1c1c !important;
+
+    border-color:#555555 !important;
+}
+
+
+.entity-profile .monitor-active {
+    background:#f5f5f5 !important;
+
+    color:#080808 !important;
+
+    border:
+        1px solid #f5f5f5 !important;
+}
+
+
+/* =========================================================
+   ENTITY PROFILE STATS
+========================================================= */
+
+.entity-profile .stats > div {
+    background:#111111 !important;
+
+    border:
+        1px solid #292929 !important;
+
+    color:#f5f5f5 !important;
+}
+
+
+.entity-profile .stats strong {
+    color:#ffffff !important;
+}
+
+
+.entity-profile .stats small {
+    color:#666666 !important;
+}
+
+
+/* =========================================================
+   ENTITY PROFILE SCROLLBAR
+========================================================= */
+
+.entity-profile::-webkit-scrollbar,
+.left-sidebar::-webkit-scrollbar,
+.right-sidebar::-webkit-scrollbar {
+    width:6px;
+}
+
+
+.entity-profile::-webkit-scrollbar-track,
+.left-sidebar::-webkit-scrollbar-track,
+.right-sidebar::-webkit-scrollbar-track {
+    background:#080808 !important;
+}
+
+
+.entity-profile::-webkit-scrollbar-thumb,
+.left-sidebar::-webkit-scrollbar-thumb,
+.right-sidebar::-webkit-scrollbar-thumb {
+    background:#292929 !important;
+
+    border-radius:10px;
+}
+
+
+.entity-profile::-webkit-scrollbar-thumb:hover,
+.left-sidebar::-webkit-scrollbar-thumb:hover,
+.right-sidebar::-webkit-scrollbar-thumb:hover {
+    background:#444444 !important;
+}
+
+
+/* =========================================================
+   REMOVE OLD BLUE/CYAN SIDEBAR COLORS
+========================================================= */
+
+.left-sidebar svg,
+.right-sidebar svg {
+    color:#a3a3a3;
+}
+
+
+.left-sidebar .active,
+.right-sidebar .active {
+    background:#1b1b1b !important;
+
+    color:#ffffff !important;
+
+    border-color:#444444 !important;
+}
+
+
+/* =========================================================
+   FINAL CONSISTENT PALETTE
+========================================================= */
+
+.left-sidebar,
+.right-sidebar,
+.entity-profile {
+    --bg-main:#080808;
+    --bg-panel:#0b0b0b;
+    --bg-card:#111111;
+    --bg-hover:#181818;
+    --border:#292929;
+    --border-hover:#444444;
+    --text:#f5f5f5;
+    --text-muted:#a3a3a3;
+    --text-dim:#666666;
+}
+/* NODE BACKGROUND ONLY */
+
+.simple-node {
+    background: #0b0b0b !important;
+    border-color: #292929 !important;
+}
