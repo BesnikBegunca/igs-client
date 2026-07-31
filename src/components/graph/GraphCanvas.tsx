@@ -33,6 +33,14 @@ import {
     useMonitor
 } from "../../context/MonitorContext";
 
+import {
+    relationshipApi
+} from "../../api/relationshipApi";
+
+
+// ============================================================
+// NODE TYPES
+// ============================================================
 
 const nodeTypes = {
 
@@ -41,6 +49,10 @@ const nodeTypes = {
 };
 
 
+// ============================================================
+// EDGE TYPES
+// ============================================================
+
 const edgeTypes = {
 
     custom: CustomEdge
@@ -48,9 +60,16 @@ const edgeTypes = {
 };
 
 
+// ============================================================
+// BEST HANDLES
+// ============================================================
+
 const getBestHandles = (
+
     sourceNode: any,
+
     targetNode: any
+
 ) => {
 
     const dx =
@@ -62,20 +81,34 @@ const getBestHandles = (
         sourceNode.position.y;
 
 
-    if (Math.abs(dx) > Math.abs(dy)) {
+    if (
+        Math.abs(dx) >
+        Math.abs(dy)
+    ) {
 
         if (dx > 0) {
 
             return {
-                sourceHandle: "right",
-                targetHandle: "left"
+
+                sourceHandle:
+                    "right",
+
+                targetHandle:
+                    "left"
+
             };
 
         }
 
+
         return {
-            sourceHandle: "left",
-            targetHandle: "right"
+
+            sourceHandle:
+                "left",
+
+            targetHandle:
+                "right"
+
         };
 
     }
@@ -84,39 +117,64 @@ const getBestHandles = (
     if (dy > 0) {
 
         return {
-            sourceHandle: "bottom",
-            targetHandle: "top"
+
+            sourceHandle:
+                "bottom",
+
+            targetHandle:
+                "top"
+
         };
 
     }
 
 
     return {
-        sourceHandle: "top",
-        targetHandle: "bottom"
+
+        sourceHandle:
+            "top",
+
+        targetHandle:
+            "bottom"
+
     };
 
 };
 
 
+// ============================================================
+// GRAPH CANVAS
+// ============================================================
+
 export default function GraphCanvas() {
 
+
+    // ========================================================
+    // GRAPH CONTEXT
+    // ========================================================
 
     const {
 
         nodes,
+
         setNodes,
 
         edges,
+
         setEdges,
 
         selectedNode,
+
         selectedEdge,
 
         setSelectedNode,
+
         setSelectedEdge,
 
+        selectedCase,
+
         deleteNode,
+
         deleteEdge,
 
         addEvent,
@@ -124,10 +182,15 @@ export default function GraphCanvas() {
         searchTerm,
 
         registerEntity,
+
         findEntityByName
 
     } = useGraph();
 
+
+    // ========================================================
+    // MONITOR CONTEXT
+    // ========================================================
 
     const {
 
@@ -136,15 +199,22 @@ export default function GraphCanvas() {
     } = useMonitor();
 
 
-    const [menu, setMenu] =
-        useState<any>(null);
+    // ========================================================
+    // CONTEXT MENU
+    // ========================================================
+
+    const [
+
+        menu,
+
+        setMenu
+
+    ] = useState<any>(null);
 
 
-    /*
-    ============================================================
-    MONITORING ALERT POPUP
-    ============================================================
-    */
+    // ========================================================
+    // MONITORING ALERT
+    // ========================================================
 
     const [
 
@@ -155,34 +225,34 @@ export default function GraphCanvas() {
     ] = useState<any>(null);
 
 
+    // ========================================================
+    // REACT FLOW
+    // ========================================================
+
     const {
 
         screenToFlowPosition,
+
         fitView,
+
         setCenter
 
     } = useReactFlow();
 
 
-    /*
-    ============================================================
-    MONITORING
-    ============================================================
-    */
+    // ========================================================
+    // MONITORING EFFECT
+    // ========================================================
 
     useEffect(() => {
 
-        if (!monitoredEntities.length) {
+        if (
+            !monitoredEntities.length
+        ) {
 
             return;
 
         }
-
-        /*
-        Monitoring state is available here
-        and can be used when relationships
-        are created.
-        */
 
     }, [
 
@@ -191,21 +261,23 @@ export default function GraphCanvas() {
     ]);
 
 
-    /*
-    ============================================================
-    SEARCH / FOCUS ENTITY
-    ============================================================
-    */
+    // ========================================================
+    // SEARCH / FOCUS ENTITY
+    // ========================================================
 
     useEffect(() => {
 
-        if (!searchTerm.trim()) {
+        if (
+            !searchTerm.trim()
+        ) {
 
             fitView({
 
-                duration: 500,
+                duration:
+                    500,
 
-                padding: 0.2
+                padding:
+                    0.2
 
             });
 
@@ -229,14 +301,16 @@ export default function GraphCanvas() {
 
                     String(
                         node.data?.label ?? ""
-                    ).toLowerCase();
+                    )
+                        .toLowerCase();
 
 
                 const type =
 
                     String(
                         node.data?.type ?? ""
-                    ).toLowerCase();
+                    )
+                        .toLowerCase();
 
 
                 return (
@@ -252,9 +326,13 @@ export default function GraphCanvas() {
         );
 
 
-        if (!node)
+        if (
+            !node
+        ) {
 
             return;
+
+        }
 
 
         setCenter(
@@ -265,9 +343,11 @@ export default function GraphCanvas() {
 
             {
 
-                zoom: 1.6,
+                zoom:
+                    1.6,
 
-                duration: 700
+                duration:
+                    700
 
             }
 
@@ -276,18 +356,19 @@ export default function GraphCanvas() {
     }, [
 
         searchTerm,
+
         nodes,
+
         fitView,
+
         setCenter
 
     ]);
 
 
-    /*
-    ============================================================
-    DELETE SELECTED EDGE
-    ============================================================
-    */
+    // ========================================================
+    // DELETE SELECTED EDGE WITH DELETE KEY
+    // ========================================================
 
     useEffect(() => {
 
@@ -298,29 +379,36 @@ export default function GraphCanvas() {
         ) => {
 
             if (
-
-                event.key !== "Delete"
-
-            )
+                event.key !==
+                "Delete"
+            ) {
 
                 return;
 
+            }
 
-            if (selectedEdge) {
 
-                deleteEdge(
+            if (
+                !selectedEdge
+            ) {
 
-                    selectedEdge.id
-
-                );
-
-                setSelectedEdge(
-
-                    null
-
-                );
+                return;
 
             }
+
+
+            void deleteEdge(
+
+                String(
+                    selectedEdge.id
+                )
+
+            );
+
+
+            setSelectedEdge(
+                null
+            );
 
         };
 
@@ -349,116 +437,141 @@ export default function GraphCanvas() {
     }, [
 
         selectedEdge,
+
         deleteEdge,
+
         setSelectedEdge
 
     ]);
 
 
-    /*
-    ============================================================
-    NODE CHANGES
-    ============================================================
-    */
+    // ========================================================
+    // NODE CHANGES
+    // ========================================================
 
     const onNodesChange = useCallback(
 
-        (changes: any) => {
+        (changes: any[]) => {
 
-            setNodes(currentNodes => {
+            setNodes(
 
-                const updatedNodes =
+                currentNodes => {
 
-                    applyNodeChanges(
+                    const updatedNodes =
 
-                        changes,
+                        applyNodeChanges(
 
-                        currentNodes
+                            changes,
+
+                            currentNodes
+
+                        );
+
+
+                    /*
+                    ------------------------------------------------
+                    Automatically update edge handles when a node
+                    moves around the canvas.
+                    ------------------------------------------------
+                    */
+
+                    setEdges(
+
+                        currentEdges => {
+
+                            return currentEdges.map(
+
+                                edge => {
+
+                                    const sourceNode =
+
+                                        updatedNodes.find(
+
+                                            node =>
+
+                                                String(
+                                                    node.id
+                                                ) ===
+                                                String(
+                                                    edge.source
+                                                )
+
+                                        );
+
+
+                                    const targetNode =
+
+                                        updatedNodes.find(
+
+                                            node =>
+
+                                                String(
+                                                    node.id
+                                                ) ===
+                                                String(
+                                                    edge.target
+                                                )
+
+                                        );
+
+
+                                    if (
+
+                                        !sourceNode ||
+
+                                        !targetNode
+
+                                    ) {
+
+                                        return edge;
+
+                                    }
+
+
+                                    const handles =
+
+                                        getBestHandles(
+
+                                            sourceNode,
+
+                                            targetNode
+
+                                        );
+
+
+                                    return {
+
+                                        ...edge,
+
+                                        sourceHandle:
+                                            handles.sourceHandle,
+
+                                        targetHandle:
+                                            handles.targetHandle
+
+                                    };
+
+                                }
+
+                            );
+
+                        }
 
                     );
 
 
-                /*
-                Update relationship handles
-                automatically when nodes move.
-                */
+                    return updatedNodes;
 
-                setEdges(currentEdges => {
+                }
 
-                    return currentEdges.map(edge => {
-
-                        const sourceNode =
-
-                            updatedNodes.find(
-
-                                node =>
-                                    node.id ===
-                                    edge.source
-
-                            );
-
-
-                        const targetNode =
-
-                            updatedNodes.find(
-
-                                node =>
-                                    node.id ===
-                                    edge.target
-
-                            );
-
-
-                        if (
-
-                            !sourceNode ||
-
-                            !targetNode
-
-                        ) {
-
-                            return edge;
-
-                        }
-
-
-                        const handles =
-
-                            getBestHandles(
-
-                                sourceNode,
-
-                                targetNode
-
-                            );
-
-
-                        return {
-
-                            ...edge,
-
-                            sourceHandle:
-                                handles.sourceHandle,
-
-                            targetHandle:
-                                handles.targetHandle
-
-                        };
-
-                    });
-
-                });
-
-
-                return updatedNodes;
-
-            });
+            );
 
         },
 
         [
 
             setNodes,
+
             setEdges
 
         ]
@@ -466,330 +579,545 @@ export default function GraphCanvas() {
     );
 
 
-    /*
-    ============================================================
-    EDGE CHANGES
-    ============================================================
-    */
+    // ========================================================
+    // EDGE CHANGES
+    // ========================================================
 
-    const onEdgesChange =
+    const onEdgesChange = useCallback(
 
-        useCallback(
+        (changes: any[]) => {
 
-            (changes: any) => {
+            setEdges(
 
-                setEdges(
+                currentEdges =>
 
-                    currentEdges =>
+                    applyEdgeChanges(
 
-                        applyEdgeChanges(
+                        changes,
 
-                            changes,
+                        currentEdges
 
-                            currentEdges
+                    )
 
+            );
+
+        },
+
+        [
+
+            setEdges
+
+        ]
+
+    );
+
+
+    // ========================================================
+    // CREATE RELATIONSHIP
+    // ========================================================
+
+    const onConnect = useCallback(
+
+        async (
+            connection: any
+        ) => {
+
+            // ==================================================
+            // ACTIVE CASE REQUIRED
+            // ==================================================
+
+            if (
+                !selectedCase?.id
+            ) {
+
+                console.warn(
+                    "Cannot create relationship without an active case."
+                );
+
+                return;
+
+            }
+
+
+            // ==================================================
+            // VALID CONNECTION
+            // ==================================================
+
+            if (
+
+                !connection.source ||
+
+                !connection.target
+
+            ) {
+
+                return;
+
+            }
+
+
+            // ==================================================
+            // PREVENT SELF CONNECTION
+            // ==================================================
+
+            if (
+
+                String(
+                    connection.source
+                ) ===
+                String(
+                    connection.target
+                )
+
+            ) {
+
+                return;
+
+            }
+
+
+            // ==================================================
+            // PREVENT DUPLICATE RELATIONSHIP
+            // ==================================================
+
+            const alreadyExists =
+
+                edges.some(
+
+                    (edge: any) => {
+
+                        const sameDirection =
+
+                            String(
+                                edge.source
+                            ) ===
+                            String(
+                                connection.source
+                            )
+
+                            &&
+
+                            String(
+                                edge.target
+                            ) ===
+                            String(
+                                connection.target
+                            );
+
+
+                        const oppositeDirection =
+
+                            String(
+                                edge.source
+                            ) ===
+                            String(
+                                connection.target
+                            )
+
+                            &&
+
+                            String(
+                                edge.target
+                            ) ===
+                            String(
+                                connection.source
+                            );
+
+
+                        return (
+
+                            sameDirection ||
+
+                            oppositeDirection
+
+                        );
+
+                    }
+
+                );
+
+
+            if (
+                alreadyExists
+            ) {
+
+                return;
+
+            }
+
+
+            // ==================================================
+            // FIND SOURCE NODE
+            // ==================================================
+
+            const sourceNode =
+
+                nodes.find(
+
+                    (node: any) =>
+
+                        String(
+                            node.id
+                        ) ===
+                        String(
+                            connection.source
                         )
 
                 );
 
-            },
 
-            [
+            // ==================================================
+            // FIND TARGET NODE
+            // ==================================================
 
-                setEdges
+            const targetNode =
 
-            ]
+                nodes.find(
 
-        );
+                    (node: any) =>
 
-
-    /*
-    ============================================================
-    CREATE RELATIONSHIP
-    ============================================================
-    */
-
-    const onConnect =
-
-        useCallback(
-
-            (connection: any) => {
-
-                if (
-
-                    !connection.source ||
-
-                    !connection.target
-
-                ) {
-
-                    return;
-
-                }
-
-
-                /*
-                Prevent self connection
-                */
-
-                if (
-
-                    connection.source ===
-
-                    connection.target
-
-                ) {
-
-                    return;
-
-                }
-
-
-                /*
-                Prevent duplicate connection
-                */
-
-                const alreadyExists =
-
-                    edges.some(
-
-                        (edge: any) =>
-
-                            (
-
-                                edge.source ===
-                                connection.source &&
-
-                                edge.target ===
-                                connection.target
-
-                            )
-
-                            ||
-
-                            (
-
-                                edge.source ===
-                                connection.target &&
-
-                                edge.target ===
-                                connection.source
-
-                            )
-
-                    );
-
-
-                if (alreadyExists)
-
-                    return;
-
-
-                /*
-                ====================================================
-                FIND SOURCE / TARGET NODES
-                ====================================================
-                */
-
-                const sourceNode =
-
-                    nodes.find(
-
-                        (node: any) =>
-
-                            node.id ===
-                            connection.source
-
-                    );
-
-
-                const targetNode =
-
-                    nodes.find(
-
-                        (node: any) =>
-
-                            node.id ===
+                        String(
+                            node.id
+                        ) ===
+                        String(
                             connection.target
+                        )
 
-                    );
+                );
 
 
-                if (
+            if (
 
-                    !sourceNode ||
+                !sourceNode ||
 
-                    !targetNode
+                !targetNode
 
-                ) {
+            ) {
 
-                    return;
+                console.warn(
+                    "Source or target node not found."
+                );
+
+                return;
+
+            }
+
+
+            // ==================================================
+            // MASTER ENTITY IDS
+            // ==================================================
+
+            const sourceEntityId =
+
+                sourceNode?.data?.entityId ??
+                sourceNode?.data?.entity?.id ??
+                sourceNode?.entityId ??
+                null;
+
+
+            const targetEntityId =
+
+                targetNode?.data?.entityId ??
+                targetNode?.data?.entity?.id ??
+                targetNode?.entityId ??
+                null;
+
+
+            if (
+
+                !sourceEntityId ||
+
+                !targetEntityId
+
+            ) {
+
+                console.error(
+                    "Cannot create relationship: source or target entity ID is missing."
+                );
+
+                return;
+
+            }
+
+
+            // ==================================================
+            // MONITORING CHECK
+            // ==================================================
+
+            const sourceIsMonitored =
+
+                monitoredEntities.some(
+
+                    (entity: any) => {
+
+                        const monitoredId =
+
+                            String(
+
+                                entity?.id ??
+
+                                entity?.data?.entityId ??
+
+                                entity?.data?.id ??
+
+                                ""
+
+                            );
+
+
+                        const nodeId =
+
+                            String(
+
+                                sourceNode?.id ??
+
+                                ""
+
+                            );
+
+
+                        const entityId =
+
+                            String(
+
+                                sourceNode?.data?.entityId ??
+
+                                ""
+
+                            );
+
+
+                        return (
+
+                            monitoredId !== ""
+
+                            &&
+
+                            (
+
+                                monitoredId ===
+                                nodeId
+
+                                ||
+
+                                monitoredId ===
+                                entityId
+
+                            )
+
+                        );
+
+                    }
+
+                );
+
+
+            const targetIsMonitored =
+
+                monitoredEntities.some(
+
+                    (entity: any) => {
+
+                        const monitoredId =
+
+                            String(
+
+                                entity?.id ??
+
+                                entity?.data?.entityId ??
+
+                                entity?.data?.id ??
+
+                                ""
+
+                            );
+
+
+                        const nodeId =
+
+                            String(
+
+                                targetNode?.id ??
+
+                                ""
+
+                            );
+
+
+                        const entityId =
+
+                            String(
+
+                                targetNode?.data?.entityId ??
+
+                                ""
+
+                            );
+
+
+                        return (
+
+                            monitoredId !== ""
+
+                            &&
+
+                            (
+
+                                monitoredId ===
+                                nodeId
+
+                                ||
+
+                                monitoredId ===
+                                entityId
+
+                            )
+
+                        );
+
+                    }
+
+                );
+
+
+            // ==================================================
+            // HANDLES
+            // ==================================================
+
+            const handles =
+
+                getBestHandles(
+
+                    sourceNode,
+
+                    targetNode
+
+                );
+
+
+            // ==================================================
+            // TEMPORARY EDGE ID
+            // ==================================================
+
+            const temporaryEdgeId =
+
+                `edge-${Date.now()}-${Math.random()
+                    .toString(36)
+                    .substring(2, 8)}`;
+
+
+            // ==================================================
+            // DATE
+            // ==================================================
+
+            const relationshipDate =
+
+                new Date()
+                    .toISOString()
+                    .split("T")[0];
+
+
+            // ==================================================
+            // OPTIMISTIC EDGE
+            // ==================================================
+
+            const optimisticEdge = {
+
+                id:
+                    temporaryEdgeId,
+
+                source:
+                    connection.source,
+
+                target:
+                    connection.target,
+
+                sourceHandle:
+                    connection.sourceHandle ??
+                    handles.sourceHandle,
+
+                targetHandle:
+                    connection.targetHandle ??
+                    handles.targetHandle,
+
+                type:
+                    "custom",
+
+                data: {
+
+                    label:
+                        "Relationship",
+
+                    relationshipType:
+                        "Related",
+
+                    color:
+                        "#94a3b8",
+
+                    description:
+                        "",
+
+                    evidence:
+                        "",
+
+                    date:
+                        relationshipDate,
+
+                    monitored:
+                        sourceIsMonitored ||
+                        targetIsMonitored
 
                 }
 
+            };
 
-                /*
-                ====================================================
-                MONITORING CHECK
-                ====================================================
-                */
 
-                const sourceIsMonitored =
+            // ==================================================
+            // SHOW EDGE IMMEDIATELY
+            // ==================================================
 
-                    monitoredEntities.some(
+            setEdges(
 
-                        (entity: any) => {
+                currentEdges =>
 
-                            const monitoredId =
+                    addEdge(
 
-                                String(
+                        optimisticEdge,
 
-                                    entity?.id ??
+                        currentEdges
 
-                                    entity?.data?.entityId ??
+                    )
 
-                                    entity?.data?.id ??
+            );
 
-                                    ""
 
-                                );
+            // ==================================================
+            // SAVE RELATIONSHIP TO SQL SERVER
+            // ==================================================
 
+            try {
 
-                            const nodeId =
+                const backendRelationship =
 
-                                String(
+                    await relationshipApi.create({
 
-                                    sourceNode?.id ??
+                        caseId:
+                            String(
+                                selectedCase.id
+                            ),
 
-                                    ""
+                        sourceEntityId:
+                            String(
+                                sourceEntityId
+                            ),
 
-                                );
-
-
-                            const entityId =
-
-                                String(
-
-                                    sourceNode?.data?.entityId ??
-
-                                    ""
-
-                                );
-
-
-                            return (
-
-                                monitoredId !== "" &&
-
-                                (
-
-                                    monitoredId ===
-                                    nodeId ||
-
-                                    monitoredId ===
-                                    entityId
-
-                                )
-
-                            );
-
-                        }
-
-                    );
-
-
-                const targetIsMonitored =
-
-                    monitoredEntities.some(
-
-                        (entity: any) => {
-
-                            const monitoredId =
-
-                                String(
-
-                                    entity?.id ??
-
-                                    entity?.data?.entityId ??
-
-                                    entity?.data?.id ??
-
-                                    ""
-
-                                );
-
-
-                            const nodeId =
-
-                                String(
-
-                                    targetNode?.id ??
-
-                                    ""
-
-                                );
-
-
-                            const entityId =
-
-                                String(
-
-                                    targetNode?.data?.entityId ??
-
-                                    ""
-
-                                );
-
-
-                            return (
-
-                                monitoredId !== "" &&
-
-                                (
-
-                                    monitoredId ===
-                                    nodeId ||
-
-                                    monitoredId ===
-                                    entityId
-
-                                )
-
-                            );
-
-                        }
-
-                    );
-
-
-                /*
-                ====================================================
-                CREATE EDGE
-                ====================================================
-                */
-
-                const newEdge = {
-
-                    ...connection,
-
-                    id:
-
-                        `${connection.source} -${connection.target} -${Date.now()} `,
-
-                    type:
-
-                        "custom",
-
-                    data: {
-
-                        label:
-                            "Relationship",
+                        targetEntityId:
+                            String(
+                                targetEntityId
+                            ),
 
                         relationshipType:
-                            "Related",
-
-                        color:
-                            "#94a3b8",
+                            "related",
 
                         description:
                             "",
@@ -798,44 +1126,109 @@ export default function GraphCanvas() {
                             "",
 
                         date:
-
-                            new Date()
-                                .toISOString()
-                                .split("T")[0],
+                            relationshipDate,
 
                         monitored:
-
                             sourceIsMonitored ||
-
                             targetIsMonitored
 
-                    }
+                    } as any);
 
-                };
 
+                // ==================================================
+                // BACKEND DID NOT RETURN RELATIONSHIP
+                // ==================================================
+
+                if (
+                    !backendRelationship
+                ) {
+
+                    throw new Error(
+                        "Relationship API returned no relationship."
+                    );
+
+                }
+
+
+                // ==================================================
+                // REPLACE TEMPORARY EDGE ID
+                // WITH REAL SQL SERVER ID
+                // ==================================================
 
                 setEdges(
 
                     currentEdges =>
 
-                        addEdge(
+                        currentEdges.map(
 
-                            newEdge,
+                            edge =>
 
-                            currentEdges
+                                String(
+                                    edge.id
+                                ) ===
+                                    String(
+                                        temporaryEdgeId
+                                    )
+
+                                    ?
+
+                                    {
+
+                                        ...edge,
+
+                                        id:
+                                            String(
+                                                backendRelationship.id
+                                            ),
+
+                                        data: {
+
+                                            ...edge.data,
+
+                                            relationshipId:
+                                                backendRelationship.id,
+
+                                            relationshipType:
+                                                backendRelationship.relationshipType ??
+                                                "related",
+
+                                            description:
+                                                backendRelationship.description ??
+                                                "",
+
+                                            evidence:
+                                                backendRelationship.evidence ??
+                                                "",
+
+                                            date:
+                                                backendRelationship.date ??
+                                                relationshipDate,
+
+                                            monitored:
+                                                backendRelationship.monitored ??
+                                                (
+                                                    sourceIsMonitored ||
+                                                    targetIsMonitored
+                                                )
+
+                                        }
+
+                                    }
+
+                                    :
+
+                                    edge
 
                         )
 
                 );
 
 
-                /*
-                ====================================================
-                RELATIONSHIP EVENT
-                ====================================================
-                */
+                // ==================================================
+                // RELATIONSHIP CREATED EVENT
+                // ==================================================
 
-                addEvent({
+                await addEvent({
 
                     title:
                         "Relationship Created",
@@ -845,16 +1238,17 @@ export default function GraphCanvas() {
 
                     description:
 
-                        `New relationship created between ${sourceNode?.data?.label || connection.source} and ${targetNode?.data?.label || connection.target}`
+                        `New relationship created between ${sourceNode?.data?.label || sourceNode.id} and ${targetNode?.data?.label || targetNode.id}`,
+
+                    date:
+                        new Date().toISOString()
 
                 });
 
 
-                /*
-                ====================================================
-                MONITORING ALERT
-                ====================================================
-                */
+                // ==================================================
+                // MONITORING ALERT
+                // ==================================================
 
                 if (
 
@@ -904,13 +1298,11 @@ export default function GraphCanvas() {
                         "Unknown Entity";
 
 
-                    /*
-                    ====================================================
-                    ADD MONITORING EVENT
-                    ====================================================
-                    */
+                    // ==========================================
+                    // ALERT EVENT
+                    // ==========================================
 
-                    addEvent({
+                    await addEvent({
 
                         title:
                             "MONITORING ALERT",
@@ -920,16 +1312,17 @@ export default function GraphCanvas() {
 
                         description:
 
-                            `${monitoredName} is being monitored and a new relationship with ${connectedName} was detected.`
+                            `${monitoredName} is being monitored and a new relationship with ${connectedName} was detected.`,
+
+                        date:
+                            new Date().toISOString()
 
                     });
 
 
-                    /*
-                    ====================================================
-                    SHOW RED POPUP
-                    ====================================================
-                    */
+                    // ==========================================
+                    // POPUP
+                    // ==========================================
 
                     setMonitoringAlert({
 
@@ -941,434 +1334,546 @@ export default function GraphCanvas() {
 
                 }
 
-            },
+            }
+            catch (error) {
 
-            [
+                console.error(
 
-                edges,
-                nodes,
-                monitoredEntities,
-                setEdges,
-                addEvent
+                    "Failed to create relationship in SQL Server:",
 
-            ]
+                    error
 
-        );
+                );
 
 
-    /*
-    ============================================================
-    DRAG OVER
-    ============================================================
-    */
+                // ==================================================
+                // REMOVE OPTIMISTIC EDGE
+                // ==================================================
 
-    const onDragOver =
+                setEdges(
 
-        useCallback(
+                    currentEdges =>
 
-            (event: React.DragEvent) => {
+                        currentEdges.filter(
 
-                event.preventDefault();
+                            edge =>
 
-                event.stopPropagation();
+                                String(
+                                    edge.id
+                                ) !==
+                                String(
+                                    temporaryEdgeId
+                                )
 
-                event.dataTransfer.dropEffect =
-                    "copy";
+                        )
 
-            },
+                );
 
-            []
+            }
 
-        );
+        },
+
+        [
+
+            selectedCase,
+
+            edges,
+
+            nodes,
+
+            monitoredEntities,
+
+            setEdges,
+
+            addEvent
+
+        ]
+
+    );
 
 
-    /*
-    ============================================================
-    DROP ENTITY
-    ============================================================
-    */
+    // ========================================================
+    // DRAG OVER
+    // ========================================================
 
-    const onDrop =
+    const onDragOver = useCallback(
 
-        useCallback(
+        (
+            event: React.DragEvent
+        ) => {
 
-            (event: React.DragEvent) => {
+            event.preventDefault();
 
-                event.preventDefault();
+            event.stopPropagation();
 
-                event.stopPropagation();
+            event.dataTransfer.dropEffect =
+                "copy";
+
+        },
+
+        []
+
+    );
 
 
-                const rawData =
+    // ========================================================
+    // DROP ENTITY
+    // ========================================================
 
-                    event.dataTransfer.getData(
+    const onDrop = useCallback(
 
-                        "application/reactflow"
+        async (
+            event: React.DragEvent
+        ) => {
 
+            event.preventDefault();
+
+            event.stopPropagation();
+
+
+            // ==================================================
+            // ACTIVE CASE REQUIRED
+            // ==================================================
+
+            if (
+                !selectedCase?.id
+            ) {
+
+                console.warn(
+                    "Cannot add entity without an active case."
+                );
+
+                return;
+
+            }
+
+
+            // ==================================================
+            // READ DRAG DATA
+            // ==================================================
+
+            const rawData =
+
+                event.dataTransfer.getData(
+
+                    "application/reactflow"
+
+                );
+
+
+            if (
+                !rawData
+            ) {
+
+                return;
+
+            }
+
+
+            let entityData: any;
+
+
+            // ==================================================
+            // PARSE ENTITY
+            // ==================================================
+
+            try {
+
+                entityData =
+
+                    JSON.parse(
+                        rawData
                     );
 
+            }
 
-                if (!rawData)
+            catch {
 
-                    return;
+                entityData = {
 
-
-                let entityData: any;
-
-
-                try {
-
-                    entityData =
-
-                        JSON.parse(
-
-                            rawData
-
-                        );
-
-                }
-
-                catch {
-
-                    entityData = {
-
-                        name:
-                            rawData,
-
-                        type:
-                            "Unknown",
-
-                        icon:
-                            "❓",
-
-                        category:
-                            "Unknown",
-
-                        attributes:
-                            {}
-
-                    };
-
-                }
-
-
-                /*
-                Normalize
-                */
-
-                const entityName =
-
-                    String(
-
-                        entityData.name ||
-
-                        "Unknown Entity"
-
-                    ).trim();
-
-
-                const entityType =
-
-                    String(
-
-                        entityData.type ||
-
-                        "Unknown"
-
-                    ).trim();
-
-
-                const entityCategory =
-
-                    entityData.category ||
-
-                    "Unknown";
-
-
-                const entityIcon =
-
-                    entityData.icon ||
-
-                    "❓";
-
-
-                /*
-                Find registered entity
-                */
-
-                let masterEntity =
-
-                    findEntityByName(
-
-                        entityName
-
-                    );
-
-
-                /*
-                Register if missing
-                */
-
-                if (!masterEntity) {
-
-                    masterEntity =
-
-                        registerEntity({
-
-                            name:
-                                entityName,
-
-                            type:
-                                entityType,
-
-                            category:
-                                entityCategory,
-
-                            icon:
-                                entityIcon,
-
-                            attributes:
-
-                                entityData.attributes ||
-
-                                {}
-
-                        });
-
-                }
-
-
-                if (!masterEntity)
-
-                    return;
-
-
-                /*
-                Check duplicate node
-                */
-
-                const existingNode =
-
-                    nodes.find(
-
-                        (node: any) =>
-
-                            String(
-
-                                node.data?.entityId
-
-                            ) ===
-
-                            String(
-
-                                masterEntity.id
-
-                            )
-
-                    );
-
-
-                if (existingNode) {
-
-                    setCenter(
-
-                        existingNode.position.x,
-
-                        existingNode.position.y,
-
-                        {
-
-                            zoom:
-                                1.5,
-
-                            duration:
-                                500
-
-                        }
-
-                    );
-
-
-                    setSelectedNode(
-
-                        existingNode
-
-                    );
-
-
-                    addEvent({
-
-                        title:
-                            "Existing Entity Selected",
-
-                        type:
-                            "entity",
-
-                        description:
-
-                            `${masterEntity.name} already exists in the investigation graph`
-
-                    });
-
-
-                    return;
-
-                }
-
-
-                /*
-                Calculate position
-                */
-
-                const position =
-
-                    screenToFlowPosition({
-
-                        x:
-                            event.clientX,
-
-                        y:
-                            event.clientY
-
-                    });
-
-
-                /*
-                Create node
-                */
-
-                const newNode = {
-
-                    id:
-
-                        `node - ${masterEntity.id} `,
-
-                    position,
+                    name:
+                        rawData,
 
                     type:
-                        "custom",
+                        "Unknown",
 
-                    data: {
+                    icon:
+                        "❓",
 
-                        entityId:
-                            masterEntity.id,
+                    category:
+                        "Unknown",
 
-                        label:
-                            masterEntity.name,
-
-                        type:
-                            masterEntity.type,
-
-                        icon:
-                            masterEntity.icon,
-
-                        category:
-                            masterEntity.category,
-
-                        risk:
-
-                            masterEntity.attributes
-                                ?.risk ||
-
-                            "Low",
-
-                        description:
-
-                            masterEntity.attributes
-                                ?.description ||
-
-                            "",
-
-                        attachments:
-
-                            masterEntity.attributes
-                                ?.attachments ||
-
-                            [],
-
-                        details: {
-
-                            ...masterEntity.attributes
-
-                        },
-
-                        entity:
-                            masterEntity
-
-                    }
+                    attributes:
+                        {}
 
                 };
 
+            }
 
-                /*
-                Add node
-                */
 
-                setNodes(
+            // ==================================================
+            // NORMALIZE ENTITY
+            // ==================================================
 
-                    currentNodes => [
+            const entityName =
 
-                        ...currentNodes,
+                String(
 
-                        newNode
+                    entityData.name ||
 
-                    ]
+                    "Unknown Entity"
+
+                )
+                    .trim();
+
+
+            const entityType =
+
+                String(
+
+                    entityData.type ||
+
+                    "Unknown"
+
+                )
+                    .trim();
+
+
+            const entityCategory =
+
+                String(
+
+                    entityData.category ||
+
+                    "Unknown"
 
                 );
 
 
-                /*
-                Select
-                */
+            const entityIcon =
+
+                String(
+
+                    entityData.icon ||
+
+                    "❓"
+
+                );
+
+
+            // ==================================================
+            // FIND EXISTING MASTER ENTITY
+            // ==================================================
+
+            let masterEntity: any = undefined;
+
+            masterEntity =
+                findEntityByName(entityName);
+
+            if (!masterEntity) {
+
+                masterEntity =
+                    await registerEntity({
+
+                        name:
+                            entityName,
+
+                        type:
+                            entityType,
+
+                        category:
+                            entityCategory,
+
+                        icon:
+                            entityIcon,
+
+                        attributes:
+                            entityData.attributes ||
+                            {}
+
+                    });
+
+            }
+
+
+            // ==================================================
+            // ENTITY CREATION FAILED
+            // ==================================================
+
+            if (
+                !masterEntity?.id
+            ) {
+
+                console.error(
+                    "Entity could not be created."
+                );
+
+                return;
+
+            }
+
+
+            // ==================================================
+            // CHECK DUPLICATE NODE
+            // ==================================================
+
+            const existingNode =
+                nodes.find(
+                    (node: any) =>
+                        String(
+                            node.data?.entityId
+                        ) ===
+                        String(
+                            masterEntity.id
+                        )
+                );
+
+            if (
+                existingNode
+            ) {
+
+                setCenter(
+
+                    existingNode.position.x,
+
+                    existingNode.position.y,
+
+                    {
+
+                        zoom:
+                            1.5,
+
+                        duration:
+                            500
+
+                    }
+
+                );
+
 
                 setSelectedNode(
-
-                    newNode
-
+                    existingNode
                 );
 
 
-                /*
-                Event
-                */
-
-                addEvent({
+                await addEvent({
 
                     title:
-                        "Entity Added",
+                        "Existing Entity Selected",
 
                     type:
                         "entity",
 
                     description:
 
-                        `${masterEntity.name} added to investigation`
+                        `${masterEntity.name} already exists in the investigation graph`,
+
+                    date:
+                        new Date().toISOString()
 
                 });
 
-            },
 
-            [
+                return;
 
-                findEntityByName,
-                registerEntity,
-                nodes,
-                screenToFlowPosition,
-                setNodes,
-                setSelectedNode,
-                setCenter,
-                addEvent
-
-            ]
-
-        );
+            }
 
 
-    /*
-    ============================================================
-    CANVAS
-    ============================================================
-    */
+            // ==================================================
+            // CALCULATE CANVAS POSITION
+            // ==================================================
+
+            const position =
+
+                screenToFlowPosition({
+
+                    x:
+                        event.clientX,
+
+                    y:
+                        event.clientY
+
+                });
+
+
+            // ==================================================
+            // ENTITY ATTRIBUTES
+            // ==================================================
+
+            const attributes =
+
+                masterEntity.attributes ??
+                {};
+
+
+            // ==================================================
+            // CREATE REACTFLOW NODE
+            // ==================================================
+
+            const newNode = {
+
+                id:
+
+                    `node-${masterEntity.id}`,
+
+                position,
+
+                type:
+                    "custom",
+
+                data: {
+
+                    // ------------------------------------------
+                    // MASTER ENTITY
+                    // ------------------------------------------
+
+                    entityId:
+                        masterEntity.id,
+
+                    entity:
+                        masterEntity,
+
+
+                    // ------------------------------------------
+                    // DISPLAY
+                    // ------------------------------------------
+
+                    label:
+                        masterEntity.name,
+
+                    name:
+                        masterEntity.name,
+
+                    type:
+                        masterEntity.type,
+
+                    category:
+                        masterEntity.category,
+
+                    icon:
+                        masterEntity.icon,
+
+
+                    // ------------------------------------------
+                    // DETAILS
+                    // ------------------------------------------
+
+                    risk:
+
+                        attributes?.risk ??
+                        "Low",
+
+                    description:
+
+                        attributes?.description ??
+                        "",
+
+
+                    attachments:
+
+                        attributes?.attachments ??
+                        [],
+
+
+                    details: {
+
+                        ...attributes
+
+                    }
+
+                }
+
+            };
+
+
+            // ==================================================
+            // ADD NODE TO CANVAS
+            // ==================================================
+
+            setNodes(
+
+                currentNodes => [
+
+                    ...currentNodes,
+
+                    newNode
+
+                ]
+
+            );
+
+
+            // ==================================================
+            // SELECT NODE
+            // ==================================================
+
+            setSelectedNode(
+
+                newNode
+
+            );
+
+
+            // ==================================================
+            // SAVE CASE ENTITY RELATIONSHIP
+            // ==================================================
+            /*
+            The graph node is already saved as part of the case
+            graph through saveCurrentCase().
+            */
+
+
+            // ==================================================
+            // AUDIT EVENT
+            // ==================================================
+
+            await addEvent({
+
+                title:
+                    "Entity Added",
+
+                type:
+                    "entity",
+
+                description:
+
+                    `${masterEntity.name} added to investigation`,
+
+                date:
+                    new Date().toISOString()
+
+            });
+
+        },
+
+        [
+
+            selectedCase,
+
+            findEntityByName,
+
+            registerEntity,
+
+            nodes,
+
+            screenToFlowPosition,
+
+            setNodes,
+
+            setSelectedNode,
+
+            setCenter,
+
+            addEvent
+
+        ]
+
+    );
+
+
+    // ========================================================
+    // CANVAS
+    // ========================================================
 
     return (
 
@@ -1381,16 +1886,21 @@ export default function GraphCanvas() {
                 if (
 
                     event.target ===
-
                     event.currentTarget
 
                 ) {
 
-                    setMenu(null);
+                    setMenu(
+                        null
+                    );
 
-                    setSelectedEdge(null);
+                    setSelectedEdge(
+                        null
+                    );
 
-                    setSelectedNode(null);
+                    setSelectedNode(
+                        null
+                    );
 
                 }
 
@@ -1400,17 +1910,35 @@ export default function GraphCanvas() {
 
             <ReactFlow
 
-                nodes={nodes}
+                // ==================================================
+                // DATA
+                // ==================================================
 
-                edges={edges}
+                nodes={
+                    nodes
+                }
 
-                nodeTypes={nodeTypes}
+                edges={
+                    edges
+                }
 
-                edgeTypes={edgeTypes}
 
-                /*
-                Hide React Flow attribution
-                */
+                // ==================================================
+                // TYPES
+                // ==================================================
+
+                nodeTypes={
+                    nodeTypes
+                }
+
+                edgeTypes={
+                    edgeTypes
+                }
+
+
+                // ==================================================
+                // OPTIONS
+                // ==================================================
 
                 proOptions={{
 
@@ -1419,11 +1947,6 @@ export default function GraphCanvas() {
 
                 }}
 
-                /*
-                Allows source-to-source
-                and target-to-target
-                connections.
-                */
 
                 connectionMode={
 
@@ -1431,13 +1954,27 @@ export default function GraphCanvas() {
 
                 }
 
-                nodesDraggable={true}
 
-                nodesConnectable={true}
+                nodesDraggable={
+                    true
+                }
 
-                elementsSelectable={true}
+                nodesConnectable={
+                    true
+                }
 
-                edgesFocusable={true}
+                elementsSelectable={
+                    true
+                }
+
+                edgesFocusable={
+                    true
+                }
+
+
+                // ==================================================
+                // CHANGES
+                // ==================================================
 
                 onNodesChange={
 
@@ -1451,11 +1988,21 @@ export default function GraphCanvas() {
 
                 }
 
+
+                // ==================================================
+                // CONNECT
+                // ==================================================
+
                 onConnect={
 
                     onConnect
 
                 }
+
+
+                // ==================================================
+                // DROP
+                // ==================================================
 
                 onDragOver={
 
@@ -1469,81 +2016,80 @@ export default function GraphCanvas() {
 
                 }
 
-                /*
-                NODE CLICK
-                */
+
+                // ==================================================
+                // NODE CLICK
+                // ==================================================
 
                 onNodeClick={
 
                     (_, node) => {
 
                         setSelectedNode(
-
                             node
-
                         );
 
                         setSelectedEdge(
-
                             null
-
                         );
 
                         setMenu(
-
                             null
-
                         );
 
                     }
 
                 }
 
-                /*
-                EDGE CLICK
-                */
+
+                // ==================================================
+                // EDGE CLICK
+                // ==================================================
 
                 onEdgeClick={
 
                     (_, edge) => {
 
                         setSelectedEdge(
-
                             edge
-
                         );
 
                         setSelectedNode(
-
                             null
-
                         );
 
                         setMenu(
-
                             null
-
                         );
 
                     }
 
                 }
 
-                /*
-                NODE RIGHT CLICK
-                */
+
+                // ==================================================
+                // NODE RIGHT CLICK
+                // ==================================================
 
                 onNodeContextMenu={
 
-                    (event, node) => {
+                    (
+                        event,
+                        node
+                    ) => {
 
                         event.preventDefault();
 
+
                         setSelectedNode(
-
                             node
-
                         );
+
+
+                        setSelectedEdge(
+                            null
+                        );
+
 
                         setMenu({
 
@@ -1565,27 +2111,30 @@ export default function GraphCanvas() {
 
                 }
 
-                /*
-                EDGE RIGHT CLICK
-                */
+
+                // ==================================================
+                // EDGE RIGHT CLICK
+                // ==================================================
 
                 onEdgeContextMenu={
 
-                    (event, edge) => {
+                    (
+                        event,
+                        edge
+                    ) => {
 
                         event.preventDefault();
 
+
                         setSelectedEdge(
-
                             edge
-
                         );
+
 
                         setSelectedNode(
-
                             null
-
                         );
+
 
                         setMenu({
 
@@ -1607,6 +2156,11 @@ export default function GraphCanvas() {
 
                 }
 
+
+                // ==================================================
+                // FIT VIEW
+                // ==================================================
+
                 fitView
 
             >
@@ -1616,15 +2170,23 @@ export default function GraphCanvas() {
             </ReactFlow>
 
 
+            {/* ====================================================
+                CONTEXT MENU
+            ==================================================== */}
+
             {
 
                 menu && (
 
                     <ContextMenu
 
-                        x={menu.x}
+                        x={
+                            menu.x
+                        }
 
-                        y={menu.y}
+                        y={
+                            menu.y
+                        }
 
                         type={
 
@@ -1634,54 +2196,55 @@ export default function GraphCanvas() {
 
                         }
 
-                        onDelete={() => {
+
+                        onDelete={async () => {
 
                             if (
 
                                 menu.type ===
-
                                 "edge"
 
                             ) {
 
-                                deleteEdge(
+                                await deleteEdge(
 
-                                    menu.id
+                                    String(
+                                        menu.id
+                                    )
 
                                 );
 
+
                                 setSelectedEdge(
-
                                     null
-
                                 );
 
                             }
 
                             else {
 
-                                deleteNode(
+                                await deleteNode(
 
-                                    menu.id
+                                    String(
+                                        menu.id
+                                    )
 
                                 );
 
                             }
 
+
                             setMenu(
-
                                 null
-
                             );
 
                         }}
 
+
                         onClose={() => {
 
                             setMenu(
-
                                 null
-
                             );
 
                         }}
@@ -1693,11 +2256,9 @@ export default function GraphCanvas() {
             }
 
 
-            /*
-            ========================================================
-            MONITORING ALERT POPUP
-            ========================================================
-            */
+            {/* ====================================================
+                MONITORING ALERT
+            ==================================================== */}
 
             {
 
@@ -1794,9 +2355,7 @@ export default function GraphCanvas() {
                                 onClick={() =>
 
                                     setMonitoringAlert(
-
                                         null
-
                                     )
 
                                 }
@@ -1848,7 +2407,9 @@ export default function GraphCanvas() {
 
                             <strong>
 
-                                {monitoringAlert.monitoredName}
+                                {
+                                    monitoringAlert.monitoredName
+                                }
 
                             </strong>
 
@@ -1862,7 +2423,9 @@ export default function GraphCanvas() {
 
                             <strong>
 
-                                {monitoringAlert.connectedName}
+                                {
+                                    monitoringAlert.connectedName
+                                }
 
                             </strong>
 
@@ -1903,7 +2466,6 @@ export default function GraphCanvas() {
                             New activity detected on a monitored entity.
 
                         </div>
-
 
                     </div>
 
