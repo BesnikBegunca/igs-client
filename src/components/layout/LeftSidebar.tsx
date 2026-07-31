@@ -565,7 +565,7 @@ export default function LeftSidebar() {
                 </span>
 
 
-                <input
+                <input className="sidebar-search-input"
 
                     value={
                         searchTerm

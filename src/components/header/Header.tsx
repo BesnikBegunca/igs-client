@@ -496,8 +496,7 @@ export default function Header() {
 
 
 
-                <input
-
+                <input className="sidebar-search-input"
 
 
                     type="text"
