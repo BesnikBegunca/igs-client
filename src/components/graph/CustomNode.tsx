@@ -1,3 +1,4 @@
+
 import {
     Handle,
     Position
@@ -98,6 +99,7 @@ export default function CustomNode({
 
 
 
+
     const icon =
 
         data.icon ||
@@ -114,9 +116,12 @@ export default function CustomNode({
 
 
 
+
     const search =
 
         searchTerm.toLowerCase();
+
+
 
 
 
@@ -154,6 +159,7 @@ export default function CustomNode({
 
 
 
+
     const riskClass =
 
 
@@ -164,6 +170,7 @@ export default function CustomNode({
         ||
 
         "low";
+
 
 
 
@@ -210,9 +217,13 @@ export default function CustomNode({
 
                     isMatch && searchTerm
 
-                        ? "scale(1.08)"
+                        ?
 
-                        : "scale(1)",
+                        "scale(1.08)"
+
+                        :
+
+                        "scale(1)",
 
 
 
@@ -240,14 +251,18 @@ export default function CustomNode({
 
 
 
-
+            {/* =========================
+                TOP
+            ========================= */}
 
 
             <Handle
 
-                type="target"
+                type="source"
 
                 position={Position.Top}
+
+                id="top"
 
             />
 
@@ -255,8 +270,28 @@ export default function CustomNode({
 
 
 
+            {/* =========================
+                LEFT
+            ========================= */}
 
 
+            <Handle
+
+                type="source"
+
+                position={Position.Left}
+
+                id="left"
+
+            />
+
+
+
+
+
+            {/* =========================
+                NODE CONTENT
+            ========================= */}
 
 
             <div className="big-node-icon">
@@ -283,8 +318,28 @@ export default function CustomNode({
 
 
 
+            {/* =========================
+                RIGHT
+            ========================= */}
 
 
+            <Handle
+
+                type="source"
+
+                position={Position.Right}
+
+                id="right"
+
+            />
+
+
+
+
+
+            {/* =========================
+                BOTTOM
+            ========================= */}
 
 
             <Handle
@@ -293,9 +348,9 @@ export default function CustomNode({
 
                 position={Position.Bottom}
 
+                id="bottom"
+
             />
-
-
 
 
 
@@ -307,3 +362,4 @@ export default function CustomNode({
 
 
 }
+

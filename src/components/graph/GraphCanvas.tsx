@@ -1,41 +1,37 @@
 import {
     ReactFlow,
     Background,
-    Controls,
-    MiniMap,
     addEdge,
     applyNodeChanges,
     applyEdgeChanges,
+    ConnectionMode
 } from "@xyflow/react";
 
 import "@xyflow/react/dist/style.css";
 
 import {
     useCallback,
-    useState,
-    useEffect
+    useEffect,
+    useState
 } from "react";
 
 import {
     useReactFlow
 } from "@xyflow/react";
 
-
 import CustomNode from "./CustomNode";
-import CustomEdge from "./CustomEdge";
 
+import CustomEdge from "./CustomEdge";
 
 import {
     useGraph
 } from "../../context/GraphContext";
 
-
 import ContextMenu from "../ContextMenu";
 
-
-
-
-
+import {
+    useMonitor
+} from "../../context/MonitorContext";
 
 
 const nodeTypes = {
@@ -45,9 +41,6 @@ const nodeTypes = {
 };
 
 
-
-
-
 const edgeTypes = {
 
     custom: CustomEdge
@@ -55,15 +48,58 @@ const edgeTypes = {
 };
 
 
+const getBestHandles = (
+    sourceNode: any,
+    targetNode: any
+) => {
+
+    const dx =
+        targetNode.position.x -
+        sourceNode.position.x;
+
+    const dy =
+        targetNode.position.y -
+        sourceNode.position.y;
 
 
+    if (Math.abs(dx) > Math.abs(dy)) {
+
+        if (dx > 0) {
+
+            return {
+                sourceHandle: "right",
+                targetHandle: "left"
+            };
+
+        }
+
+        return {
+            sourceHandle: "left",
+            targetHandle: "right"
+        };
+
+    }
 
 
+    if (dy > 0) {
 
+        return {
+            sourceHandle: "bottom",
+            targetHandle: "top"
+        };
+
+    }
+
+
+    return {
+        sourceHandle: "top",
+        targetHandle: "bottom"
+    };
+
+};
 
 
 export default function GraphCanvas() {
-
 
 
     const {
@@ -85,44 +121,85 @@ export default function GraphCanvas() {
 
         addEvent,
 
-        searchTerm
+        searchTerm,
+
+        registerEntity,
+        findEntityByName
 
     } = useGraph();
 
 
+    const {
+
+        monitoredEntities
+
+    } = useMonitor();
 
 
+    const [menu, setMenu] =
+        useState<any>(null);
 
 
+    /*
+    ============================================================
+    MONITORING ALERT POPUP
+    ============================================================
+    */
 
-    const [menu, setMenu] = useState<any>(null);
+    const [
 
+        monitoringAlert,
 
+        setMonitoringAlert
 
+    ] = useState<any>(null);
 
 
     const {
 
         screenToFlowPosition,
-
         fitView,
-
         setCenter
 
     } = useReactFlow();
 
 
-
-
-
-
-
+    /*
+    ============================================================
+    MONITORING
+    ============================================================
+    */
 
     useEffect(() => {
 
+        if (!monitoredEntities.length) {
+
+            return;
+
+        }
+
+        /*
+        Monitoring state is available here
+        and can be used when relationships
+        are created.
+        */
+
+    }, [
+
+        monitoredEntities
+
+    ]);
+
+
+    /*
+    ============================================================
+    SEARCH / FOCUS ENTITY
+    ============================================================
+    */
+
+    useEffect(() => {
 
         if (!searchTerm.trim()) {
-
 
             fitView({
 
@@ -132,41 +209,52 @@ export default function GraphCanvas() {
 
             });
 
-
             return;
 
         }
 
 
+        const search =
+
+            searchTerm
+                .trim()
+                .toLowerCase();
 
 
-        const node = nodes.find(n => {
+        const node = nodes.find(
+
+            (node: any) => {
+
+                const label =
+
+                    String(
+                        node.data?.label ?? ""
+                    ).toLowerCase();
 
 
-            return (
+                const type =
 
-                n.data.label
-                    ?.toLowerCase()
-                    .includes(searchTerm.toLowerCase())
-
-                ||
-
-                n.data.type
-                    ?.toLowerCase()
-                    .includes(searchTerm.toLowerCase())
-
-            );
+                    String(
+                        node.data?.type ?? ""
+                    ).toLowerCase();
 
 
-        });
+                return (
 
+                    label.includes(search) ||
 
+                    type.includes(search)
+
+                );
+
+            }
+
+        );
 
 
         if (!node)
+
             return;
-
-
 
 
         setCenter(
@@ -185,159 +273,192 @@ export default function GraphCanvas() {
 
         );
 
-
-
     }, [
 
         searchTerm,
-
         nodes,
-
         fitView,
-
         setCenter
 
     ]);
 
 
-
-
-
-
-
-
-
-    // DELETE SELECTED EDGE
+    /*
+    ============================================================
+    DELETE SELECTED EDGE
+    ============================================================
+    */
 
     useEffect(() => {
 
+        const handleKey = (
 
-        const handleKey = (e: KeyboardEvent) => {
+            event: KeyboardEvent
 
+        ) => {
 
-            if (e.key !== "Delete")
+            if (
+
+                event.key !== "Delete"
+
+            )
+
                 return;
-
-
 
 
             if (selectedEdge) {
 
+                deleteEdge(
 
-                deleteEdge(selectedEdge.id);
+                    selectedEdge.id
 
+                );
 
-                setSelectedEdge(null);
+                setSelectedEdge(
 
+                    null
 
-                return;
+                );
 
             }
-
-
 
         };
 
 
-
         window.addEventListener(
+
             "keydown",
+
             handleKey
+
         );
 
 
-
-        return () =>
-
+        return () => {
 
             window.removeEventListener(
+
                 "keydown",
+
                 handleKey
+
             );
 
-
+        };
 
     }, [
 
         selectedEdge,
-
         deleteEdge,
-
         setSelectedEdge
 
     ]);
 
 
-
-
-
-
-
-
-
-
-
+    /*
+    ============================================================
+    NODE CHANGES
+    ============================================================
+    */
 
     const onNodesChange = useCallback(
 
         (changes: any) => {
 
+            setNodes(currentNodes => {
 
-            setNodes(nodes =>
+                const updatedNodes =
+
+                    applyNodeChanges(
+
+                        changes,
+
+                        currentNodes
+
+                    );
 
 
-                applyNodeChanges(
+                /*
+                Update relationship handles
+                automatically when nodes move.
+                */
 
-                    changes,
+                setEdges(currentEdges => {
 
-                    nodes
+                    return currentEdges.map(edge => {
 
-                )
+                        const sourceNode =
 
-            );
+                            updatedNodes.find(
 
+                                node =>
+                                    node.id ===
+                                    edge.source
+
+                            );
+
+
+                        const targetNode =
+
+                            updatedNodes.find(
+
+                                node =>
+                                    node.id ===
+                                    edge.target
+
+                            );
+
+
+                        if (
+
+                            !sourceNode ||
+
+                            !targetNode
+
+                        ) {
+
+                            return edge;
+
+                        }
+
+
+                        const handles =
+
+                            getBestHandles(
+
+                                sourceNode,
+
+                                targetNode
+
+                            );
+
+
+                        return {
+
+                            ...edge,
+
+                            sourceHandle:
+                                handles.sourceHandle,
+
+                            targetHandle:
+                                handles.targetHandle
+
+                        };
+
+                    });
+
+                });
+
+
+                return updatedNodes;
+
+            });
 
         },
 
         [
 
-            setNodes
-
-        ]
-
-    );
-
-
-
-
-
-
-
-
-
-    const onEdgesChange = useCallback(
-
-        (changes: any) => {
-
-
-            setEdges(edges =>
-
-
-                applyEdgeChanges(
-
-                    changes,
-
-                    edges
-
-                )
-
-            );
-
-
-        },
-
-        [
-
+            setNodes,
             setEdges
 
         ]
@@ -345,634 +466,1453 @@ export default function GraphCanvas() {
     );
 
 
+    /*
+    ============================================================
+    EDGE CHANGES
+    ============================================================
+    */
+
+    const onEdgesChange =
+
+        useCallback(
+
+            (changes: any) => {
+
+                setEdges(
+
+                    currentEdges =>
+
+                        applyEdgeChanges(
+
+                            changes,
+
+                            currentEdges
+
+                        )
+
+                );
+
+            },
+
+            [
+
+                setEdges
+
+            ]
+
+        );
 
 
+    /*
+    ============================================================
+    CREATE RELATIONSHIP
+    ============================================================
+    */
 
+    const onConnect =
 
+        useCallback(
 
+            (connection: any) => {
 
+                if (
 
+                    !connection.source ||
 
+                    !connection.target
 
+                ) {
 
-    const onConnect = useCallback(
-
-        (connection: any) => {
-
-
-            const newEdge = {
-
-
-                ...connection,
-
-
-                id:
-
-                    `${connection.source}-${connection.target}-${Date.now()}`,
-
-
-
-                type: "custom",
-
-
-
-                data: {
-
-
-                    label: "Relationship",
-
-                    relationshipType: "Related",
-
-                    color: "#94a3b8",
-
-                    description: "",
-
-                    evidence: "",
-
-                    date:
-
-                        new Date()
-
-                            .toISOString()
-
-                            .split("T")[0]
+                    return;
 
                 }
 
 
-            };
+                /*
+                Prevent self connection
+                */
 
+                if (
 
+                    connection.source ===
 
+                    connection.target
 
-            setEdges(edges =>
+                ) {
 
+                    return;
 
-                addEdge(
+                }
 
-                    newEdge,
 
-                    edges
+                /*
+                Prevent duplicate connection
+                */
 
-                )
+                const alreadyExists =
 
-            );
+                    edges.some(
 
+                        (edge: any) =>
 
+                            (
 
+                                edge.source ===
+                                connection.source &&
 
+                                edge.target ===
+                                connection.target
 
-            addEvent({
+                            )
 
+                            ||
 
-                title: "Relationship Created",
+                            (
 
+                                edge.source ===
+                                connection.target &&
 
-                description:
+                                edge.target ===
+                                connection.source
 
-                    `New relationship created between ${connection.source} and ${connection.target}`
+                            )
 
+                    );
 
-            });
 
+                if (alreadyExists)
 
+                    return;
 
-        },
 
-        [
+                /*
+                ====================================================
+                FIND SOURCE / TARGET NODES
+                ====================================================
+                */
 
-            setEdges,
+                const sourceNode =
 
-            addEvent
+                    nodes.find(
 
-        ]
+                        (node: any) =>
 
-    );
+                            node.id ===
+                            connection.source
 
+                    );
 
 
+                const targetNode =
 
+                    nodes.find(
 
+                        (node: any) =>
 
+                            node.id ===
+                            connection.target
 
+                    );
 
 
+                if (
 
+                    !sourceNode ||
 
+                    !targetNode
 
-    const onDragOver = useCallback(
+                ) {
 
-        (event: React.DragEvent) => {
+                    return;
 
+                }
 
-            event.preventDefault();
 
+                /*
+                ====================================================
+                MONITORING CHECK
+                ====================================================
+                */
 
-            event.dataTransfer.dropEffect = "move";
+                const sourceIsMonitored =
 
+                    monitoredEntities.some(
 
-        },
+                        (entity: any) => {
 
-        []
+                            const monitoredId =
 
-    );
+                                String(
 
+                                    entity?.id ??
 
+                                    entity?.data?.entityId ??
 
+                                    entity?.data?.id ??
 
+                                    ""
 
+                                );
 
 
+                            const nodeId =
 
+                                String(
 
+                                    sourceNode?.id ??
 
+                                    ""
 
+                                );
 
-    const onDrop = useCallback(
 
-        (event: React.DragEvent) => {
+                            const entityId =
 
+                                String(
 
-            event.preventDefault();
+                                    sourceNode?.data?.entityId ??
 
+                                    ""
 
+                                );
 
 
-            const rawData = event.dataTransfer.getData(
+                            return (
 
-                "application/reactflow"
+                                monitoredId !== "" &&
 
-            );
+                                (
 
+                                    monitoredId ===
+                                    nodeId ||
 
+                                    monitoredId ===
+                                    entityId
 
+                                )
 
-            if (!rawData)
-                return;
+                            );
 
+                        }
 
+                    );
 
 
+                const targetIsMonitored =
 
-            let entity;
+                    monitoredEntities.some(
 
+                        (entity: any) => {
 
+                            const monitoredId =
 
+                                String(
 
-            try {
+                                    entity?.id ??
 
+                                    entity?.data?.entityId ??
 
-                entity = JSON.parse(rawData);
+                                    entity?.data?.id ??
 
+                                    ""
 
-            }
+                                );
 
-            catch {
 
+                            const nodeId =
 
-                entity = {
+                                String(
 
+                                    targetNode?.id ??
 
-                    type: rawData,
+                                    ""
 
-                    name: rawData,
+                                );
 
-                    icon: "❓",
 
-                    category: "Unknown"
+                            const entityId =
 
+                                String(
+
+                                    targetNode?.data?.entityId ??
+
+                                    ""
+
+                                );
+
+
+                            return (
+
+                                monitoredId !== "" &&
+
+                                (
+
+                                    monitoredId ===
+                                    nodeId ||
+
+                                    monitoredId ===
+                                    entityId
+
+                                )
+
+                            );
+
+                        }
+
+                    );
+
+
+                /*
+                ====================================================
+                CREATE EDGE
+                ====================================================
+                */
+
+                const newEdge = {
+
+                    ...connection,
+
+                    id:
+
+                        `${connection.source} -${connection.target} -${Date.now()} `,
+
+                    type:
+
+                        "custom",
+
+                    data: {
+
+                        label:
+                            "Relationship",
+
+                        relationshipType:
+                            "Related",
+
+                        color:
+                            "#94a3b8",
+
+                        description:
+                            "",
+
+                        evidence:
+                            "",
+
+                        date:
+
+                            new Date()
+                                .toISOString()
+                                .split("T")[0],
+
+                        monitored:
+
+                            sourceIsMonitored ||
+
+                            targetIsMonitored
+
+                    }
 
                 };
 
 
-            }
+                setEdges(
+
+                    currentEdges =>
+
+                        addEdge(
+
+                            newEdge,
+
+                            currentEdges
+
+                        )
+
+                );
 
 
+                /*
+                ====================================================
+                RELATIONSHIP EVENT
+                ====================================================
+                */
+
+                addEvent({
+
+                    title:
+                        "Relationship Created",
+
+                    type:
+                        "relationship",
+
+                    description:
+
+                        `New relationship created between ${sourceNode?.data?.label || connection.source} and ${targetNode?.data?.label || connection.target}`
+
+                });
 
 
+                /*
+                ====================================================
+                MONITORING ALERT
+                ====================================================
+                */
 
-            const position = screenToFlowPosition({
+                if (
 
-                x: event.clientX,
+                    sourceIsMonitored ||
 
-                y: event.clientY
+                    targetIsMonitored
 
-            });
+                ) {
 
+                    const monitoredNode =
 
+                        sourceIsMonitored
 
+                            ?
 
+                            sourceNode
 
+                            :
 
-            const newNode = {
-
-
-                id:
-
-                    Date.now().toString(),
-
-
-
-                position,
-
-
-
-                type: "custom",
+                            targetNode;
 
 
+                    const connectedNode =
 
-                data: {
+                        sourceIsMonitored
 
+                            ?
 
-                    label: entity.name,
+                            targetNode
 
-                    type: entity.type,
+                            :
 
-                    icon: entity.icon,
-
-                    category: entity.category,
-
-                    risk: "Low",
-
-                    description: "",
-
-                    attachments: [],
+                            sourceNode;
 
 
-                    details: {
+                    const monitoredName =
+
+                        monitoredNode?.data?.label ||
+
+                        "Monitored Entity";
 
 
-                        gender: "",
+                    const connectedName =
 
-                        role: "",
+                        connectedNode?.data?.label ||
 
-                        phone: "",
+                        "Unknown Entity";
 
-                        email: "",
 
-                        address: "",
+                    /*
+                    ====================================================
+                    ADD MONITORING EVENT
+                    ====================================================
+                    */
 
-                        owner: "",
+                    addEvent({
 
-                        plate: "",
+                        title:
+                            "MONITORING ALERT",
 
-                        model: "",
+                        type:
+                            "alert",
 
-                        color: "",
+                        description:
 
-                        vin: ""
+                            `${monitoredName} is being monitored and a new relationship with ${connectedName} was detected.`
 
+                    });
+
+
+                    /*
+                    ====================================================
+                    SHOW RED POPUP
+                    ====================================================
+                    */
+
+                    setMonitoringAlert({
+
+                        monitoredName,
+
+                        connectedName
+
+                    });
+
+                }
+
+            },
+
+            [
+
+                edges,
+                nodes,
+                monitoredEntities,
+                setEdges,
+                addEvent
+
+            ]
+
+        );
+
+
+    /*
+    ============================================================
+    DRAG OVER
+    ============================================================
+    */
+
+    const onDragOver =
+
+        useCallback(
+
+            (event: React.DragEvent) => {
+
+                event.preventDefault();
+
+                event.stopPropagation();
+
+                event.dataTransfer.dropEffect =
+                    "copy";
+
+            },
+
+            []
+
+        );
+
+
+    /*
+    ============================================================
+    DROP ENTITY
+    ============================================================
+    */
+
+    const onDrop =
+
+        useCallback(
+
+            (event: React.DragEvent) => {
+
+                event.preventDefault();
+
+                event.stopPropagation();
+
+
+                const rawData =
+
+                    event.dataTransfer.getData(
+
+                        "application/reactflow"
+
+                    );
+
+
+                if (!rawData)
+
+                    return;
+
+
+                let entityData: any;
+
+
+                try {
+
+                    entityData =
+
+                        JSON.parse(
+
+                            rawData
+
+                        );
+
+                }
+
+                catch {
+
+                    entityData = {
+
+                        name:
+                            rawData,
+
+                        type:
+                            "Unknown",
+
+                        icon:
+                            "❓",
+
+                        category:
+                            "Unknown",
+
+                        attributes:
+                            {}
+
+                    };
+
+                }
+
+
+                /*
+                Normalize
+                */
+
+                const entityName =
+
+                    String(
+
+                        entityData.name ||
+
+                        "Unknown Entity"
+
+                    ).trim();
+
+
+                const entityType =
+
+                    String(
+
+                        entityData.type ||
+
+                        "Unknown"
+
+                    ).trim();
+
+
+                const entityCategory =
+
+                    entityData.category ||
+
+                    "Unknown";
+
+
+                const entityIcon =
+
+                    entityData.icon ||
+
+                    "❓";
+
+
+                /*
+                Find registered entity
+                */
+
+                let masterEntity =
+
+                    findEntityByName(
+
+                        entityName
+
+                    );
+
+
+                /*
+                Register if missing
+                */
+
+                if (!masterEntity) {
+
+                    masterEntity =
+
+                        registerEntity({
+
+                            name:
+                                entityName,
+
+                            type:
+                                entityType,
+
+                            category:
+                                entityCategory,
+
+                            icon:
+                                entityIcon,
+
+                            attributes:
+
+                                entityData.attributes ||
+
+                                {}
+
+                        });
+
+                }
+
+
+                if (!masterEntity)
+
+                    return;
+
+
+                /*
+                Check duplicate node
+                */
+
+                const existingNode =
+
+                    nodes.find(
+
+                        (node: any) =>
+
+                            String(
+
+                                node.data?.entityId
+
+                            ) ===
+
+                            String(
+
+                                masterEntity.id
+
+                            )
+
+                    );
+
+
+                if (existingNode) {
+
+                    setCenter(
+
+                        existingNode.position.x,
+
+                        existingNode.position.y,
+
+                        {
+
+                            zoom:
+                                1.5,
+
+                            duration:
+                                500
+
+                        }
+
+                    );
+
+
+                    setSelectedNode(
+
+                        existingNode
+
+                    );
+
+
+                    addEvent({
+
+                        title:
+                            "Existing Entity Selected",
+
+                        type:
+                            "entity",
+
+                        description:
+
+                            `${masterEntity.name} already exists in the investigation graph`
+
+                    });
+
+
+                    return;
+
+                }
+
+
+                /*
+                Calculate position
+                */
+
+                const position =
+
+                    screenToFlowPosition({
+
+                        x:
+                            event.clientX,
+
+                        y:
+                            event.clientY
+
+                    });
+
+
+                /*
+                Create node
+                */
+
+                const newNode = {
+
+                    id:
+
+                        `node - ${masterEntity.id} `,
+
+                    position,
+
+                    type:
+                        "custom",
+
+                    data: {
+
+                        entityId:
+                            masterEntity.id,
+
+                        label:
+                            masterEntity.name,
+
+                        type:
+                            masterEntity.type,
+
+                        icon:
+                            masterEntity.icon,
+
+                        category:
+                            masterEntity.category,
+
+                        risk:
+
+                            masterEntity.attributes
+                                ?.risk ||
+
+                            "Low",
+
+                        description:
+
+                            masterEntity.attributes
+                                ?.description ||
+
+                            "",
+
+                        attachments:
+
+                            masterEntity.attributes
+                                ?.attachments ||
+
+                            [],
+
+                        details: {
+
+                            ...masterEntity.attributes
+
+                        },
+
+                        entity:
+                            masterEntity
 
                     }
 
-
-                }
-
-
-            };
+                };
 
 
+                /*
+                Add node
+                */
+
+                setNodes(
+
+                    currentNodes => [
+
+                        ...currentNodes,
+
+                        newNode
+
+                    ]
+
+                );
 
 
+                /*
+                Select
+                */
 
-            setNodes(nodes => [
+                setSelectedNode(
 
-                ...nodes,
+                    newNode
 
-                newNode
-
-            ]);
-
-
-
-
-            addEvent({
-
-                title: "Entity Created",
-
-                description:
-
-                    `${entity.name} added to investigation`
-
-            });
+                );
 
 
+                /*
+                Event
+                */
 
-        },
+                addEvent({
 
-        [
+                    title:
+                        "Entity Added",
 
-            screenToFlowPosition,
+                    type:
+                        "entity",
 
-            setNodes,
+                    description:
 
-            addEvent
+                        `${masterEntity.name} added to investigation`
 
-        ]
+                });
 
-    );
+            },
+
+            [
+
+                findEntityByName,
+                registerEntity,
+                nodes,
+                screenToFlowPosition,
+                setNodes,
+                setSelectedNode,
+                setCenter,
+                addEvent
+
+            ]
+
+        );
 
 
-
-
-
-
-
-
-
-
-
-
+    /*
+    ============================================================
+    CANVAS
+    ============================================================
+    */
 
     return (
 
-
         <div
-
 
             className="graph-wrapper"
 
-
-            onDrop={onDrop}
-
-
-            onDragOver={onDragOver}
-
-
-
-
             onClick={(event) => {
 
+                if (
 
-                if (event.target === event.currentTarget) {
+                    event.target ===
 
+                    event.currentTarget
+
+                ) {
 
                     setMenu(null);
 
-
                     setSelectedEdge(null);
 
-
                     setSelectedNode(null);
-
 
                 }
 
-
             }}
-
-
 
         >
 
-
-
-
-
             <ReactFlow
-
 
                 nodes={nodes}
 
-
                 edges={edges}
-
 
                 nodeTypes={nodeTypes}
 
-
                 edgeTypes={edgeTypes}
 
+                /*
+                Hide React Flow attribution
+                */
 
+                proOptions={{
+
+                    hideAttribution:
+                        true
+
+                }}
+
+                /*
+                Allows source-to-source
+                and target-to-target
+                connections.
+                */
+
+                connectionMode={
+
+                    ConnectionMode.Loose
+
+                }
 
                 nodesDraggable={true}
 
-
                 nodesConnectable={true}
-
 
                 elementsSelectable={true}
 
-
                 edgesFocusable={true}
 
+                onNodesChange={
 
+                    onNodesChange
 
-                onNodesChange={onNodesChange}
+                }
 
+                onEdgesChange={
 
-                onEdgesChange={onEdgesChange}
+                    onEdgesChange
 
+                }
 
-                onConnect={onConnect}
+                onConnect={
 
+                    onConnect
 
+                }
 
+                onDragOver={
 
+                    onDragOver
 
+                }
 
-                onNodeClick={(event, node) => {
+                onDrop={
 
+                    onDrop
 
-                    setSelectedNode(node);
+                }
 
+                /*
+                NODE CLICK
+                */
 
-                    setSelectedEdge(null);
+                onNodeClick={
 
+                    (_, node) => {
 
-                    setMenu(null);
+                        setSelectedNode(
 
+                            node
 
-                }}
+                        );
 
+                        setSelectedEdge(
 
+                            null
 
+                        );
 
+                        setMenu(
 
+                            null
 
-                onEdgeClick={(event, edge) => {
+                        );
 
+                    }
 
-                    setSelectedEdge(edge);
+                }
 
+                /*
+                EDGE CLICK
+                */
 
-                    setSelectedNode(null);
+                onEdgeClick={
 
+                    (_, edge) => {
 
-                    setMenu(null);
+                        setSelectedEdge(
 
+                            edge
 
-                }}
+                        );
 
+                        setSelectedNode(
 
+                            null
 
+                        );
 
+                        setMenu(
 
+                            null
 
+                        );
 
+                    }
 
-                onNodeContextMenu={(event, node) => {
+                }
 
+                /*
+                NODE RIGHT CLICK
+                */
 
-                    event.preventDefault();
+                onNodeContextMenu={
 
+                    (event, node) => {
 
+                        event.preventDefault();
 
+                        setSelectedNode(
 
-                    setSelectedNode(node);
+                            node
 
+                        );
 
+                        setMenu({
 
+                            id:
+                                node.id,
 
-                    setMenu({
+                            type:
+                                "node",
 
+                            x:
+                                event.clientX,
 
-                        id: node.id,
+                            y:
+                                event.clientY
 
+                        });
 
-                        x: event.clientX,
+                    }
 
+                }
 
-                        y: event.clientY
+                /*
+                EDGE RIGHT CLICK
+                */
 
+                onEdgeContextMenu={
 
-                    });
+                    (event, edge) => {
 
+                        event.preventDefault();
 
+                        setSelectedEdge(
 
-                }}
-                onEdgeContextMenu={(event, edge) => {
+                            edge
 
+                        );
 
-                    event.preventDefault();
+                        setSelectedNode(
 
+                            null
 
-                    setSelectedEdge(edge);
+                        );
 
+                        setMenu({
 
-                    setSelectedNode(null);
+                            id:
+                                edge.id,
 
+                            type:
+                                "edge",
 
-                    setMenu({
+                            x:
+                                event.clientX,
 
-                        id: edge.id,
+                            y:
+                                event.clientY
 
-                        type: "edge",
+                        });
 
-                        x: event.clientX,
+                    }
 
-                        y: event.clientY
-
-                    });
-
-
-                }}
-
-
+                }
 
                 fitView
 
-
-
             >
-
-
 
                 <Background />
 
-
-                <Controls />
-
-
-                <MiniMap />
-
-
-
             </ReactFlow>
-
-
-
-
-
-
 
 
             {
 
                 menu && (
 
-
-
                     <ContextMenu
-
 
                         x={menu.x}
 
                         y={menu.y}
 
+                        type={
 
-                        type={menu.type || "node"}
+                            menu.type ||
 
+                            "node"
+
+                        }
 
                         onDelete={() => {
 
+                            if (
 
+                                menu.type ===
 
-                            if (menu.type === "edge") {
+                                "edge"
 
+                            ) {
 
-                                deleteEdge(menu.id);
+                                deleteEdge(
 
-                                setSelectedEdge(null);
+                                    menu.id
 
+                                );
+
+                                setSelectedEdge(
+
+                                    null
+
+                                );
 
                             }
+
                             else {
 
+                                deleteNode(
 
-                                deleteNode(menu.id);
+                                    menu.id
 
+                                );
 
                             }
 
+                            setMenu(
 
+                                null
 
-
-                            setMenu(null);
-
-
+                            );
 
                         }}
-
-
 
                         onClose={() => {
 
+                            setMenu(
 
-                            setMenu(null);
+                                null
 
+                            );
 
                         }}
 
-
-
                     />
 
-
-
                 )
-
 
             }
 
 
+            /*
+            ========================================================
+            MONITORING ALERT POPUP
+            ========================================================
+            */
+
+            {
+
+                monitoringAlert && (
+
+                    <div
+
+                        style={{
+
+                            position:
+                                "fixed",
+
+                            top:
+                                "24px",
+
+                            right:
+                                "24px",
+
+                            width:
+                                "380px",
+
+                            background:
+                                "#1a0b0b",
+
+                            border:
+                                "1px solid #ef4444",
+
+                            borderLeft:
+                                "5px solid #ef4444",
+
+                            borderRadius:
+                                "10px",
+
+                            padding:
+                                "18px",
+
+                            zIndex:
+                                99999,
+
+                            boxShadow:
+                                "0 10px 35px rgba(0,0,0,0.45)",
+
+                            color:
+                                "white"
+
+                        }}
+
+                    >
+
+                        <div
+
+                            style={{
+
+                                display:
+                                    "flex",
+
+                                alignItems:
+                                    "center",
+
+                                justifyContent:
+                                    "space-between",
+
+                                marginBottom:
+                                    "10px"
+
+                            }}
+
+                        >
+
+                            <div
+
+                                style={{
+
+                                    color:
+                                        "#ef4444",
+
+                                    fontWeight:
+                                        700,
+
+                                    fontSize:
+                                        "16px"
+
+                                }}
+
+                            >
+
+                                🚨 MONITORING ALERT
+
+                            </div>
 
 
+                            <button
+
+                                onClick={() =>
+
+                                    setMonitoringAlert(
+
+                                        null
+
+                                    )
+
+                                }
+
+                                style={{
+
+                                    background:
+                                        "transparent",
+
+                                    border:
+                                        "none",
+
+                                    color:
+                                        "#94a3b8",
+
+                                    fontSize:
+                                        "20px",
+
+                                    cursor:
+                                        "pointer"
+
+                                }}
+
+                            >
+
+                                ×
+
+                            </button>
+
+                        </div>
+
+
+                        <div
+
+                            style={{
+
+                                fontSize:
+                                    "14px",
+
+                                lineHeight:
+                                    "1.6",
+
+                                color:
+                                    "#e5e7eb"
+
+                            }}
+
+                        >
+
+                            <strong>
+
+                                {monitoringAlert.monitoredName}
+
+                            </strong>
+
+                            {" "}is currently being monitored.
+
+                            <br />
+
+                            A new relationship with
+
+                            {" "}
+
+                            <strong>
+
+                                {monitoringAlert.connectedName}
+
+                            </strong>
+
+                            {" "}was detected.
+
+                        </div>
+
+
+                        <div
+
+                            style={{
+
+                                marginTop:
+                                    "14px",
+
+                                padding:
+                                    "10px",
+
+                                background:
+                                    "rgba(239,68,68,0.10)",
+
+                                border:
+                                    "1px solid rgba(239,68,68,0.25)",
+
+                                borderRadius:
+                                    "6px",
+
+                                color:
+                                    "#fca5a5",
+
+                                fontSize:
+                                    "12px"
+
+                            }}
+
+                        >
+
+                            New activity detected on a monitored entity.
+
+                        </div>
+
+
+                    </div>
+
+                )
+
+            }
 
         </div>
 
-
     );
-
 
 }

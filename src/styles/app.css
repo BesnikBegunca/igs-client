@@ -7568,3 +7568,154 @@ color:#94a3b8;
 
 
 }
+/* ============================================================
+   MONITORING ALERT
+============================================================ */
+
+.monitoring-alert {
+
+    position: fixed;
+
+    top: 25px;
+
+    right: 25px;
+
+    width: 340px;
+
+    background: #160b0b;
+
+    border: 1px solid #ef4444;
+
+    border-left: 5px solid #ef4444;
+
+    border-radius: 10px;
+
+    padding: 16px;
+
+    z-index: 99999;
+
+    box-shadow:
+        0 10px 35px rgba(0, 0, 0, 0.55),
+        0 0 25px rgba(239, 68, 68, 0.20);
+
+    animation:
+        monitoringAlertIn
+        0.25s ease-out;
+
+}
+
+
+.monitoring-alert-header {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    color: #ef4444;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.8px;
+
+}
+
+
+.monitoring-alert-icon {
+
+    font-size: 21px;
+
+}
+
+
+.monitoring-alert-body {
+
+    margin-top: 13px;
+
+    color: #e5e7eb;
+
+}
+
+
+.monitoring-alert-body strong {
+
+    display: block;
+
+    color: #ffffff;
+
+    font-size: 16px;
+
+    margin-bottom: 6px;
+
+}
+
+
+.monitoring-alert-body p {
+
+    margin: 0;
+
+    color: #a1a1aa;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+
+}
+
+
+.monitoring-alert-close {
+
+    margin-top: 14px;
+
+    width: 100%;
+
+    padding: 8px 12px;
+
+    border: 1px solid #7f1d1d;
+
+    border-radius: 6px;
+
+    background: #2a0d0d;
+
+    color: #fca5a5;
+
+    cursor: pointer;
+
+    font-size: 13px;
+
+}
+
+
+.monitoring-alert-close:hover {
+
+    background: #451010;
+
+    color: #ffffff;
+
+}
+
+
+@keyframes monitoringAlertIn {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateX(30px);
+
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform:
+            translateX(0);
+
+    }
+
+}

@@ -7,7 +7,6 @@ import Dashboard from "./pages/Dashboard";
 import LandingPage from "./pages/LandingPage";
 
 
-
 import {
   GraphProvider
 } from "./context/GraphContext";
@@ -28,100 +27,69 @@ import {
 } from "./context/AlertContext";
 
 
-
-
-
+import {
+  EntityProvider
+} from "./context/EntityContext";
 
 
 
 function App() {
 
 
-
-  const [page, setPage] = useState<
+  const [
+    page,
+    setPage
+  ] = useState<
     "home" | "console"
   >("home");
 
 
 
-
-
-
-
   return (
-
-
-
 
     <AlertProvider>
 
-
-
       <MonitorProvider>
 
+        <EntityProvider>
 
+          <CaseProvider>
 
-        <CaseProvider>
+            <GraphProvider>
 
+              {
 
+                page === "home"
 
-          <GraphProvider>
+                  ?
 
+                  <LandingPage
 
+                    goConsole={() =>
+                      setPage("console")
+                    }
 
+                  />
 
-            {
+                  :
 
-              page === "home"
+                  <Dashboard />
 
+              }
 
-                ?
+            </GraphProvider>
 
+          </CaseProvider>
 
-                <LandingPage
-
-                  goConsole={() =>
-
-                    setPage("console")
-
-                  }
-
-                />
-
-
-                :
-
-
-                <Dashboard />
-
-            }
-
-
-
-
-          </GraphProvider>
-
-
-
-        </CaseProvider>
-
-
+        </EntityProvider>
 
       </MonitorProvider>
 
-
-
     </AlertProvider>
-
-
-
 
   );
 
-
-
 }
-
 
 
 export default App;

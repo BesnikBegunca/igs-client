@@ -23,8 +23,6 @@ import {
 } from "../../services/importService";
 
 
-import AlertNotification from "../intelligence/AlertNotification";
-
 
 
 
@@ -552,26 +550,7 @@ export default function Header() {
 
 
 
-                <AlertNotification
 
-
-                    onSelectEntity={(entity) => {
-
-
-                        console.log(
-
-                            "Alert entity:",
-
-                            entity
-
-                        );
-
-
-                    }}
-
-
-
-                />
 
 
 

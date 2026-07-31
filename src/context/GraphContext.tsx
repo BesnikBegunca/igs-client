@@ -1,3 +1,4 @@
+
 import {
     createContext,
     useContext,
@@ -34,9 +35,6 @@ interface GraphContextType {
     >;
 
 
-
-
-
     edges: any[];
 
     setEdges: React.Dispatch<
@@ -44,7 +42,15 @@ interface GraphContextType {
     >;
 
 
+    // ==============================
+    // ENTITY REGISTRY
+    // ==============================
 
+    entityRegistry: any[];
+
+    registerEntity: (entity: any) => any;
+
+    findEntityByName: (name: string) => any;
 
 
     selectedNode: any;
@@ -54,17 +60,11 @@ interface GraphContextType {
     >;
 
 
-
-
-
     selectedEdge: any;
 
     setSelectedEdge: React.Dispatch<
         React.SetStateAction<any>
     >;
-
-
-
 
 
     selectedCase: CaseItem | null;
@@ -74,16 +74,9 @@ interface GraphContextType {
     >;
 
 
-
-
-
     openCase: (item: CaseItem) => void;
 
-
     clearCase: () => void;
-
-
-
 
 
     events: any[];
@@ -93,22 +86,17 @@ interface GraphContextType {
     >;
 
 
-
-
-
     addEvent: (event: any) => void;
 
 
-
-
     deleteNode: (id: string) => void;
+
     deleteEdge: (id: string) => void;
 
 
-
-
-
+    // ==============================
     // SEARCH
+    // ==============================
 
     searchTerm: string;
 
@@ -116,24 +104,14 @@ interface GraphContextType {
         React.SetStateAction<string>
     >;
 
-
-
-
-
 }
 
 
 
 
 
-
-
-
 const GraphContext =
-
     createContext<GraphContextType | null>(null);
-
-
 
 
 
@@ -153,84 +131,322 @@ export function GraphProvider({
 
 
 
-
+    // ==============================
+    // GRAPH STATE
+    // ==============================
 
     const [nodes, setNodes] =
-
         useState<any[]>([]);
-
-
-
 
 
     const [edges, setEdges] =
-
         useState<any[]>([]);
 
 
-
-
-
     const [selectedNode, setSelectedNode] =
-
         useState<any>(null);
-
-
-
 
 
     const [selectedEdge, setSelectedEdge] =
-
         useState<any>(null);
 
 
-
-
-
     const [selectedCase, setSelectedCase] =
-
         useState<CaseItem | null>(null);
 
 
+    const [events, setEvents] =
+        useState<any[]>([]);
 
 
+    // ==============================
+    // ENTITY REGISTRY
+    // ==============================
+
+    const [entityRegistry, setEntityRegistry] =
+        useState<any[]>([]);
+
+
+    // ==============================
+    // SEARCH STATE
+    // ==============================
+
+    const [searchTerm, setSearchTerm] =
+        useState<string>("");
 
 
     const {
-
         updateCase
-
     } = useCases();
 
 
 
 
 
+    // ==============================
+    // REGISTER ENTITY
+    // ==============================
+
+    const registerEntity = (entity: any) => {
 
 
-    const [events, setEvents] =
+        if (!entity?.name) {
 
-        useState<any[]>([]);
+            return null;
 
-
-
-
-
-    // SEARCH STATE
-
-    const [searchTerm, setSearchTerm] =
-
-        useState<string>("");
+        }
 
 
+        const normalizedName =
+
+            String(entity.name)
+                .trim()
+                .toLowerCase();
+
+
+        const normalizedType =
+
+            String(entity.type ?? "")
+                .trim()
+                .toLowerCase();
+
+
+
+        // ==============================
+        // CHECK IF ENTITY ALREADY EXISTS
+        // ==============================
+
+        const existing = entityRegistry.find(
+
+            item =>
+
+                String(item.name)
+                    .trim()
+                    .toLowerCase()
+
+                ===
+
+                normalizedName
+
+                &&
+
+                String(item.type ?? "")
+                    .trim()
+                    .toLowerCase()
+
+                ===
+
+                normalizedType
+
+        );
+
+
+
+        if (existing) {
+
+            return existing;
+
+        }
+
+
+
+        // ==============================
+        // CREATE MASTER ENTITY
+        // ==============================
+
+        const newEntity = {
+
+
+            id:
+
+                entity.id ??
+
+                `entity - ${Date.now()} -${Math.random()
+                    .toString(36)
+                    .substring(2, 8)
+                } `,
+
+
+            name:
+
+                entity.name,
+
+
+            type:
+
+                entity.type ?? "Unknown",
+
+
+            category:
+
+                entity.category ?? "Unknown",
+
+
+            icon:
+
+                entity.icon ?? "❓",
+
+
+            attributes:
+
+                entity.attributes ?? {},
+
+
+            createdAt:
+
+                entity.createdAt ??
+
+                new Date().toISOString()
+
+        };
+
+
+
+        setEntityRegistry(prev => [
+
+
+            ...prev,
+
+
+            newEntity
+
+
+        ]);
+
+
+
+        return newEntity;
+
+    };
 
 
 
 
 
+    // ==============================
+    // FIND ENTITY
+    // ==============================
+
+    const findEntityByName = (
+
+        name: string
+
+    ) => {
 
 
+        if (!name?.trim()) {
+
+            return undefined;
+
+        }
+
+
+
+        const normalizedName =
+
+            name
+                .trim()
+                .toLowerCase();
+
+
+
+        return entityRegistry.find(
+
+            item =>
+
+                String(item.name)
+                    .trim()
+                    .toLowerCase()
+
+                ===
+
+                normalizedName
+
+        );
+
+    };
+
+
+
+
+
+    // ==============================
+    // REGISTER EXISTING CASE NODES
+    // ==============================
+
+    const registerCaseEntities = (
+
+        caseNodes: any[]
+
+    ) => {
+
+
+        if (!caseNodes?.length) {
+
+            return;
+
+        }
+
+
+
+        caseNodes.forEach(node => {
+
+
+            const data = node?.data ?? {};
+
+
+            registerEntity({
+
+
+                id:
+
+                    node.id,
+
+
+                name:
+
+                    data.label ??
+                    data.name ??
+                    "Unknown Entity",
+
+
+                type:
+
+                    data.type ??
+                    "Unknown",
+
+
+                category:
+
+                    data.category ??
+                    "Unknown",
+
+
+                icon:
+
+                    data.icon ??
+                    "❓",
+
+
+                attributes:
+
+                    data.attributes ??
+                    {}
+
+            });
+
+
+        });
+
+    };
+
+
+
+
+
+    // ==============================
     // OPEN CASE
+    // ==============================
 
     const openCase = (
 
@@ -239,30 +455,41 @@ export function GraphProvider({
     ) => {
 
 
-
         setSelectedCase(item);
 
 
 
-        setNodes(
+        const caseNodes =
 
-            item.nodes ?? []
-
-        );
+            item.nodes ?? [];
 
 
+        const caseEdges =
 
-        setEdges(
-
-            item.edges ?? []
-
-        );
+            item.edges ?? [];
 
 
+        const caseEvents =
 
-        setEvents(
+            item.events ?? [];
 
-            item.events ?? []
+
+
+        setNodes(caseNodes);
+
+
+        setEdges(caseEdges);
+
+
+        setEvents(caseEvents);
+
+
+
+        // Register all existing entities
+
+        registerCaseEntities(
+
+            caseNodes
 
         );
 
@@ -282,11 +509,9 @@ export function GraphProvider({
 
 
 
-
-
-
-
+    // ==============================
     // CLEAR CASE
+    // ==============================
 
     const clearCase = () => {
 
@@ -317,11 +542,9 @@ export function GraphProvider({
 
 
 
-
-
-
-
+    // ==============================
     // ADD EVENT
+    // ==============================
 
     const addEvent = (
 
@@ -357,16 +580,15 @@ export function GraphProvider({
 
         ]);
 
-
     };
 
 
 
 
 
-
-
-
+    // ==============================
+    // AUTO SAVE CASE
+    // ==============================
 
     useEffect(() => {
 
@@ -399,8 +621,8 @@ export function GraphProvider({
         );
 
 
-
     }, [
+
 
         nodes,
 
@@ -410,17 +632,16 @@ export function GraphProvider({
 
         selectedCase
 
+
     ]);
 
 
 
 
 
-
-
-
-
+    // ==============================
     // DELETE NODE
+    // ==============================
 
     const deleteNode = (
 
@@ -436,14 +657,13 @@ export function GraphProvider({
 
                 node =>
 
-                    node.id !== id
+                    String(node.id) !==
+                    String(id)
 
             )
 
 
         );
-
-
 
 
 
@@ -454,9 +674,13 @@ export function GraphProvider({
 
                 edge =>
 
-                    edge.source !== id &&
+                    String(edge.source) !==
+                    String(id)
 
-                    edge.target !== id
+                    &&
+
+                    String(edge.target) !==
+                    String(id)
 
             )
 
@@ -465,15 +689,17 @@ export function GraphProvider({
 
 
 
-
-
         addEvent({
 
 
-            title: "Entity Deleted",
+            title:
+
+                "Entity Deleted",
 
 
-            type: "delete",
+            type:
+
+                "delete",
 
 
             description:
@@ -485,55 +711,110 @@ export function GraphProvider({
 
 
 
+        if (
 
+            selectedNode &&
 
+            String(selectedNode.id) ===
+            String(id)
 
-
-        if (selectedNode?.id === id) {
+        ) {
 
 
             setSelectedNode(null);
-
 
         }
 
 
 
-
-
         if (
 
-            selectedEdge?.source === id ||
+            selectedEdge &&
 
-            selectedEdge?.target === id
+            (
+
+                String(selectedEdge.source) ===
+                String(id)
+
+                ||
+
+                String(selectedEdge.target) ===
+                String(id)
+
+            )
 
         ) {
 
 
             setSelectedEdge(null);
 
-
         }
 
-
     };
-    const deleteEdge = (id: string) => {
+
+
+
+
+
+    // ==============================
+    // DELETE EDGE
+    // ==============================
+
+    const deleteEdge = (
+
+        id: string
+
+    ) => {
+
 
         setEdges(prev =>
-            prev.filter(edge => edge.id !== id)
+
+
+            prev.filter(
+
+                edge =>
+
+                    String(edge.id) !==
+                    String(id)
+
+            )
+
+
         );
+
+
 
         addEvent({
 
-            title: "Relationship Deleted",
 
-            type: "delete",
+            title:
 
-            description: `Relationship ${id} removed`
+                "Relationship Deleted",
+
+
+            type:
+
+                "delete",
+
+
+            description:
+
+                `Relationship ${id} removed`
+
 
         });
 
-        if (selectedEdge?.id === id) {
+
+
+        if (
+
+            selectedEdge &&
+
+            String(selectedEdge.id) ===
+            String(id)
+
+        ) {
+
 
             setSelectedEdge(null);
 
@@ -545,16 +826,11 @@ export function GraphProvider({
 
 
 
-
-
-
-
-
-
-
+    // ==============================
+    // PROVIDER
+    // ==============================
 
     return (
-
 
 
         <GraphContext.Provider
@@ -563,11 +839,9 @@ export function GraphProvider({
             value={{
 
 
-
                 nodes,
 
                 setNodes,
-
 
 
                 edges,
@@ -575,11 +849,18 @@ export function GraphProvider({
                 setEdges,
 
 
+                // ENTITY REGISTRY
+
+                entityRegistry,
+
+                registerEntity,
+
+                findEntityByName,
+
 
                 selectedNode,
 
                 setSelectedNode,
-
 
 
                 selectedEdge,
@@ -587,18 +868,14 @@ export function GraphProvider({
                 setSelectedEdge,
 
 
-
                 selectedCase,
 
                 setSelectedCase,
 
 
-
                 openCase,
 
-
                 clearCase,
-
 
 
                 events,
@@ -606,27 +883,20 @@ export function GraphProvider({
                 setEvents,
 
 
-
                 addEvent,
-
 
 
                 deleteNode,
 
+                deleteEdge,
 
-
-                // SEARCH
 
                 searchTerm,
 
-                setSearchTerm,
-
-                deleteEdge
-
+                setSearchTerm
 
 
             }}
-
 
 
         >
@@ -646,18 +916,16 @@ export function GraphProvider({
 
 
 
-
-
-
+// ==============================
+// USE GRAPH
+// ==============================
 
 export function useGraph() {
-
 
 
     const context =
 
         useContext(GraphContext);
-
 
 
 
@@ -670,12 +938,11 @@ export function useGraph() {
 
         );
 
-
     }
 
 
 
     return context;
 
-
 }
+

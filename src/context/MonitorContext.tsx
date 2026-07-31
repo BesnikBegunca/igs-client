@@ -5,11 +5,7 @@ import {
 } from "react";
 
 
-
 const MonitorContext = createContext<any>(null);
-
-
-
 
 
 export function MonitorProvider({
@@ -19,45 +15,32 @@ export function MonitorProvider({
 }: any) {
 
 
-
-    const [monitoredEntities, setMonitoredEntities] = useState<any[]>([]);
-
-
-
-
+    const [monitoredEntities, setMonitoredEntities] =
+        useState<any[]>([]);
 
 
     const toggleMonitor = (entity: any) => {
 
-
         setMonitoredEntities(prev => {
-
 
             const exists = prev.some(
 
                 item =>
-
                     item.id === entity.id
 
             );
 
 
-
             if (exists) {
-
 
                 return prev.filter(
 
                     item =>
-
                         item.id !== entity.id
 
                 );
 
-
             }
-
-
 
 
             return [
@@ -68,63 +51,35 @@ export function MonitorProvider({
 
             ];
 
-
-
         });
-
-
 
     };
 
 
-
-
-
-
     return (
-
 
         <MonitorContext.Provider
 
-
             value={{
 
-
                 monitoredEntities,
-
                 toggleMonitor
-
 
             }}
 
-
-
         >
-
 
             {children}
 
-
         </MonitorContext.Provider>
 
-
-
     );
-
-
 
 }
 
 
-
-
-
-
-
 export function useMonitor() {
 
-
     return useContext(MonitorContext);
-
 
 }

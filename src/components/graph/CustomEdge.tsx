@@ -124,6 +124,16 @@ export default function CustomEdge(props: any) {
         {
             name: "Partner",
             color: "#ec4899"
+        },
+
+        {
+            name: "Located At",
+            color: "#06b6d4"
+        },
+
+        {
+            name: "Driver",
+            color: "#14b8a6"
         }
 
 
