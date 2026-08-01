@@ -1,4 +1,3 @@
-
 import { api } from "./api";
 
 
@@ -51,7 +50,7 @@ export const entityApi = {
         id: number | string
     ) =>
         api.get<EntityDto>(
-            `/ entities / ${id} `
+            `/Entities/${id}`
         ),
 
 
@@ -68,7 +67,7 @@ export const entityApi = {
         >
     ) =>
         api.post<EntityDto>(
-            "/entities",
+            "/Entities",
             entity
         ),
 
@@ -82,7 +81,7 @@ export const entityApi = {
         entity: Partial<EntityDto>
     ) =>
         api.put<EntityDto>(
-            `/ entities / ${id} `,
+            `/Entities/${id}`,
             entity
         ),
 
@@ -95,8 +94,7 @@ export const entityApi = {
         id: number | string
     ) =>
         api.delete<void>(
-            `/ entities / ${id} `
+            `/Entities/${id}`
         )
 
 };
-

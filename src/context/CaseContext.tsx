@@ -1,4 +1,3 @@
-
 import {
     createContext,
     useContext,
@@ -40,9 +39,8 @@ export interface CaseItem {
 
     updatedAt?: string;
 
-
     // ========================================================
-    // GRAPH DATA
+    // GRAPH
     // ========================================================
 
     nodes: any[];
@@ -51,9 +49,8 @@ export interface CaseItem {
 
     events: any[];
 
-
     // ========================================================
-    // OPTIONAL CASE DATA
+    // OPTIONAL
     // ========================================================
 
     entities?: any[];
@@ -83,7 +80,6 @@ interface CaseContextType {
 
     activeCase: CaseItem | null;
 
-
     addCase: (
         data: Omit<
             CaseItem,
@@ -96,22 +92,18 @@ interface CaseContextType {
         >
     ) => Promise<void>;
 
-
     deleteCase: (
         id: string
     ) => Promise<void>;
-
 
     updateCase: (
         id: string,
         data: Partial<CaseItem>
     ) => Promise<void>;
 
-
     openCase: (
         id: string
     ) => Promise<void>;
-
 
     refreshCases: () => Promise<void>;
 
@@ -129,6 +121,449 @@ const CaseContext =
 
 
 // ============================================================
+// STORAGE
+// ============================================================
+
+const ACTIVE_CASE_STORAGE_KEY =
+    "igs-active-case-id";
+
+
+// ============================================================
+// SAFE ARRAY
+// ============================================================
+
+function safeArray(
+    value: any
+): any[] {
+
+    return Array.isArray(value)
+        ? value
+        : [];
+
+}
+
+
+// ============================================================
+// NORMALIZE STATUS
+// ============================================================
+
+function normalizeStatus(
+    value: any
+): CaseItem["status"] {
+
+    const status =
+        String(
+            value ?? "open"
+        )
+            .trim()
+            .toLowerCase();
+
+    switch (status) {
+
+        case "closed":
+            return "closed";
+
+        case "archived":
+            return "archived";
+
+        case "active":
+            return "active";
+
+        case "open":
+        default:
+            return "open";
+    }
+}
+
+
+// ============================================================
+// NORMALIZE NODE FROM BACKEND
+//
+// Backend returns:
+// {
+//   id,
+//   type,
+//   x,
+//   y,
+//   label,
+//   name,
+//   entityType,
+//   category,
+//   icon,
+//   role,
+//   attributesJson
+// }
+//
+// ReactFlow needs:
+// {
+//   id,
+//   type,
+//   position,
+//   data
+// }
+// ============================================================
+
+function normalizeNode(
+    node: any
+): any {
+
+    const id =
+        String(
+            node?.id ??
+            ""
+        );
+
+    const label =
+        node?.label ??
+        node?.name ??
+        "Unknown";
+
+    const entityType =
+        node?.entityType ??
+        node?.type ??
+        "Unknown";
+
+    const category =
+        node?.category ??
+        "Unknown";
+
+    const icon =
+        node?.icon ??
+        "❓";
+
+    let attributes: any = {};
+
+    if (
+        node?.attributes
+    ) {
+
+        attributes =
+            node.attributes;
+
+    }
+    else if (
+        node?.attributesJson
+    ) {
+
+        try {
+
+            attributes =
+                typeof node.attributesJson === "string"
+                    ? JSON.parse(
+                        node.attributesJson
+                    )
+                    : node.attributesJson;
+
+        }
+        catch {
+
+            attributes = {};
+
+        }
+
+    }
+
+    return {
+
+        id,
+
+        type:
+            node?.type === "custom"
+                ? "custom"
+                : "custom",
+
+        position: {
+
+            x:
+                Number(
+                    node?.x ??
+                    node?.position?.x ??
+                    0
+                ),
+
+            y:
+                Number(
+                    node?.y ??
+                    node?.position?.y ??
+                    0
+                )
+
+        },
+
+        data: {
+
+            label,
+
+            name:
+                node?.name ??
+                label,
+
+            type:
+                entityType,
+
+            entityType,
+
+            category,
+
+            icon,
+
+            role:
+                node?.role ??
+                "",
+
+            attributes
+
+        }
+
+    };
+
+}
+
+
+// ============================================================
+// NORMALIZE EDGE FROM BACKEND
+// ============================================================
+
+function normalizeEdge(
+    edge: any
+): any {
+
+    return {
+
+        id:
+            String(
+                edge?.id ??
+                crypto.randomUUID()
+            ),
+
+        source:
+            String(
+                edge?.source ??
+                ""
+            ),
+
+        target:
+            String(
+                edge?.target ??
+                ""
+            ),
+
+        type:
+            edge?.type ??
+            "default",
+
+        data: {
+
+            label:
+                edge?.label ??
+                edge?.relationshipType ??
+                "related",
+
+            relationshipType:
+                edge?.relationshipType ??
+                edge?.label ??
+                "related",
+
+            description:
+                edge?.description ??
+                "",
+
+            evidence:
+                edge?.evidence ??
+                "",
+
+            date:
+                edge?.date ??
+                null,
+
+            monitored:
+                edge?.monitored ??
+                false
+
+        }
+
+    };
+
+}
+
+
+// ============================================================
+// REACTFLOW NODE -> BACKEND DTO
+//
+// THIS IS THE IMPORTANT FIX.
+// ============================================================
+
+function serializeNode(
+    node: any
+): any {
+
+    const data =
+        node?.data ??
+        {};
+
+    let attributesJson =
+        null;
+
+    if (
+        data?.attributesJson
+    ) {
+
+        attributesJson =
+            data.attributesJson;
+
+    }
+    else if (
+        data?.attributes
+    ) {
+
+        try {
+
+            attributesJson =
+                JSON.stringify(
+                    data.attributes
+                );
+
+        }
+        catch {
+
+            attributesJson =
+                null;
+
+        }
+
+    }
+
+    return {
+
+        id:
+            String(
+                node?.id ??
+                ""
+            ),
+
+        type:
+            node?.type ??
+            "default",
+
+        x:
+            node?.position?.x ??
+            0,
+
+        y:
+            node?.position?.y ??
+            0,
+
+        label:
+            data?.label ??
+            data?.name ??
+            node?.label ??
+            "Unknown",
+
+        name:
+            data?.name ??
+            data?.label ??
+            node?.name ??
+            "Unknown",
+
+        entityType:
+            data?.entityType ??
+            data?.type ??
+            node?.entityType ??
+            "Unknown",
+
+        category:
+            data?.category ??
+            "Unknown",
+
+        icon:
+            data?.icon ??
+            null,
+
+        role:
+            data?.role ??
+            null,
+
+        attributesJson
+
+    };
+
+}
+
+
+// ============================================================
+// REACTFLOW EDGE -> BACKEND DTO
+// ============================================================
+
+function serializeEdge(
+    edge: any
+): any {
+
+    const data =
+        edge?.data ??
+        {};
+
+    return {
+
+        id:
+            String(
+                edge?.id ??
+                crypto.randomUUID()
+            ),
+
+        source:
+            String(
+                edge?.source ??
+                ""
+            ),
+
+        target:
+            String(
+                edge?.target ??
+                ""
+            ),
+
+        type:
+            edge?.type ??
+            "default",
+
+        label:
+            data?.label ??
+            edge?.label ??
+            data?.relationshipType ??
+            "related",
+
+        relationshipType:
+            data?.relationshipType ??
+            data?.label ??
+            edge?.label ??
+            "related",
+
+        description:
+            data?.description ??
+            edge?.description ??
+            null,
+
+        evidence:
+            data?.evidence ??
+            edge?.evidence ??
+            null,
+
+        date:
+            data?.date ??
+            edge?.date ??
+            null,
+
+        monitored:
+            data?.monitored ??
+            edge?.monitored ??
+            false
+
+    };
+
+}
+
+
+// ============================================================
 // NORMALIZE CASE
 // ============================================================
 
@@ -140,7 +575,8 @@ function normalizeCase(
 
         id:
             String(
-                item?.id ?? ""
+                item?.id ??
+                ""
             ),
 
         name:
@@ -170,85 +606,69 @@ function normalizeCase(
             item?.updatedAt ??
             undefined,
 
-
         // ====================================================
         // GRAPH
         // ====================================================
 
         nodes:
-            Array.isArray(
+            safeArray(
                 item?.nodes
             )
-                ? item.nodes
-                : [],
+                .map(
+                    normalizeNode
+                ),
 
         edges:
-            Array.isArray(
+            safeArray(
                 item?.edges
             )
-                ? item.edges
-                : [],
+                .map(
+                    normalizeEdge
+                ),
 
         events:
-            Array.isArray(
+            safeArray(
                 item?.events
-            )
-                ? item.events
-                : [],
-
+            ),
 
         // ====================================================
-        // OPTIONAL DATA
+        // OPTIONAL
         // ====================================================
 
         entities:
-            Array.isArray(
+            safeArray(
                 item?.entities
-            )
-                ? item.entities
-                : [],
+            ),
 
         relationships:
-            Array.isArray(
+            safeArray(
                 item?.relationships
-            )
-                ? item.relationships
-                : [],
+            ),
 
         evidence:
-            Array.isArray(
+            safeArray(
                 item?.evidence
-            )
-                ? item.evidence
-                : [],
+            ),
 
         documents:
-            Array.isArray(
+            safeArray(
                 item?.documents
-            )
-                ? item.documents
-                : [],
+            ),
 
         locations:
-            Array.isArray(
+            safeArray(
                 item?.locations
-            )
-                ? item.locations
-                : [],
+            ),
 
         communications:
-            Array.isArray(
+            safeArray(
                 item?.communications
-            )
-                ? item.communications
-                : [],
+            ),
 
         notes:
-            Array.isArray(
+            safeArray(
                 item?.notes
             )
-                ? item.notes
-                : []
 
     };
 
@@ -269,15 +689,10 @@ export function CaseProvider({
 
 }) {
 
-    // ========================================================
-    // STATE
-    // ========================================================
-
     const [
         cases,
         setCases
     ] = useState<CaseItem[]>([]);
-
 
     const [
         activeCase,
@@ -288,7 +703,7 @@ export function CaseProvider({
 
 
     // ========================================================
-    // LOAD CASES
+    // REFRESH
     // ========================================================
 
     const refreshCases =
@@ -300,7 +715,6 @@ export function CaseProvider({
                     const data =
                         await caseApi.getAll();
 
-
                     if (
                         !Array.isArray(data)
                     ) {
@@ -311,49 +725,57 @@ export function CaseProvider({
 
                     }
 
-
                     const normalizedCases =
                         data.map(
                             normalizeCase
                         );
 
-
                     setCases(
                         normalizedCases
                     );
 
+                    const savedCaseId =
+                        localStorage.getItem(
+                            ACTIVE_CASE_STORAGE_KEY
+                        );
 
-                    // ==================================================
-                    // KEEP ACTIVE CASE SYNCHRONIZED
-                    // ==================================================
+                    if (
+                        savedCaseId
+                    ) {
 
-                    setActiveCase(
-                        previous => {
+                        const restored =
+                            normalizedCases.find(
+                                item =>
+                                    String(
+                                        item.id
+                                    ) ===
+                                    String(
+                                        savedCaseId
+                                    )
+                            );
 
-                            if (
-                                !previous
-                            ) {
+                        if (
+                            restored
+                        ) {
 
-                                return null;
+                            setActiveCase(
+                                restored
+                            );
 
-                            }
+                        }
+                        else {
 
+                            localStorage.removeItem(
+                                ACTIVE_CASE_STORAGE_KEY
+                            );
 
-                            return (
-                                normalizedCases.find(
-                                    item =>
-                                        String(
-                                            item.id
-                                        ) ===
-                                        String(
-                                            previous.id
-                                        )
-                                ) ??
+                            setActiveCase(
                                 null
                             );
 
                         }
-                    );
+
+                    }
 
                 }
                 catch (error) {
@@ -406,69 +828,55 @@ export function CaseProvider({
 
             ) => {
 
+                const payload = {
+
+                    name:
+                        data.name ??
+                        data.title ??
+                        "",
+
+                    title:
+                        data.title ??
+                        data.name ??
+                        "",
+
+                    description:
+                        data.description ??
+                        "",
+
+                    status:
+                        data.status ??
+                        "open",
+
+                    nodes: [],
+
+                    edges: [],
+
+                    events: []
+
+                };
+
                 try {
-
-                    const payload = {
-
-                        name:
-                            data.name ??
-                            data.title ??
-                            "",
-
-                        title:
-                            data.title ??
-                            data.name ??
-                            "",
-
-                        description:
-                            data.description ??
-                            "",
-
-                        status:
-                            data.status ??
-                            "open",
-
-                        // ==================================================
-                        // IMPORTANT
-                        // ==================================================
-                        // Start every new case with an empty graph.
-                        // ==================================================
-
-                        nodes: [],
-
-                        edges: [],
-
-                        events: []
-
-                    };
-
 
                     const created =
                         await caseApi.create(
                             payload as any
                         );
 
-
                     if (
                         !created
                     ) {
 
                         throw new Error(
-                            "Backend did not return the created case."
+                            "Backend did not return created case."
                         );
 
                     }
-
 
                     const newCase =
                         normalizeCase(
                             created
                         );
-
-
-                    // ==================================================
-                    // ADD TO LOCAL STATE
-                    // ==================================================
 
                     setCases(
                         previous => [
@@ -480,13 +888,13 @@ export function CaseProvider({
                         ]
                     );
 
-
-                    // ==================================================
-                    // MAKE NEW CASE ACTIVE
-                    // ==================================================
-
                     setActiveCase(
                         newCase
+                    );
+
+                    localStorage.setItem(
+                        ACTIVE_CASE_STORAGE_KEY,
+                        newCase.id
                     );
 
                 }
@@ -496,7 +904,6 @@ export function CaseProvider({
                         "Failed to create case:",
                         error
                     );
-
 
                     throw error;
 
@@ -534,7 +941,6 @@ export function CaseProvider({
                                 )
                         );
 
-
                     if (
                         !current
                     ) {
@@ -550,7 +956,7 @@ export function CaseProvider({
 
 
                     // ==================================================
-                    // MERGE LOCAL DATA
+                    // MERGE
                     // ==================================================
 
                     const updatedLocal: CaseItem = {
@@ -584,10 +990,76 @@ export function CaseProvider({
 
 
                     // ==================================================
+                    // IMPORTANT:
+                    // REACTFLOW -> BACKEND
+                    // ==================================================
+
+                    const backendNodes =
+                        updatedLocal.nodes
+                            .map(
+                                serializeNode
+                            )
+                            .filter(
+                                node =>
+                                    node.id
+                            );
+
+
+                    const backendEdges =
+                        updatedLocal.edges
+                            .map(
+                                serializeEdge
+                            )
+                            .filter(
+                                edge =>
+                                    edge.source &&
+                                    edge.target
+                            );
+
+
+                    // ==================================================
+                    // DEBUG
+                    // ==================================================
+
+                    console.log(
+                        "================================="
+                    );
+
+                    console.log(
+                        "SAVING CASE:",
+                        id
+                    );
+
+                    console.log(
+                        "REACTFLOW NODES:",
+                        updatedLocal.nodes
+                    );
+
+                    console.log(
+                        "BACKEND NODES:",
+                        backendNodes
+                    );
+
+                    console.log(
+                        "REACTFLOW EDGES:",
+                        updatedLocal.edges
+                    );
+
+                    console.log(
+                        "BACKEND EDGES:",
+                        backendEdges
+                    );
+
+                    console.log(
+                        "================================="
+                    );
+
+
+                    // ==================================================
                     // BACKEND PAYLOAD
                     // ==================================================
 
-                    const payload: any = {
+                    const payload = {
 
                         id:
                             updatedLocal.id,
@@ -610,13 +1082,13 @@ export function CaseProvider({
                             updatedLocal.status,
 
                         nodes:
-                            updatedLocal.nodes,
+                            backendNodes,
 
                         edges:
-                            updatedLocal.edges,
+                            backendEdges,
 
                         events:
-                            updatedLocal.events
+                            updatedLocal.events ?? []
 
                     };
 
@@ -632,43 +1104,25 @@ export function CaseProvider({
                         );
 
 
+                    if (
+                        !backendCase
+                    ) {
+
+                        throw new Error(
+                            "Backend returned empty case."
+                        );
+
+                    }
+
+
                     // ==================================================
-                    // FINAL CASE
+                    // NORMALIZE RESPONSE
                     // ==================================================
 
                     const finalCase =
-                        normalizeCase({
-
-                            ...updatedLocal,
-
-                            ...(backendCase ?? {}),
-
-                            id:
-                                backendCase?.id ??
-                                updatedLocal.id,
-
-                            nodes:
-                                Array.isArray(
-                                    backendCase?.nodes
-                                )
-                                    ? backendCase.nodes
-                                    : updatedLocal.nodes,
-
-                            edges:
-                                Array.isArray(
-                                    backendCase?.edges
-                                )
-                                    ? backendCase.edges
-                                    : updatedLocal.edges,
-
-                            events:
-                                Array.isArray(
-                                    backendCase?.events
-                                )
-                                    ? backendCase.events
-                                    : updatedLocal.events
-
-                        });
+                        normalizeCase(
+                            backendCase
+                        );
 
 
                     // ==================================================
@@ -709,7 +1163,6 @@ export function CaseProvider({
 
                             }
 
-
                             if (
                                 String(
                                     previous.id
@@ -723,10 +1176,15 @@ export function CaseProvider({
 
                             }
 
-
                             return finalCase;
 
                         }
+                    );
+
+
+                    localStorage.setItem(
+                        ACTIVE_CASE_STORAGE_KEY,
+                        String(id)
                     );
 
                 }
@@ -736,7 +1194,6 @@ export function CaseProvider({
                         "Failed to update case:",
                         error
                     );
-
 
                     throw error;
 
@@ -750,7 +1207,7 @@ export function CaseProvider({
 
 
     // ========================================================
-    // DELETE CASE
+    // DELETE
     // ========================================================
 
     const deleteCase =
@@ -765,11 +1222,6 @@ export function CaseProvider({
                         String(id)
                     );
 
-
-                    // ==================================================
-                    // REMOVE FROM LIST
-                    // ==================================================
-
                     setCases(
                         previous =>
                             previous.filter(
@@ -782,11 +1234,6 @@ export function CaseProvider({
                                     )
                             )
                     );
-
-
-                    // ==================================================
-                    // CLEAR ACTIVE CASE
-                    // ==================================================
 
                     setActiveCase(
                         previous => {
@@ -801,10 +1248,13 @@ export function CaseProvider({
                                 )
                             ) {
 
+                                localStorage.removeItem(
+                                    ACTIVE_CASE_STORAGE_KEY
+                                );
+
                                 return null;
 
                             }
-
 
                             return previous;
 
@@ -818,7 +1268,6 @@ export function CaseProvider({
                         "Failed to delete case:",
                         error
                     );
-
 
                     throw error;
 
@@ -846,7 +1295,6 @@ export function CaseProvider({
                             String(id)
                         );
 
-
                     if (
                         !item
                     ) {
@@ -857,25 +1305,26 @@ export function CaseProvider({
 
                     }
 
-
                     const loadedCase =
                         normalizeCase(
                             item
                         );
 
 
-                    // ==================================================
-                    // ACTIVE CASE
-                    // ==================================================
+                    console.log(
+                        "LOADED CASE:",
+                        loadedCase
+                    );
+
 
                     setActiveCase(
                         loadedCase
                     );
 
-
-                    // ==================================================
-                    // UPDATE CASE LIST
-                    // ==================================================
+                    localStorage.setItem(
+                        ACTIVE_CASE_STORAGE_KEY,
+                        loadedCase.id
+                    );
 
                     setCases(
                         previous => {
@@ -891,7 +1340,6 @@ export function CaseProvider({
                                         )
                                 );
 
-
                             if (
                                 !exists
                             ) {
@@ -905,7 +1353,6 @@ export function CaseProvider({
                                 ];
 
                             }
-
 
                             return previous.map(
                                 existing =>
@@ -932,7 +1379,6 @@ export function CaseProvider({
                         "Failed to open case:",
                         error
                     );
-
 
                     throw error;
 
@@ -981,56 +1427,7 @@ export function CaseProvider({
 
 
 // ============================================================
-// STATUS NORMALIZER
-// ============================================================
-
-function normalizeStatus(
-
-    value: any
-
-): CaseItem["status"] {
-
-    const status =
-        String(
-            value ??
-            "open"
-        )
-            .trim()
-            .toLowerCase();
-
-
-    switch (
-    status
-    ) {
-
-        case "closed":
-
-            return "closed";
-
-
-        case "archived":
-
-            return "archived";
-
-
-        case "active":
-
-            return "active";
-
-
-        case "open":
-
-        default:
-
-            return "open";
-
-    }
-
-}
-
-
-// ============================================================
-// USE CASES
+// HOOK
 // ============================================================
 
 export function useCases() {
@@ -1039,7 +1436,6 @@ export function useCases() {
         useContext(
             CaseContext
         );
-
 
     if (
         !context
@@ -1051,8 +1447,6 @@ export function useCases() {
 
     }
 
-
     return context;
 
 }
-
