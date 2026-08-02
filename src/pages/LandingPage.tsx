@@ -1,3 +1,4 @@
+
 import {
     useState
 } from "react";
@@ -86,7 +87,7 @@ export default function LandingPage({
 
 
     // ============================================================
-    // NORMALIZE ENTITY FROM ENTITY REGISTRY
+    // NORMALIZE ENTITY
     // ============================================================
 
     const normalizeEntity = (
@@ -102,26 +103,6 @@ export default function LandingPage({
         }
 
 
-        /*
-         * entityRegistry already contains the REAL entity
-         * loaded from SQL Server.
-         *
-         * Example:
-         *
-         * {
-         *   id,
-         *   name,
-         *   type,
-         *   category,
-         *   icon,
-         *   attributes
-         * }
-         *
-         * Therefore we DON'T try to reconstruct the
-         * entity from ReactFlow nodes.
-         */
-
-
         const id =
 
             entity.id ??
@@ -133,16 +114,10 @@ export default function LandingPage({
 
             entity.name ??
             entity.label ??
+            entity.data?.name ??
+            entity.data?.label ??
             "";
 
-
-        /*
-         * IMPORTANT:
-         *
-         * Do not immediately turn missing values into
-         * "Unknown" because the real value may exist under
-         * another property inside the original entity.
-         */
 
         const type =
 
@@ -171,6 +146,7 @@ export default function LandingPage({
 
             entity.attributes ??
             entity.data?.attributes ??
+            entity.data?.details ??
             {};
 
 
@@ -182,6 +158,7 @@ export default function LandingPage({
 
             label:
                 entity.label ??
+                entity.data?.label ??
                 name,
 
             type,
@@ -216,7 +193,7 @@ export default function LandingPage({
 
 
     // ============================================================
-    // REAL ENTITIES
+    // ALL ENTITIES
     // ============================================================
 
     const allEntities = (
@@ -233,9 +210,7 @@ export default function LandingPage({
 
         .filter(
 
-            (
-                entity: any
-            ) =>
+            (entity: any) =>
 
                 entity &&
 
@@ -247,43 +222,112 @@ export default function LandingPage({
 
 
     // ============================================================
-    // REMOVE DUPLICATES
+    // GLOBAL ENTITY KEY
+    //
+    // IMPORTANT:
+    //
+    // DO NOT USE entity.id HERE.
+    //
+    // Same person can have different node IDs
+    // in different cases.
     // ============================================================
+
+    const getEntityKey = (
+
+        entity: any
+
+    ) => {
+
+        const name = String(
+
+            entity?.name ??
+            entity?.label ??
+            entity?.data?.name ??
+            entity?.data?.label ??
+            ""
+
+        )
+
+            .trim()
+
+            .toLowerCase();
+
+
+        const type = String(
+
+            entity?.type ??
+            entity?.entityType ??
+            entity?.data?.type ??
+            entity?.data?.entityType ??
+            ""
+
+        )
+
+            .trim()
+
+            .toLowerCase();
+
+
+        const category = String(
+
+            entity?.category ??
+            entity?.data?.category ??
+            ""
+
+        )
+
+            .trim()
+
+            .toLowerCase();
+
+
+        return `${name}|${type}|${category}`;
+
+    };
+
+
+    // ============================================================
+    // GLOBAL UNIQUE ENTITIES
+    //
+    // Ardi Case 1 + Ardi Case 2 = ONE SEARCH RESULT
+    // ============================================================
+
+    const uniqueEntityMap = new Map<string, any>();
+
+
+    allEntities.forEach(
+
+        (entity: any) => {
+
+            const key = getEntityKey(entity);
+
+
+            if (!uniqueEntityMap.has(key)) {
+
+                uniqueEntityMap.set(
+
+                    key,
+
+                    {
+
+                        ...entity,
+
+                        globalKey: key
+
+                    }
+
+                );
+
+            }
+
+        }
+
+    );
+
 
     const uniqueEntities = Array.from(
 
-        new Map(
-
-            allEntities.map(
-
-                (
-                    entity: any
-                ) => {
-
-                    const key =
-
-                        String(
-
-                            entity.id ??
-
-                            `${entity.name}-${entity.type}`
-
-                        );
-
-
-                    return [
-
-                        key,
-
-                        entity
-
-                    ];
-
-                }
-
-            )
-
-        ).values()
+        uniqueEntityMap.values()
 
     );
 
@@ -296,9 +340,7 @@ export default function LandingPage({
 
         .filter(
 
-            (
-                entity: any
-            ) => {
+            (entity: any) => {
 
                 const term =
 
@@ -316,36 +358,22 @@ export default function LandingPage({
                 }
 
 
-                // ====================================================
-                // REAL ENTITY NAME
-                // ====================================================
+                const entityName = String(
 
-                const entityName =
+                    entity.name ??
+                    entity.label ??
+                    ""
 
-                    String(
+                )
 
-                        entity.name ??
-                        entity.label ??
-                        ""
+                    .trim()
 
-                    )
+                    .toLowerCase();
 
-                        .trim()
-
-                        .toLowerCase();
-
-
-                // ====================================================
-                // NAME HAS PRIORITY
-                // ====================================================
 
                 if (
 
-                    entityName.includes(
-
-                        term
-
-                    )
+                    entityName.includes(term)
 
                 ) {
 
@@ -353,10 +381,6 @@ export default function LandingPage({
 
                 }
 
-
-                // ====================================================
-                // SEARCH THROUGH REAL ENTITY DATA
-                // ====================================================
 
                 const attributesText =
 
@@ -391,9 +415,7 @@ export default function LandingPage({
 
                             value !== undefined &&
 
-                            String(
-                                value
-                            ).trim() !== ""
+                            String(value).trim() !== ""
 
                     )
 
@@ -402,11 +424,7 @@ export default function LandingPage({
                     .toLowerCase();
 
 
-                return searchText.includes(
-
-                    term
-
-                );
+                return searchText.includes(term);
 
             }
 
@@ -414,22 +432,13 @@ export default function LandingPage({
 
         .map(
 
-            (
-                entity: any
-            ) => ({
-
-
-                // ====================================================
-                // RESULT ID
-                // ====================================================
+            (entity: any) => ({
 
                 id:
                     entity.id,
 
-
-                // ====================================================
-                // RESULT DATA
-                // ====================================================
+                globalKey:
+                    entity.globalKey,
 
                 data: {
 
@@ -469,18 +478,8 @@ export default function LandingPage({
 
                 },
 
-
-                // ====================================================
-                // ORIGINAL ENTITY
-                // ====================================================
-
                 original:
                     entity.original,
-
-
-                // ====================================================
-                // RESULT TYPE
-                // ====================================================
 
                 resultType:
                     "Entity"
@@ -502,9 +501,7 @@ export default function LandingPage({
 
         .filter(
 
-            (
-                item: any
-            ) => {
+            (item: any) => {
 
                 const term =
 
@@ -543,11 +540,7 @@ export default function LandingPage({
                     .toLowerCase();
 
 
-                return text.includes(
-
-                    term
-
-                );
+                return text.includes(term);
 
             }
 
@@ -555,9 +548,7 @@ export default function LandingPage({
 
         .map(
 
-            (
-                item: any
-            ) => ({
+            (item: any) => ({
 
                 id:
                     item.id,
@@ -606,10 +597,6 @@ export default function LandingPage({
             <div className="landing-container">
 
 
-                {/* ==================================================
-                    LOGO
-                ================================================== */}
-
                 <div className="landing-logo">
 
                     🕵️
@@ -651,13 +638,9 @@ export default function LandingPage({
 
                         value={search}
 
-                        onChange={
+                        onChange={(e) =>
 
-                            (e) =>
-
-                                setSearch(
-                                    e.target.value
-                                )
+                            setSearch(e.target.value)
 
                         }
 
@@ -678,12 +661,13 @@ export default function LandingPage({
 
                         <div className="landing-results">
 
-
                             {
 
                                 results.length === 0
 
-                                    ? (
+                                    ?
+
+                                    (
 
                                         <div className="empty-result">
 
@@ -693,7 +677,9 @@ export default function LandingPage({
 
                                     )
 
-                                    : (
+                                    :
+
+                                    (
 
                                         results.map(
 
@@ -702,82 +688,71 @@ export default function LandingPage({
                                                 index: number
                                             ) => {
 
-
                                                 const data =
 
                                                     item?.data ??
                                                     {};
 
 
-                                                // ====================
-                                                // ENTITY NAME
-                                                // ====================
-
                                                 const name =
 
                                                     item.resultType === "Entity"
 
-                                                        ? (
+                                                        ?
+
+                                                        (
 
                                                             data?.name ??
-
                                                             data?.label ??
-
                                                             "Unnamed Entity"
 
                                                         )
 
-                                                        : (
+                                                        :
+
+                                                        (
 
                                                             data?.name ??
-
                                                             data?.title ??
-
                                                             "Unnamed Case"
 
                                                         );
 
 
-                                                // ====================
-                                                // ICON
-                                                // ====================
-
                                                 const icon =
 
                                                     item.resultType === "Entity"
 
-                                                        ? (
+                                                        ?
 
+                                                        (
                                                             data?.icon ??
-
                                                             "❓"
-
                                                         )
 
-                                                        : "📁";
+                                                        :
 
+                                                        "📁";
 
-                                                // ====================
-                                                // TYPE
-                                                // ====================
 
                                                 const type =
 
                                                     item.resultType === "Entity"
 
-                                                        ? (
+                                                        ?
+
+                                                        (
 
                                                             data?.type ??
-
                                                             data?.entityType ??
-
                                                             data?.category ??
-
                                                             "Entity"
 
                                                         )
 
-                                                        : "Case";
+                                                        :
+
+                                                        "Case";
 
 
                                                 return (
@@ -786,9 +761,7 @@ export default function LandingPage({
 
                                                         key={
 
-                                                            `${String(
-                                                                item.id
-                                                            )}-${index}`
+                                                            `${item.resultType}-${item.globalKey ?? item.id}-${index}`
 
                                                         }
 
@@ -797,13 +770,14 @@ export default function LandingPage({
                                                         onClick={() => {
 
                                                             setSelectedResult(
+
                                                                 item
+
                                                             );
 
                                                         }}
 
                                                     >
-
 
                                                         <div className="result-icon">
 
@@ -829,7 +803,6 @@ export default function LandingPage({
 
                                                         </div>
 
-
                                                     </div>
 
                                                 );
@@ -841,7 +814,6 @@ export default function LandingPage({
                                     )
 
                             }
-
 
                         </div>
 
@@ -860,125 +832,114 @@ export default function LandingPage({
 
                         selectedResult.resultType === "Entity"
 
-                            ? (
+                            ?
+
+                            (
 
                                 <EntityProfile
 
-                                    entity={
-                                        selectedResult
-                                    }
+                                    entity={selectedResult}
 
                                     onClose={() =>
 
-                                        setSelectedResult(
-                                            null
-                                        )
+                                        setSelectedResult(null)
 
                                     }
 
-                                    onSelectEntity={
+                                    onSelectEntity={(selectedEntity: any) => {
 
-                                        (
-                                            entity: any
-                                        ) => {
+                                        const data =
 
-                                            const data =
-
-                                                entity?.data ??
-                                                entity ??
-                                                {};
+                                            selectedEntity?.data ??
+                                            selectedEntity ??
+                                            {};
 
 
-                                            setSelectedResult({
+                                        setSelectedResult({
+
+                                            id:
+
+                                                selectedEntity?.id ??
+                                                data?.id,
+
+                                            globalKey:
+
+                                                selectedResult.globalKey ??
+                                                getEntityKey(data),
+
+                                            data: {
+
+                                                ...data,
 
                                                 id:
 
-                                                    entity?.id ??
+                                                    selectedEntity?.id ??
                                                     data?.id,
 
+                                                name:
 
-                                                data: {
+                                                    data?.name ??
+                                                    data?.label ??
+                                                    "Unnamed Entity",
 
-                                                    ...data,
+                                                label:
 
-                                                    id:
+                                                    data?.label ??
+                                                    data?.name ??
+                                                    "Unnamed Entity",
 
-                                                        entity?.id ??
-                                                        data?.id,
+                                                type:
 
+                                                    data?.type ??
+                                                    data?.entityType ??
+                                                    data?.data?.type ??
+                                                    data?.data?.entityType ??
+                                                    "",
 
-                                                    name:
+                                                category:
 
-                                                        data?.name ??
-                                                        data?.label ??
-                                                        "Unnamed Entity",
+                                                    data?.category ??
+                                                    data?.data?.category ??
+                                                    "",
 
+                                                icon:
 
-                                                    label:
+                                                    data?.icon ??
+                                                    data?.data?.icon ??
+                                                    "❓",
 
-                                                        data?.label ??
-                                                        data?.name ??
-                                                        "Unnamed Entity",
+                                                attributes:
 
+                                                    data?.attributes ??
+                                                    data?.data?.attributes ??
+                                                    {},
 
-                                                    type:
+                                                entity:
 
-                                                        data?.type ??
-                                                        data?.entityType ??
-                                                        data?.data?.type ??
-                                                        data?.data?.entityType ??
-                                                        "",
+                                                    data?.entity ??
+                                                    selectedEntity
 
+                                            },
 
-                                                    category:
+                                            original:
 
-                                                        data?.category ??
-                                                        data?.data?.category ??
-                                                        "",
+                                                selectedEntity?.original ??
+                                                selectedEntity,
 
+                                            resultType:
+                                                "Entity"
 
-                                                    icon:
+                                        });
 
-                                                        data?.icon ??
-                                                        data?.data?.icon ??
-                                                        "❓",
-
-
-                                                    attributes:
-
-                                                        data?.attributes ??
-                                                        data?.data?.attributes ??
-                                                        {},
-
-
-                                                    entity:
-
-                                                        data?.entity ??
-                                                        entity
-
-                                                },
-
-
-                                                original:
-
-                                                    entity?.original ??
-                                                    entity,
-
-
-                                                resultType:
-                                                    "Entity"
-
-                                            });
-
-                                        }
-
-                                    }
+                                    }}
 
                                 />
 
                             )
 
-                            : (
+                            :
+
+                            (
 
                                 <CaseProfile
 
@@ -990,9 +951,7 @@ export default function LandingPage({
 
                                     onClose={() =>
 
-                                        setSelectedResult(
-                                            null
-                                        )
+                                        setSelectedResult(null)
 
                                     }
 
@@ -1006,7 +965,7 @@ export default function LandingPage({
 
 
                 {/* ==================================================
-                    CONSOLE BUTTON
+                    CONSOLE
                 ================================================== */}
 
                 <button
@@ -1029,7 +988,6 @@ export default function LandingPage({
                 ================================================== */}
 
                 <div className="landing-features">
-
 
                     <div className="feature-card">
 
@@ -1087,7 +1045,6 @@ export default function LandingPage({
 
                     </div>
 
-
                 </div>
 
 
@@ -1098,3 +1055,4 @@ export default function LandingPage({
     );
 
 }
+
