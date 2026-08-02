@@ -75,6 +75,8 @@ interface GraphEntity {
 
     attributes: Record<string, any>;
 
+    role?: string | null;
+
     createdAt?: string | null;
 
     updatedAt?: string | null;
@@ -95,7 +97,6 @@ interface GraphContextType {
     setEdges: React.Dispatch<
         React.SetStateAction<any[]>
     >;
-
 
     entityRegistry: GraphEntity[];
 
@@ -119,7 +120,6 @@ interface GraphContextType {
         }
     ) => Promise<any>;
 
-
     selectedNode: any;
 
     setSelectedNode: React.Dispatch<
@@ -131,7 +131,6 @@ interface GraphContextType {
     setSelectedEdge: React.Dispatch<
         React.SetStateAction<any>
     >;
-
 
     selectedCase: CaseItem | null;
 
@@ -145,7 +144,6 @@ interface GraphContextType {
 
     clearCase: () => void;
 
-
     events: any[];
 
     setEvents: React.Dispatch<
@@ -156,7 +154,6 @@ interface GraphContextType {
         event: any
     ) => Promise<any>;
 
-
     deleteNode: (
         id: string
     ) => Promise<void>;
@@ -165,18 +162,15 @@ interface GraphContextType {
         id: string
     ) => Promise<void>;
 
-
     saveCurrentCase: () => Promise<void>;
 
     refreshCurrentCase: () => Promise<void>;
-
 
     searchTerm: string;
 
     setSearchTerm: React.Dispatch<
         React.SetStateAction<string>
     >;
-
 
     loading: boolean;
 
@@ -204,11 +198,6 @@ const GraphContext =
 // ============================================================
 // STORAGE
 // ============================================================
-//
-// IMPORTANT:
-// localStorage stores ONLY active case ID.
-// Graph itself is stored in SQL Server.
-// ============================================================
 
 const ACTIVE_CASE_STORAGE_KEY =
     "igs-active-case-id";
@@ -218,20 +207,301 @@ const ACTIVE_CASE_STORAGE_KEY =
 // HELPERS
 // ============================================================
 
+function isValidValue(
+    value: any
+): boolean {
+
+    return (
+        value !== undefined &&
+        value !== null &&
+        String(value).trim() !== ""
+    );
+
+}
+
+
 function normalizeIcon(
     value: any
 ): string {
 
     if (
-        typeof value === "string" &&
-        value.trim() !== ""
+        isValidValue(value)
+    ) {
+
+        return String(value);
+
+    }
+
+    return "❓";
+
+}
+
+
+function normalizeAttributes(
+    value: any
+): Record<string, any> {
+
+    if (
+        value &&
+        typeof value === "object" &&
+        !Array.isArray(value)
     ) {
 
         return value;
 
     }
 
-    return "❓";
+
+    if (
+        typeof value === "string"
+    ) {
+
+        try {
+
+            const parsed =
+                JSON.parse(value);
+
+            if (
+                parsed &&
+                typeof parsed === "object"
+            ) {
+
+                return parsed;
+
+            }
+
+        }
+        catch {
+
+            // Ignore invalid JSON
+
+        }
+
+    }
+
+
+    return {};
+
+}
+
+
+// ============================================================
+// GET VALUE FROM ENTITY / NODE
+// ============================================================
+//
+// This is the important fix.
+//
+// Excel/import data can arrive as:
+//
+// entity.name
+// entity.entityName
+// entity.entityType
+//
+// OR:
+//
+// entity.data.name
+// entity.data.entityName
+// entity.data.entityType
+//
+// OR:
+//
+// entity.data.properties.name
+//
+// We always resolve the real value before falling back.
+// ============================================================
+
+function getEntityName(
+    entity: any
+): string {
+
+    const data =
+        entity?.data ?? {};
+
+    const properties =
+        data?.properties ??
+        entity?.properties ??
+        {};
+
+
+    const value =
+
+        entity?.name ??
+
+        entity?.entityName ??
+
+        data?.name ??
+
+        data?.entityName ??
+
+        properties?.name ??
+
+        properties?.entityName ??
+
+        entity?.attributes?.name ??
+
+        data?.attributes?.name ??
+
+        "Unnamed Entity";
+
+
+    return String(value);
+
+}
+
+
+function getEntityType(
+    entity: any
+): string {
+
+    const data =
+        entity?.data ?? {};
+
+    const properties =
+        data?.properties ??
+        entity?.properties ??
+        {};
+
+
+    const value =
+
+        entity?.entityType ??
+
+        entity?.type ??
+
+        data?.entityType ??
+
+        data?.type ??
+
+        properties?.entityType ??
+
+        properties?.type ??
+
+        "Unknown";
+
+
+    return String(value);
+
+}
+
+
+function getEntityCategory(
+    entity: any
+): string {
+
+    const data =
+        entity?.data ?? {};
+
+    const properties =
+        data?.properties ??
+        entity?.properties ??
+        {};
+
+
+    const value =
+
+        entity?.category ??
+
+        data?.category ??
+
+        properties?.category ??
+
+        "Unknown";
+
+
+    return String(value);
+
+}
+
+
+function getEntityIcon(
+    entity: any
+): string {
+
+    const data =
+        entity?.data ?? {};
+
+    const properties =
+        data?.properties ??
+        entity?.properties ??
+        {};
+
+
+    return normalizeIcon(
+
+        entity?.icon ??
+
+        data?.icon ??
+
+        properties?.icon
+
+    );
+
+}
+
+
+function getEntityRole(
+    entity: any
+): string | null {
+
+    const data =
+        entity?.data ?? {};
+
+    const properties =
+        data?.properties ??
+        entity?.properties ??
+        {};
+
+
+    const value =
+
+        entity?.role ??
+
+        data?.role ??
+
+        properties?.role ??
+
+        null;
+
+
+    return isValidValue(value)
+        ? String(value)
+        : null;
+
+}
+
+
+function getEntityId(
+    entity: any
+): string | number | undefined {
+
+    const data =
+        entity?.data ?? {};
+
+    const value =
+
+        entity?.entityId ??
+
+        entity?.entityID ??
+
+        data?.entityId ??
+
+        data?.entityID ??
+
+        entity?.id ??
+
+        data?.id;
+
+
+    if (
+        !isValidValue(value)
+    ) {
+
+        return undefined;
+
+    }
+
+
+    return value;
 
 }
 
@@ -244,70 +514,61 @@ function normalizeEntity(
     entity: any
 ): GraphEntity {
 
-    const resolvedName =
-        entity?.name ??
-        entity?.entityName ??
-        entity?.label ??
-        entity?.data?.name ??
-        entity?.data?.entityName ??
-        entity?.data?.label ??
-        entity?.attributes?.name ??
-        entity?.data?.attributes?.name ??
-        "Unnamed Entity";
+    const attributes = normalizeAttributes(
 
-
-    const resolvedType =
-        entity?.type ??
-        entity?.entityType ??
-        entity?.data?.type ??
-        entity?.data?.entityType ??
-        "Unknown";
-
-
-    const resolvedCategory =
-        entity?.category ??
-        entity?.data?.category ??
-        "Unknown";
-
-
-    const resolvedAttributes =
         entity?.attributes ??
+
         entity?.data?.attributes ??
-        {};
+
+        entity?.properties ??
+
+        entity?.data?.properties ??
+
+        entity?.attributesJson ??
+
+        entity?.data?.attributesJson
+
+    );
+
+
+    const id =
+        getEntityId(entity);
 
 
     return {
 
         id:
-            entity?.id ??
-            entity?.entityId ??
-            entity?.data?.id ??
-            entity?.data?.entityId ??
-            `entity-${Date.now()}`,
+            id ??
+            `temporary-${Date.now()}-${Math.random()
+                .toString(36)
+                .substring(2, 8)}`,
 
         name:
-            String(
-                resolvedName
+            getEntityName(
+                entity
             ),
 
         type:
-            String(
-                resolvedType
+            getEntityType(
+                entity
             ),
 
         category:
-            String(
-                resolvedCategory
+            getEntityCategory(
+                entity
             ),
 
         icon:
-            normalizeIcon(
-                entity?.icon ??
-                entity?.data?.icon
+            getEntityIcon(
+                entity
             ),
 
-        attributes:
-            resolvedAttributes,
+        role:
+            getEntityRole(
+                entity
+            ),
+
+        attributes,
 
         createdAt:
             entity?.createdAt ??
@@ -325,26 +586,80 @@ function normalizeEntity(
 
 
 // ============================================================
+// GET REAL NODE ENTITY ID
+// ============================================================
+
+function getNodeEntityId(
+    node: any
+): string | number | undefined {
+
+    const data =
+        node?.data ?? {};
+
+
+    const entity =
+        data?.entity ??
+        node?.entity;
+
+
+    const value =
+
+        data?.entityId ??
+
+        data?.entityID ??
+
+        entity?.id ??
+
+        entity?.entityId ??
+
+        node?.entityId;
+
+
+    if (
+        !isValidValue(value)
+    ) {
+
+        return undefined;
+
+    }
+
+
+    return value;
+
+}
+
+
+// ============================================================
+// GET NODE DATA
+// ============================================================
+
+function getNodeData(
+    node: any
+): any {
+
+    return (
+        node?.data &&
+        typeof node.data === "object"
+    )
+        ? node.data
+        : {};
+
+}
+
+
+// ============================================================
 // HYDRATE NODE
 // ============================================================
 //
-// This is the IMPORTANT part.
+// IMPORTANT:
 //
-// DB graph node:
-// data.entityId
+// Never use node.id as entityId.
 //
-// gets matched against:
+// node.id = ReactFlow node ID
 //
-// Entity.id
+// entityId = database Entity ID
 //
-// Then the node receives:
-// name
-// label
-// type
-// category
-// icon
-// attributes
-// entity
+// They are two different things.
 // ============================================================
 
 function hydrateSingleNode(
@@ -352,55 +667,67 @@ function hydrateSingleNode(
     allEntities: GraphEntity[]
 ) {
 
-    const nodeData =
-        node?.data ?? {};
+    const data =
+        getNodeData(node);
 
-
-    // ========================================================
-    // ENTITY ID FROM GRAPH
-    // ========================================================
 
     const entityId =
-        nodeData?.entityId ??
-        nodeData?.entity?.id ??
-        node?.entityId;
+        getNodeEntityId(node);
+
+
+    let masterEntity:
+        GraphEntity | undefined;
 
 
     // ========================================================
-    // FIND ENTITY BY ID
+    // FIRST: FIND BY ENTITY ID
     // ========================================================
 
-    let masterEntity =
-        allEntities.find(
-            entity =>
-                entityId !== undefined &&
-                entityId !== null &&
-                String(entity.id) ===
-                String(entityId)
-        );
+    if (
+        entityId !== undefined
+    ) {
+
+        masterEntity =
+            allEntities.find(
+                entity =>
+
+                    String(
+                        entity.id
+                    )
+                    ===
+                    String(
+                        entityId
+                    )
+            );
+
+    }
 
 
     // ========================================================
-    // FALLBACK BY NAME
+    // SECOND: FIND BY NAME
     // ========================================================
 
-    if (!masterEntity) {
+    if (
+        !masterEntity
+    ) {
 
-        const possibleName =
-            nodeData?.name ??
-            nodeData?.label ??
+        const nodeName =
+
+            data?.name ??
+
+            data?.label ??
+
+            node?.name ??
+
             node?.label;
 
 
         if (
-            possibleName &&
-            String(possibleName).trim() !== ""
+            isValidValue(nodeName)
         ) {
 
             const normalizedName =
-                String(
-                    possibleName
-                )
+                String(nodeName)
                     .trim()
                     .toLowerCase();
 
@@ -408,6 +735,7 @@ function hydrateSingleNode(
             masterEntity =
                 allEntities.find(
                     entity =>
+
                         String(
                             entity.name ?? ""
                         )
@@ -420,6 +748,47 @@ function hydrateSingleNode(
         }
 
     }
+
+
+    // ========================================================
+    // POSITION
+    // ========================================================
+
+    const x =
+
+        Number(
+            node?.position?.x
+        );
+
+    const y =
+
+        Number(
+            node?.position?.y
+        );
+
+
+    const safeX =
+        Number.isFinite(x)
+            ? x
+            : (
+                Number.isFinite(
+                    Number(node?.x)
+                )
+                    ? Number(node.x)
+                    : 0
+            );
+
+
+    const safeY =
+        Number.isFinite(y)
+            ? y
+            : (
+                Number.isFinite(
+                    Number(node?.y)
+                )
+                    ? Number(node.y)
+                    : 0
+            );
 
 
     // ========================================================
@@ -441,14 +810,10 @@ function hydrateSingleNode(
         position: {
 
             x:
-                Number(
-                    node?.position?.x
-                ) || 0,
+                safeX,
 
             y:
-                Number(
-                    node?.position?.y
-                ) || 0
+                safeY
 
         }
 
@@ -459,7 +824,9 @@ function hydrateSingleNode(
     // ENTITY FOUND
     // ========================================================
 
-    if (masterEntity) {
+    if (
+        masterEntity
+    ) {
 
         return {
 
@@ -467,7 +834,7 @@ function hydrateSingleNode(
 
             data: {
 
-                ...nodeData,
+                ...data,
 
                 entityId:
                     masterEntity.id,
@@ -481,6 +848,9 @@ function hydrateSingleNode(
                 type:
                     masterEntity.type,
 
+                entityType:
+                    masterEntity.type,
+
                 category:
                     masterEntity.category,
 
@@ -488,6 +858,9 @@ function hydrateSingleNode(
                     normalizeIcon(
                         masterEntity.icon
                     ),
+
+                role:
+                    masterEntity.role ?? null,
 
                 attributes:
                     masterEntity.attributes,
@@ -506,22 +879,17 @@ function hydrateSingleNode(
     // ENTITY NOT FOUND
     // ========================================================
     //
-    // IMPORTANT:
-    // DO NOT DESTROY EXISTING NODE DATA.
+    // DO NOT CREATE UNKNOWN.
     //
-    // If DB entity lookup fails but node already contains
-    // name/type/category/icon, keep those values.
+    // Preserve whatever is already in the case.
     // ========================================================
 
     console.warn(
-        "ENTITY NOT FOUND FOR GRAPH NODE:",
+        "ENTITY NOT FOUND FOR NODE",
         {
-            nodeId:
-                node?.id,
-
+            nodeId: node?.id,
             entityId,
-
-            nodeData
+            data
         }
     );
 
@@ -532,39 +900,276 @@ function hydrateSingleNode(
 
         data: {
 
-            ...nodeData,
+            ...data,
 
             entityId:
-                entityId ??
-                nodeData?.entityId,
+                entityId,
 
             name:
-                nodeData?.name ??
-                nodeData?.label ??
-                "Unknown",
+                data?.name ??
+                data?.label ??
+                node?.name ??
+                node?.label ??
+                "",
 
             label:
-                nodeData?.label ??
-                nodeData?.name ??
-                "Unknown",
+                data?.label ??
+                data?.name ??
+                node?.label ??
+                node?.name ??
+                "",
 
             type:
-                nodeData?.type ??
-                nodeData?.entityType ??
-                "Unknown",
+                data?.type ??
+                data?.entityType ??
+                node?.type ??
+                "",
+
+            entityType:
+                data?.entityType ??
+                data?.type ??
+                "",
 
             category:
-                nodeData?.category ??
-                "Unknown",
+                data?.category ??
+                "",
 
             icon:
                 normalizeIcon(
-                    nodeData?.icon
+                    data?.icon
                 ),
 
+            role:
+                data?.role ??
+                null,
+
             attributes:
-                nodeData?.attributes ??
-                {}
+                normalizeAttributes(
+                    data?.attributes
+                )
+
+        }
+
+    };
+
+}
+
+
+// ============================================================
+// SERIALIZE NODE FOR DATABASE
+// ============================================================
+//
+// ReactFlow:
+//
+// node.position.x
+// node.position.y
+// node.data.name
+// node.data.entityId
+//
+// Database:
+//
+// x
+// y
+// name
+// entityId
+//
+// This function converts one into the other.
+// ============================================================
+
+function serializeNodeForDatabase(
+    node: any
+) {
+
+    const data =
+        getNodeData(node);
+
+
+    const entity =
+        data?.entity ??
+        node?.entity ??
+        null;
+
+
+    const entityId =
+
+        data?.entityId ??
+
+        data?.entityID ??
+
+        entity?.id ??
+
+        node?.entityId;
+
+
+    const name =
+
+        data?.name ??
+
+        data?.label ??
+
+        entity?.name ??
+
+        node?.name;
+
+
+    const label =
+
+        data?.label ??
+
+        data?.name ??
+
+        entity?.name ??
+
+        node?.label;
+
+
+    const entityType =
+
+        data?.entityType ??
+
+        data?.type ??
+
+        entity?.type;
+
+
+    const category =
+
+        data?.category ??
+
+        entity?.category;
+
+
+    const icon =
+
+        data?.icon ??
+
+        entity?.icon;
+
+
+    const role =
+
+        data?.role ??
+
+        entity?.role ??
+        null;
+
+
+    const attributes =
+
+        normalizeAttributes(
+
+            data?.attributes ??
+
+            entity?.attributes ??
+
+            {}
+
+        );
+
+
+    const x =
+        Number(
+            node?.position?.x
+        );
+
+
+    const y =
+        Number(
+            node?.position?.y
+        );
+
+
+    const safeX =
+        Number.isFinite(x)
+            ? x
+            : 0;
+
+
+    const safeY =
+        Number.isFinite(y)
+            ? y
+            : 0;
+
+
+    return {
+
+        // ReactFlow node ID
+        id:
+            String(
+                node?.id
+            ),
+
+        // REAL DATABASE ENTITY ID
+        entityId:
+            entityId !== undefined &&
+                entityId !== null
+                ? String(entityId)
+                : null,
+
+        // ReactFlow type
+        type:
+            node?.type ??
+            "custom",
+
+        // REAL CANVAS POSITION
+        x:
+            safeX,
+
+        y:
+            safeY,
+
+        // Properties
+        label:
+            label ?? "",
+
+        name:
+            name ?? "",
+
+        entityType:
+            entityType ?? "",
+
+        category:
+            category ?? "",
+
+        icon:
+            normalizeIcon(icon),
+
+        role,
+
+        attributesJson:
+            JSON.stringify(
+                attributes
+            ),
+
+        // Keep original ReactFlow data too
+        data: {
+
+            ...data,
+
+            entityId:
+                entityId,
+
+            name:
+                name ?? "",
+
+            label:
+                label ?? "",
+
+            type:
+                entityType ?? "",
+
+            entityType:
+                entityType ?? "",
+
+            category:
+                category ?? "",
+
+            icon:
+                normalizeIcon(icon),
+
+            role,
+
+            attributes
 
         }
 
@@ -681,7 +1286,7 @@ export function GraphProvider({
 
 
     // ========================================================
-    // SAVE TIMER
+    // REFS
     // ========================================================
 
     const saveTimer =
@@ -690,19 +1295,11 @@ export function GraphProvider({
         >(null);
 
 
-    // ========================================================
-    // ACTIVE CASE REF
-    // ========================================================
-
     const activeCaseIdRef =
         useRef<string | null>(
             null
         );
 
-
-    // ========================================================
-    // INITIALIZED CASE
-    // ========================================================
 
     const initializedCase =
         useRef<string | null>(
@@ -710,30 +1307,21 @@ export function GraphProvider({
         );
 
 
-    // ========================================================
-    // SAVE VERSION
-    // ========================================================
-
     const saveVersion =
         useRef(0);
 
 
-    // ========================================================
-    // CURRENT STATE REFS
-    // ========================================================
-    //
-    // These prevent saveCurrentCase from using stale React
-    // state when switching cases.
-    // ========================================================
-
     const nodesRef =
         useRef<any[]>([]);
+
 
     const edgesRef =
         useRef<any[]>([]);
 
+
     const eventsRef =
         useRef<any[]>([]);
+
 
     const selectedCaseRef =
         useRef<CaseItem | null>(
@@ -812,14 +1400,21 @@ export function GraphProvider({
 
 
                     const normalized =
-                        data.map(
-                            (
-                                entity: any
-                            ) =>
-                                normalizeEntity(
-                                    entity
-                                )
-                        );
+                        data
+                            .map(
+                                (
+                                    entity: any
+                                ) =>
+                                    normalizeEntity(
+                                        entity
+                                    )
+                            )
+                            .filter(
+                                entity =>
+                                    isValidValue(
+                                        entity.name
+                                    )
+                            );
 
 
                     setEntityRegistry(
@@ -1065,7 +1660,8 @@ export function GraphProvider({
                                 .toLowerCase();
 
 
-                        let attributesText = "";
+                        let attributesText =
+                            "";
 
 
                         try {
@@ -1146,6 +1742,36 @@ export function GraphProvider({
                     );
 
 
+                // ====================================================
+                // NEVER SAVE UNKNOWN ENTITY
+                // ====================================================
+
+                if (
+                    !isValidValue(
+                        normalizedInput.name
+                    ) ||
+
+                    normalizedInput.name
+                        .trim()
+                        .toLowerCase()
+                    ===
+                    "unknown"
+                ) {
+
+                    console.error(
+                        "BLOCKED ENTITY SAVE:",
+                        normalizedInput
+                    );
+
+                    setApiError(
+                        "Entity has no valid name."
+                    );
+
+                    return null;
+
+                }
+
+
                 const normalizedName =
                     normalizedInput.name
                         .trim()
@@ -1193,25 +1819,39 @@ export function GraphProvider({
 
                 try {
 
+                    const payload = {
+
+                        name:
+                            normalizedInput.name,
+
+                        type:
+                            normalizedInput.type,
+
+                        category:
+                            normalizedInput.category,
+
+                        icon:
+                            normalizedInput.icon,
+
+                        role:
+                            normalizedInput.role ?? null,
+
+                        attributes:
+                            normalizedInput.attributes
+
+                    };
+
+
+                    console.log(
+                        "CREATING REAL ENTITY:",
+                        payload
+                    );
+
+
                     const created =
-                        await entityApi.create({
-
-                            name:
-                                normalizedInput.name,
-
-                            type:
-                                normalizedInput.type,
-
-                            category:
-                                normalizedInput.category,
-
-                            icon:
-                                normalizedInput.icon,
-
-                            attributes:
-                                normalizedInput.attributes
-
-                        });
+                        await entityApi.create(
+                            payload
+                        );
 
 
                     if (
@@ -1235,6 +1875,7 @@ export function GraphProvider({
                             const alreadyExists =
                                 prev.some(
                                     item =>
+
                                         String(
                                             item.id
                                         )
@@ -1276,11 +1917,9 @@ export function GraphProvider({
                         error
                     );
 
-
                     setApiError(
                         "Failed to save entity to SQL Server."
                     );
-
 
                     return null;
 
@@ -1316,6 +1955,12 @@ export function GraphProvider({
                 }
 
 
+                console.log(
+                    "ADDING ENTITY TO GRAPH:",
+                    entity
+                );
+
+
                 let masterEntity =
                     normalizeEntity(
                         entity
@@ -1323,39 +1968,105 @@ export function GraphProvider({
 
 
                 // ====================================================
-                // FIND EXISTING ENTITY
+                // DO NOT ACCEPT UNKNOWN
                 // ====================================================
 
-                const existing =
-                    entityRegistry.find(
-                        item =>
+                if (
+                    !isValidValue(
+                        masterEntity.name
+                    ) ||
 
-                            String(
-                                item.name
-                            )
-                                .trim()
-                                .toLowerCase()
-                            ===
-                            String(
-                                masterEntity.name
-                            )
-                                .trim()
-                                .toLowerCase()
+                    masterEntity.name
+                        .trim()
+                        .toLowerCase()
+                    ===
+                    "unknown"
+                ) {
 
-                            &&
-
-                            String(
-                                item.type
-                            )
-                                .trim()
-                                .toLowerCase()
-                            ===
-                            String(
-                                masterEntity.type
-                            )
-                                .trim()
-                                .toLowerCase()
+                    console.error(
+                        "INVALID ENTITY PASSED TO GRAPH:",
+                        entity
                     );
+
+                    return null;
+
+                }
+
+
+                // ====================================================
+                // FIND EXISTING ENTITY BY ID
+                // ====================================================
+
+                const incomingId =
+                    getEntityId(
+                        entity
+                    );
+
+
+                let existing:
+                    GraphEntity | undefined;
+
+
+                if (
+                    incomingId !== undefined
+                ) {
+
+                    existing =
+                        entityRegistry.find(
+                            item =>
+
+                                String(
+                                    item.id
+                                )
+                                ===
+                                String(
+                                    incomingId
+                                )
+                        );
+
+                }
+
+
+                // ====================================================
+                // FIND BY NAME + TYPE
+                // ====================================================
+
+                if (
+                    !existing
+                ) {
+
+                    existing =
+                        entityRegistry.find(
+                            item =>
+
+                                String(
+                                    item.name
+                                )
+                                    .trim()
+                                    .toLowerCase()
+                                ===
+                                String(
+                                    masterEntity.name
+                                )
+                                    .trim()
+                                    .toLowerCase()
+
+                                &&
+
+                                String(
+                                    item.type
+                                )
+                                    .trim()
+                                    .toLowerCase()
+                                ===
+                                String(
+                                    masterEntity.type
+                                )
+                                    .trim()
+                                    .toLowerCase()
+                        );
+
+                }
 
 
                 if (
@@ -1375,13 +2086,16 @@ export function GraphProvider({
 
 
                     if (
-                        registered
+                        !registered
                     ) {
 
-                        masterEntity =
-                            registered;
+                        return null;
 
                     }
+
+
+                    masterEntity =
+                        registered;
 
                 }
 
@@ -1395,11 +2109,15 @@ export function GraphProvider({
                         node => {
 
                             const nodeEntityId =
-                                node?.data?.entityId ??
-                                node?.entityId;
+                                getNodeEntityId(
+                                    node
+                                );
 
 
                             return (
+
+                                nodeEntityId !==
+                                undefined &&
 
                                 String(
                                     nodeEntityId
@@ -1433,7 +2151,9 @@ export function GraphProvider({
                 // ====================================================
 
                 const nodeId =
-                    `entity-${masterEntity.id}-${Date.now()}`;
+                    `node-${Date.now()}-${Math.random()
+                        .toString(36)
+                        .substring(2, 8)}`;
 
 
                 const newNode = {
@@ -1460,10 +2180,12 @@ export function GraphProvider({
 
                     data: {
 
-                        id:
+                        // IMPORTANT
+                        // This is REAL ENTITY ID
+                        entityId:
                             masterEntity.id,
 
-                        entityId:
+                        id:
                             masterEntity.id,
 
                         name:
@@ -1475,6 +2197,9 @@ export function GraphProvider({
                         type:
                             masterEntity.type,
 
+                        entityType:
+                            masterEntity.type,
+
                         category:
                             masterEntity.category,
 
@@ -1482,6 +2207,9 @@ export function GraphProvider({
                             normalizeIcon(
                                 masterEntity.icon
                             ),
+
+                        role:
+                            masterEntity.role ?? null,
 
                         attributes:
                             masterEntity.attributes,
@@ -1492,6 +2220,12 @@ export function GraphProvider({
                     }
 
                 };
+
+
+                console.log(
+                    "NEW GRAPH NODE:",
+                    newNode
+                );
 
 
                 setNodes(
@@ -1524,13 +2258,6 @@ export function GraphProvider({
     // ========================================================
     // SAVE CURRENT CASE
     // ========================================================
-    //
-    // IMPORTANT:
-    // This function is BEFORE openCase.
-    //
-    // Therefore:
-    // saveCurrentCase is declared before it is used.
-    // ========================================================
 
     const saveCurrentCase =
         useCallback(
@@ -1559,10 +2286,6 @@ export function GraphProvider({
                     );
 
 
-                // ====================================================
-                // DO NOT SAVE INTO ANOTHER CASE
-                // ====================================================
-
                 if (
                     activeCaseIdRef.current &&
                     activeCaseIdRef.current !==
@@ -1570,16 +2293,7 @@ export function GraphProvider({
                 ) {
 
                     console.warn(
-                        "SAVE SKIPPED: Case is no longer active.",
-                        {
-
-                            active:
-                                activeCaseIdRef.current,
-
-                            requested:
-                                caseId
-
-                        }
+                        "SAVE SKIPPED: Case is no longer active."
                     );
 
                     return;
@@ -1590,7 +2304,6 @@ export function GraphProvider({
                 try {
 
                     setApiError(null);
-
 
                     saveVersion.current += 1;
 
@@ -1604,16 +2317,21 @@ export function GraphProvider({
 
 
                     // ==================================================
-                    // COPY CURRENT GRAPH FROM REFS
+                    // SERIALIZE NODES
                     // ==================================================
 
                     const nodesToSave =
-                        JSON.parse(
-                            JSON.stringify(
-                                nodesRef.current
-                            )
+                        nodesRef.current.map(
+                            node =>
+                                serializeNodeForDatabase(
+                                    node
+                                )
                         );
 
+
+                    // ==================================================
+                    // EDGES
+                    // ==================================================
 
                     const edgesToSave =
                         JSON.parse(
@@ -1622,6 +2340,10 @@ export function GraphProvider({
                             )
                         );
 
+
+                    // ==================================================
+                    // EVENTS
+                    // ==================================================
 
                     const eventsToSave =
                         JSON.parse(
@@ -1632,8 +2354,41 @@ export function GraphProvider({
 
 
                     // ==================================================
-                    // PAYLOAD
+                    // DEBUG
                     // ==================================================
+
+                    console.log(
+                        "===================================="
+                    );
+
+                    console.log(
+                        "SAVING CASE"
+                    );
+
+                    console.log(
+                        "CASE:",
+                        caseId
+                    );
+
+                    console.log(
+                        "NODES TO SAVE:",
+                        nodesToSave
+                    );
+
+                    console.log(
+                        "EDGES TO SAVE:",
+                        edgesToSave
+                    );
+
+                    console.log(
+                        "EVENTS TO SAVE:",
+                        eventsToSave
+                    );
+
+                    console.log(
+                        "===================================="
+                    );
+
 
                     const payload = {
 
@@ -1676,66 +2431,11 @@ export function GraphProvider({
                     };
 
 
-                    // ==================================================
-                    // DEBUG
-                    // ==================================================
-
                     console.log(
-                        "===================================="
-                    );
-
-                    console.log(
-                        "SAVING CASE TO DATABASE"
-                    );
-
-                    console.log(
-                        "CASE ID:",
-                        caseId
-                    );
-
-                    console.log(
-                        "NODE COUNT:",
-                        nodesToSave.length
-                    );
-
-                    console.log(
-                        "EDGE COUNT:",
-                        edgesToSave.length
-                    );
-
-                    console.log(
-                        "EVENT COUNT:",
-                        eventsToSave.length
-                    );
-
-                    console.log(
-                        "NODES:",
-                        nodesToSave
-                    );
-
-                    console.log(
-                        "EDGES:",
-                        edgesToSave
-                    );
-
-                    console.log(
-                        "EVENTS:",
-                        eventsToSave
-                    );
-
-                    console.log(
-                        "PAYLOAD:",
+                        "FINAL CASE PAYLOAD:",
                         payload
                     );
 
-                    console.log(
-                        "===================================="
-                    );
-
-
-                    // ==================================================
-                    // DATABASE UPDATE
-                    // ==================================================
 
                     const updated =
                         await caseApi.update(
@@ -1744,38 +2444,19 @@ export function GraphProvider({
                         );
 
 
-                    // ==================================================
-                    // IGNORE OLD RESPONSE
-                    // ==================================================
-
                     if (
                         currentVersion !==
                         saveVersion.current
                     ) {
-
-                        console.warn(
-                            "OLD SAVE RESPONSE IGNORED."
-                        );
 
                         return;
 
                     }
 
 
-                    // ==================================================
-                    // UPDATE CASE METADATA ONLY
-                    // ==================================================
-                    //
-                    // DO NOT replace graph with backend response.
-                    // ==================================================
-
                     if (
                         updated
                     ) {
-
-                        const updatedAny =
-                            updated as any;
-
 
                         setSelectedCase(
                             prev => {
@@ -1793,7 +2474,7 @@ export function GraphProvider({
 
                                     ...prev,
 
-                                    ...updatedAny,
+                                    ...(updated as any),
 
                                     id:
                                         prev.id,
@@ -1812,35 +2493,21 @@ export function GraphProvider({
                             }
                         );
 
-
-                        console.log(
-                            "CASE SAVED SUCCESSFULLY:",
-                            caseId
-                        );
-
                     }
+
+
+                    console.log(
+                        "CASE SAVED SUCCESSFULLY:",
+                        caseId
+                    );
 
                 }
                 catch (error) {
 
                     console.error(
-                        "===================================="
-                    );
-
-                    console.error(
                         "FAILED TO SAVE CASE:",
                         error
                     );
-
-                    console.error(
-                        "CASE ID:",
-                        caseId
-                    );
-
-                    console.error(
-                        "===================================="
-                    );
-
 
                     setApiError(
                         "Failed to save case to SQL Server."
@@ -1854,7 +2521,7 @@ export function GraphProvider({
 
 
     // ========================================================
-    // HYDRATE CASE NODES
+    // HYDRATE CASE
     // ========================================================
 
     const hydrateCaseNodes =
@@ -1872,10 +2539,6 @@ export function GraphProvider({
                 }
 
 
-                // ==================================================
-                // ALWAYS GET FRESH ENTITIES FROM DATABASE
-                // ==================================================
-
                 let allEntities:
                     GraphEntity[] = [];
 
@@ -1887,7 +2550,9 @@ export function GraphProvider({
 
 
                     if (
-                        Array.isArray(entityData)
+                        Array.isArray(
+                            entityData
+                        )
                     ) {
 
                         allEntities =
@@ -1901,7 +2566,6 @@ export function GraphProvider({
                             );
 
 
-                        // Update registry too
                         setEntityRegistry(
                             allEntities
                         );
@@ -1912,40 +2576,125 @@ export function GraphProvider({
                 catch (error) {
 
                     console.error(
-                        "Failed to load entities for graph hydration:",
+                        "Failed to load entities:",
                         error
                     );
 
 
-                    // fallback to current registry
                     allEntities =
                         entityRegistry;
 
                 }
 
 
-                console.log(
-                    "ENTITIES USED FOR HYDRATION:",
-                    allEntities
-                );
-
-
-                // ==================================================
-                // HYDRATE NODES
-                // ==================================================
-
                 const hydratedNodes =
                     caseNodes.map(
-                        node =>
-                            hydrateSingleNode(
-                                node,
+                        node => {
+
+                            // ========================================
+                            // Backend flat node → ReactFlow node
+                            // ========================================
+
+                            const reactFlowNode = {
+
+                                ...node,
+
+                                id:
+                                    String(
+                                        node?.id
+                                    ),
+
+                                type:
+                                    node?.type ??
+                                    "custom",
+
+                                position: {
+
+                                    x:
+                                        Number(
+                                            node?.x
+                                        ) || 0,
+
+                                    y:
+                                        Number(
+                                            node?.y
+                                        ) || 0
+
+                                },
+
+                                data: {
+
+                                    ...(node?.data ?? {}),
+
+                                    entityId:
+                                        node?.entityId ??
+                                        node?.data?.entityId,
+
+                                    name:
+                                        node?.name ??
+                                        node?.label ??
+                                        node?.data?.name ??
+                                        node?.data?.label ??
+                                        "",
+
+                                    label:
+                                        node?.label ??
+                                        node?.name ??
+                                        node?.data?.label ??
+                                        node?.data?.name ??
+                                        "",
+
+                                    type:
+                                        node?.entityType ??
+                                        node?.data?.entityType ??
+                                        node?.data?.type ??
+                                        "",
+
+                                    entityType:
+                                        node?.entityType ??
+                                        node?.data?.entityType ??
+                                        node?.data?.type ??
+                                        "",
+
+                                    category:
+                                        node?.category ??
+                                        node?.data?.category ??
+                                        "",
+
+                                    icon:
+                                        normalizeIcon(
+                                            node?.icon ??
+                                            node?.data?.icon
+                                        ),
+
+                                    role:
+                                        node?.role ??
+                                        node?.data?.role ??
+                                        null,
+
+                                    attributes:
+                                        normalizeAttributes(
+                                            node?.data?.attributes ??
+                                            node?.attributesJson ??
+                                            node?.attributes
+                                        )
+
+                                }
+
+                            };
+
+
+                            return hydrateSingleNode(
+                                reactFlowNode,
                                 allEntities
-                            )
+                            );
+
+                        }
                     );
 
 
                 console.log(
-                    "HYDRATED NODES:",
+                    "HYDRATED CASE NODES:",
                     hydratedNodes
                 );
 
@@ -1984,10 +2733,6 @@ export function GraphProvider({
                     );
 
 
-                // ==================================================
-                // SAVE PREVIOUS CASE BEFORE SWITCHING
-                // ==================================================
-
                 if (
                     activeCaseIdRef.current &&
                     activeCaseIdRef.current !==
@@ -2002,7 +2747,7 @@ export function GraphProvider({
                     catch (error) {
 
                         console.error(
-                            "Failed to save previous case before switching:",
+                            "Failed saving previous case:",
                             error
                         );
 
@@ -2010,10 +2755,6 @@ export function GraphProvider({
 
                 }
 
-
-                // ==================================================
-                // CANCEL AUTOSAVE
-                // ==================================================
 
                 if (
                     saveTimer.current
@@ -2036,10 +2777,6 @@ export function GraphProvider({
                     setApiError(null);
 
 
-                    // ==================================================
-                    // GET FRESH CASE FROM DATABASE
-                    // ==================================================
-
                     const freshCase =
                         await caseApi.getById(
                             requestedCaseId
@@ -2060,10 +2797,6 @@ export function GraphProvider({
                     const graphCase =
                         freshCase as GraphCaseItem;
 
-
-                    // ==================================================
-                    // GET GRAPH
-                    // ==================================================
 
                     const caseNodes =
                         Array.isArray(
@@ -2090,31 +2823,22 @@ export function GraphProvider({
 
 
                     console.log(
-                        "RAW CASE FROM DATABASE:",
+                        "RAW CASE:",
                         graphCase
                     );
 
 
                     console.log(
-                        "RAW NODES FROM DATABASE:",
+                        "RAW NODES:",
                         caseNodes
                     );
 
-
-                    // ==================================================
-                    // IMPORTANT:
-                    // HYDRATE BEFORE setNodes
-                    // ==================================================
 
                     const hydratedNodes =
                         await hydrateCaseNodes(
                             caseNodes
                         );
 
-
-                    // ==================================================
-                    // SET ACTIVE CASE
-                    // ==================================================
 
                     activeCaseIdRef.current =
                         requestedCaseId;
@@ -2130,18 +2854,10 @@ export function GraphProvider({
                     );
 
 
-                    // ==================================================
-                    // SET CASE
-                    // ==================================================
-
                     setSelectedCase(
                         graphCase
                     );
 
-
-                    // ==================================================
-                    // SET GRAPH
-                    // ==================================================
 
                     setNodes(
                         hydratedNodes
@@ -2158,17 +2874,15 @@ export function GraphProvider({
                     );
 
 
-                    // ==================================================
-                    // CLEAR SELECTION
-                    // ==================================================
-
                     setSelectedNode(
                         null
                     );
 
+
                     setSelectedEdge(
                         null
                     );
+
 
                     setSearchTerm(
                         ""
@@ -2176,31 +2890,8 @@ export function GraphProvider({
 
 
                     console.log(
-                        "===================================="
-                    );
-
-                    console.log(
                         "CASE OPENED:",
                         requestedCaseId
-                    );
-
-                    console.log(
-                        "HYDRATED NODES:",
-                        hydratedNodes
-                    );
-
-                    console.log(
-                        "EDGES:",
-                        caseEdges
-                    );
-
-                    console.log(
-                        "EVENTS:",
-                        caseEvents
-                    );
-
-                    console.log(
-                        "===================================="
                     );
 
                 }
@@ -2210,7 +2901,6 @@ export function GraphProvider({
                         "Failed to open case:",
                         error
                     );
-
 
                     setApiError(
                         "Failed to load case from SQL Server."
@@ -2237,7 +2927,7 @@ export function GraphProvider({
 
     useEffect(() => {
 
-        const restoreActiveCase =
+        const restore =
             async () => {
 
                 const savedCaseId =
@@ -2247,15 +2937,7 @@ export function GraphProvider({
 
 
                 if (
-                    !savedCaseId
-                ) {
-
-                    return;
-
-                }
-
-
-                if (
+                    !savedCaseId ||
                     initializedCase.current
                 ) {
 
@@ -2266,57 +2948,27 @@ export function GraphProvider({
 
                 try {
 
-                    setLoading(true);
+                    await openCase({
 
+                        id:
+                            savedCaseId
 
-                    // ==================================================
-                    // GET CASE FROM DATABASE
-                    // ==================================================
-
-                    const savedCase =
-                        await caseApi.getById(
-                            String(
-                                savedCaseId
-                            )
-                        );
-
-
-                    if (
-                        !savedCase
-                    ) {
-
-                        localStorage.removeItem(
-                            ACTIVE_CASE_STORAGE_KEY
-                        );
-
-                        return;
-
-                    }
-
-
-                    await openCase(
-                        savedCase as CaseItem
-                    );
+                    } as CaseItem);
 
                 }
                 catch (error) {
 
                     console.error(
-                        "Failed to restore active case:",
+                        "Failed to restore case:",
                         error
                     );
-
-                }
-                finally {
-
-                    setLoading(false);
 
                 }
 
             };
 
 
-        void restoreActiveCase();
+        void restore();
 
     }, [
         openCase
@@ -2415,16 +3067,13 @@ export function GraphProvider({
                     !currentCase?.id
                 ) {
 
-                    console.warn(
-                        "Cannot create event without an active case."
-                    );
-
                     return null;
 
                 }
 
 
                 const eventDate =
+
                     typeof event?.date === "string" &&
                         event.date.trim() !== ""
 
@@ -2475,10 +3124,6 @@ export function GraphProvider({
 
                 };
 
-
-                // ==================================================
-                // OPTIMISTIC UI
-                // ==================================================
 
                 setEvents(
                     prev => [
@@ -2547,7 +3192,6 @@ export function GraphProvider({
                                             }
 
                                             :
-
                                             eventItem
                                 )
                         );
@@ -2592,7 +3236,7 @@ export function GraphProvider({
 
 
     // ========================================================
-    // REFRESH CURRENT CASE
+    // REFRESH CASE
     // ========================================================
 
     const refreshCurrentCase =
@@ -2618,10 +3262,6 @@ export function GraphProvider({
 
                     setApiError(null);
 
-
-                    // ==================================================
-                    // GET FRESH CASE
-                    // ==================================================
 
                     const fresh =
                         await caseApi.getById(
@@ -2668,43 +3308,28 @@ export function GraphProvider({
                             : [];
 
 
-                    // ==================================================
-                    // HYDRATE
-                    // ==================================================
-
                     const hydratedNodes =
                         await hydrateCaseNodes(
                             freshNodes
                         );
 
 
-                    // ==================================================
-                    // SET STATE
-                    // ==================================================
-
                     setSelectedCase(
                         freshCase
                     );
-
 
                     setNodes(
                         hydratedNodes
                     );
 
-
                     setEdges(
                         freshEdges
                     );
-
 
                     setEvents(
                         freshEvents
                     );
 
-
-                    // ==================================================
-                    // ACTIVE CASE
-                    // ==================================================
 
                     activeCaseIdRef.current =
                         String(
@@ -2725,12 +3350,6 @@ export function GraphProvider({
                         )
                     );
 
-
-                    console.log(
-                        "CASE REFRESHED FROM DATABASE:",
-                        freshCase.id
-                    );
-
                 }
                 catch (error) {
 
@@ -2738,7 +3357,6 @@ export function GraphProvider({
                         "Failed to refresh case:",
                         error
                     );
-
 
                     setApiError(
                         "Failed to load case from SQL Server."
@@ -2779,10 +3397,6 @@ export function GraphProvider({
             );
 
 
-        // ==================================================
-        // MUST BE ACTIVE CASE
-        // ==================================================
-
         if (
             activeCaseIdRef.current !==
             caseId
@@ -2792,10 +3406,6 @@ export function GraphProvider({
 
         }
 
-
-        // ==================================================
-        // MUST BE INITIALIZED
-        // ==================================================
 
         if (
             initializedCase.current !==
@@ -2807,10 +3417,6 @@ export function GraphProvider({
         }
 
 
-        // ==================================================
-        // CLEAR OLD TIMER
-        // ==================================================
-
         if (
             saveTimer.current
         ) {
@@ -2821,10 +3427,6 @@ export function GraphProvider({
 
         }
 
-
-        // ==================================================
-        // SAVE AFTER 700ms
-        // ==================================================
 
         saveTimer.current =
             setTimeout(
@@ -2886,14 +3488,10 @@ export function GraphProvider({
 
 
                 const entityId =
-                    node?.data?.entityId ??
-                    node?.data?.entity?.id ??
-                    node?.entityId;
+                    getNodeEntityId(
+                        node
+                    );
 
-
-                // ==================================================
-                // REMOVE NODE
-                // ==================================================
 
                 setNodes(
                     prev =>
@@ -2908,10 +3506,6 @@ export function GraphProvider({
                         )
                 );
 
-
-                // ==================================================
-                // REMOVE CONNECTED EDGES
-                // ==================================================
 
                 setEdges(
                     prev =>
@@ -2935,10 +3529,6 @@ export function GraphProvider({
                 );
 
 
-                // ==================================================
-                // CLEAR NODE SELECTION
-                // ==================================================
-
                 if (
                     selectedNode &&
                     String(
@@ -2954,10 +3544,6 @@ export function GraphProvider({
 
                 }
 
-
-                // ==================================================
-                // CLEAR EDGE SELECTION
-                // ==================================================
 
                 if (
                     selectedEdge &&
@@ -2985,73 +3571,19 @@ export function GraphProvider({
                 }
 
 
-                // ==================================================
-                // DELETE MASTER ENTITY
-                // ==================================================
-
-                const masterEntity =
-                    entityRegistry.find(
-                        entity =>
-
-                            String(
-                                entity.id
-                            )
-                            ===
-                            String(
-                                entityId
-                            )
-                    );
-
-
-                if (
-                    masterEntity?.id
-                ) {
-
-                    try {
-
-                        await entityApi.delete(
-                            masterEntity.id
-                        );
-
-
-                        setEntityRegistry(
-                            prev =>
-                                prev.filter(
-                                    entity =>
-
-                                        String(
-                                            entity.id
-                                        )
-                                        !==
-                                        String(
-                                            masterEntity.id
-                                        )
-                                )
-                        );
-
-                    }
-                    catch (error) {
-
-                        console.error(
-                            "Failed to delete entity:",
-                            error
-                        );
-
-                    }
-
-                }
-
-
-                // ==================================================
-                // CREATE EVENT
-                // ==================================================
+                // NOTE:
+                // Deleting graph node does NOT automatically
+                // delete master entity.
+                //
+                // This prevents destroying the master entity
+                // just because a node was removed from a case.
 
                 try {
 
                     await addEvent({
 
                         title:
-                            "Entity Deleted",
+                            "Entity Removed From Graph",
 
                         type:
                             "delete",
@@ -3079,7 +3611,6 @@ export function GraphProvider({
                 nodes,
                 selectedNode,
                 selectedEdge,
-                entityRegistry,
                 addEvent
             ]
         );
@@ -3107,10 +3638,6 @@ export function GraphProvider({
                     );
 
 
-                // ==================================================
-                // REMOVE FROM GRAPH
-                // ==================================================
-
                 setEdges(
                     prev =>
                         prev.filter(
@@ -3124,10 +3651,6 @@ export function GraphProvider({
                         )
                 );
 
-
-                // ==================================================
-                // CLEAR SELECTION
-                // ==================================================
 
                 if (
                     selectedEdge &&
@@ -3145,10 +3668,6 @@ export function GraphProvider({
                 }
 
 
-                // ==================================================
-                // DELETE RELATIONSHIP FROM DATABASE
-                // ==================================================
-
                 try {
 
                     await relationshipApi.delete(
@@ -3165,10 +3684,6 @@ export function GraphProvider({
 
                 }
 
-
-                // ==================================================
-                // CREATE EVENT
-                // ==================================================
 
                 try {
 
@@ -3243,10 +3758,6 @@ export function GraphProvider({
 
             value={{
 
-                // ============================================
-                // GRAPH
-                // ============================================
-
                 nodes,
 
                 setNodes,
@@ -3254,11 +3765,6 @@ export function GraphProvider({
                 edges,
 
                 setEdges,
-
-
-                // ============================================
-                // ENTITIES
-                // ============================================
 
                 entityRegistry,
 
@@ -3270,11 +3776,6 @@ export function GraphProvider({
 
                 addEntityToGraph,
 
-
-                // ============================================
-                // SELECTION
-                // ============================================
-
                 selectedNode,
 
                 setSelectedNode,
@@ -3282,11 +3783,6 @@ export function GraphProvider({
                 selectedEdge,
 
                 setSelectedEdge,
-
-
-                // ============================================
-                // CASE
-                // ============================================
 
                 selectedCase,
 
@@ -3296,57 +3792,27 @@ export function GraphProvider({
 
                 clearCase,
 
-
-                // ============================================
-                // EVENTS
-                // ============================================
-
                 events,
 
                 setEvents,
 
                 addEvent,
 
-
-                // ============================================
-                // DELETE
-                // ============================================
-
                 deleteNode,
 
                 deleteEdge,
-
-
-                // ============================================
-                // SAVE / REFRESH
-                // ============================================
 
                 saveCurrentCase,
 
                 refreshCurrentCase,
 
-
-                // ============================================
-                // SEARCH
-                // ============================================
-
                 searchTerm,
 
                 setSearchTerm,
 
-
-                // ============================================
-                // API STATE
-                // ============================================
-
                 loading,
 
                 apiError,
-
-
-                // ============================================
-                // LOAD
-                // ============================================
 
                 loadEntities,
 

@@ -14,12 +14,77 @@ import {
 } from "../../context/GraphContext";
 
 
+// ============================================================
+// RELATIONSHIP TYPES
+// ============================================================
+
+const relationships = [
+
+    {
+        name: "Related",
+        color: "#94a3b8"
+    },
+
+    {
+        name: "Owner",
+        color: "#22c55e"
+    },
+
+    {
+        name: "Owns",
+        color: "#22c55e"
+    },
+
+    {
+        name: "Friend",
+        color: "#3b82f6"
+    },
+
+    {
+        name: "Family",
+        color: "#f97316"
+    },
+
+    {
+        name: "Works For",
+        color: "#a855f7"
+    },
+
+    {
+        name: "Suspect",
+        color: "#ef4444"
+    },
+
+    {
+        name: "Witness",
+        color: "#eab308"
+    },
+
+    {
+        name: "Partner",
+        color: "#ec4899"
+    },
+
+    {
+        name: "Located At",
+        color: "#06b6d4"
+    },
+
+    {
+        name: "Driver",
+        color: "#14b8a6"
+    }
+
+];
 
 
+// ============================================================
+// COMPONENT
+// ============================================================
 
-export default function CustomEdge(props: any) {
-
-
+export default function CustomEdge(
+    props: any
+) {
 
     const {
 
@@ -36,116 +101,26 @@ export default function CustomEdge(props: any) {
 
         data
 
-
     } = props;
-
-
-
-
-
 
 
     const {
 
         setEdges,
-
         addEvent
-
 
     } = useGraph();
 
 
+    const [
+        open,
+        setOpen
+    ] = useState(false);
 
 
-
-
-
-    const [open, setOpen] = useState(false);
-
-
-
-
-
-
-
-
-
-    const relationships = [
-
-
-        {
-            name: "Related",
-            color: "#94a3b8"
-        },
-
-
-        {
-            name: "Owner",
-            color: "#22c55e"
-        },
-
-
-        {
-            name: "Owns",
-            color: "#22c55e"
-        },
-
-
-        {
-            name: "Friend",
-            color: "#3b82f6"
-        },
-
-
-        {
-            name: "Family",
-            color: "#f97316"
-        },
-
-
-        {
-            name: "Works For",
-            color: "#a855f7"
-        },
-
-
-        {
-            name: "Suspect",
-            color: "#ef4444"
-        },
-
-
-        {
-            name: "Witness",
-            color: "#eab308"
-        },
-
-
-        {
-            name: "Partner",
-            color: "#ec4899"
-        },
-
-        {
-            name: "Located At",
-            color: "#06b6d4"
-        },
-
-        {
-            name: "Driver",
-            color: "#14b8a6"
-        }
-
-
-    ];
-
-
-
-
-
-
-
-
+    // ========================================================
+    // BEZIER PATH
+    // ========================================================
 
     const [
 
@@ -155,419 +130,379 @@ export default function CustomEdge(props: any) {
 
         labelY
 
-
     ] = getBezierPath({
 
-
         sourceX,
-
         sourceY,
-
         sourcePosition,
 
-
         targetX,
-
         targetY,
-
         targetPosition
-
 
     });
 
 
+    // ========================================================
+    // IMPORTANT
+    //
+    // Relationship can come from:
+    //
+    // data.relationshipType
+    // data.relationship
+    // data.label
+    // props.relationshipType
+    // props.relationship
+    // props.label
+    //
+    // This prevents the edge from becoming "Related"
+    // after loading the case.
+    // ========================================================
+
+    const relationshipType =
+
+        data?.relationshipType ??
+
+        data?.relationship ??
+
+        data?.label ??
+
+        props?.relationshipType ??
+
+        props?.relationship ??
+
+        props?.label ??
+
+        "Related";
 
 
+    // ========================================================
+    // RELATIONSHIP COLOR
+    // ========================================================
 
+    const getRelationshipColor = (
+        type: string
+    ) => {
 
-
-
-
-
-
-
-    const updateRelationship = useCallback(
-
-        (value: string) => {
-
-
-
-            setEdges(edges =>
-
-
-                edges.map(edge =>
-
-
-
-                    edge.id === id
-
-
-                        ?
-
-                        {
-
-
-                            ...edge,
-
-
-                            data: {
-
-
-                                ...edge.data,
-
-
-                                relationshipType: value
-
-
-                            }
-
-
-                        }
-
-
-                        :
-
-                        edge
-
-
-
-                )
-
-
-
+        const relation =
+            relationships.find(
+                item =>
+                    item.name === type
             );
 
 
-
-
-
-
-            addEvent({
-
-
-                title: "Relationship Updated",
-
-
-                description:
-
-                    `Relationship changed to ${value}`
-
-
-            });
-
-
-
-
-
-
-
-            // mbyll dropdown pas zgjedhjes
-
-            setOpen(false);
-
-
-
-        },
-
-        [
-
-            id,
-
-            setEdges,
-
-            addEvent
-
-        ]
-
-    );
-
-
-
-
-
-
-
-
-
-
-
-
-    const label =
-
-        data?.relationshipType || "Related";
-
-
-
-
-
-
-
-
-
-
-
-
-    const getRelationshipColor = (type: string) => {
-
-
-        const relation = relationships.find(
-
-
-            item => item.name === type
-
-
+        return (
+            relation?.color ??
+            "#94a3b8"
         );
-
-
-
-        return relation?.color || "#94a3b8";
-
 
     };
 
 
+    // ========================================================
+    // UPDATE RELATIONSHIP
+    // ========================================================
+
+    const updateRelationship =
+        useCallback(
+
+            async (
+                value: string
+            ) => {
+
+                // ==================================================
+                // UPDATE EDGE
+                // ==================================================
+
+                setEdges(
+                    currentEdges =>
+
+                        currentEdges.map(
+                            edge => {
+
+                                if (
+                                    String(
+                                        edge.id
+                                    ) !==
+                                    String(
+                                        id
+                                    )
+                                ) {
+
+                                    return edge;
+
+                                }
 
 
+                                return {
+
+                                    ...edge,
 
 
+                                    // =================================
+                                    // KEEP RELATIONSHIP ALSO TOP LEVEL
+                                    // =================================
+
+                                    relationshipType:
+                                        value,
 
 
+                                    relationship:
+                                        value,
 
 
+                                    label:
+                                        value,
 
+
+                                    // =================================
+                                    // KEEP IT INSIDE DATA
+                                    // =================================
+
+                                    data: {
+
+                                        ...(edge.data ?? {}),
+
+
+                                        relationshipType:
+                                            value,
+
+
+                                        relationship:
+                                            value,
+
+
+                                        label:
+                                            value
+
+                                    }
+
+                                };
+
+                            }
+
+                        )
+
+                );
+
+
+                // ==================================================
+                // EVENT
+                // ==================================================
+
+                try {
+
+                    await addEvent({
+
+                        title:
+                            "Relationship Updated",
+
+                        type:
+                            "relationship",
+
+                        description:
+                            `Relationship changed to ${value}`,
+
+                        date:
+                            new Date().toISOString()
+
+                    });
+
+                }
+                catch (
+                error
+                ) {
+
+                    console.error(
+                        "Failed to create relationship event:",
+                        error
+                    );
+
+                }
+
+
+                // ==================================================
+                // CLOSE DROPDOWN
+                // ==================================================
+
+                setOpen(false);
+
+            },
+
+            [
+                id,
+                setEdges,
+                addEvent
+            ]
+
+        );
+
+
+    // ========================================================
+    // CURRENT COLOR
+    // ========================================================
+
+    const relationshipColor =
+        getRelationshipColor(
+            relationshipType
+        );
+
+
+    // ========================================================
+    // RENDER
+    // ========================================================
 
     return (
 
         <>
 
-
             <BaseEdge
-
 
                 id={id}
 
-
                 path={edgePath}
-
 
                 style={{
 
+                    stroke:
+                        relationshipColor,
 
-                    stroke: getRelationshipColor(label),
-
-
-                    strokeWidth: 1.5
-
+                    strokeWidth:
+                        1.5
 
                 }}
-
 
             />
 
 
-
-
-
-
-
-
-
-
             <EdgeLabelRenderer>
-
 
                 <div
 
-
                     className="edge-label nodrag nopan"
-
 
                     style={{
 
-
                         transform:
+                            `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
 
-                            `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-
-
-                        pointerEvents: "all"
-
+                        pointerEvents:
+                            "all"
 
                     }}
 
-
-
                 >
 
-
-
-
-
-
+                    {/* ==========================================
+                        CURRENT RELATIONSHIP
+                    ========================================== */}
 
                     <div
 
-
-                        onClick={(e) => {
-
+                        onClick={(
+                            e
+                        ) => {
 
                             e.stopPropagation();
 
-
-                            setOpen(prev => !prev);
-
+                            setOpen(
+                                previous =>
+                                    !previous
+                            );
 
                         }}
 
-
                     >
 
-
-                        {label}
-
+                        {relationshipType}
 
                     </div>
 
 
-
-
-
-
-
-
+                    {/* ==========================================
+                        DROPDOWN
+                    ========================================== */}
 
                     {
 
                         open && (
 
-
-
                             <div
-
 
                                 className="edge-dropdown"
 
-
-                                onClick={(e) => {
-
+                                onClick={(
+                                    e
+                                ) => {
 
                                     e.stopPropagation();
 
-
                                 }}
-
-
 
                             >
 
-
-
-
                                 {
 
+                                    relationships.map(
+                                        item => (
 
-                                    relationships.map(item => (
+                                            <div
 
-
-
-                                        <div
-
-
-                                            key={item.name}
-
-
-                                            className="edge-option"
-
-
-
-                                            onClick={(e) => {
-
-
-                                                e.stopPropagation();
-
-
-
-                                                updateRelationship(
-
+                                                key={
                                                     item.name
+                                                }
 
-                                                );
+                                                className="edge-option"
 
+                                                onClick={(
+                                                    e
+                                                ) => {
 
-
-                                            }}
-
-
-                                        >
-
-
+                                                    e.stopPropagation();
 
 
-                                            <span
-
-
-                                                className="relationship-dot"
-
-
-                                                style={{
-
-
-                                                    background: item.color
-
+                                                    void updateRelationship(
+                                                        item.name
+                                                    );
 
                                                 }}
 
+                                            >
 
-                                            />
+                                                <span
 
+                                                    className="relationship-dot"
 
+                                                    style={{
 
+                                                        background:
+                                                            item.color
 
-                                            {item.name}
+                                                    }}
 
+                                                />
 
+                                                {item.name}
 
-                                        </div>
+                                            </div>
 
-
-
-
-                                    ))
-
+                                        )
+                                    )
 
                                 }
 
-
-
-
-
                             </div>
-
-
 
                         )
 
                     }
 
-
-
-
-
-
                 </div>
-
-
 
             </EdgeLabelRenderer>
 
-
-
-
         </>
 
-
     );
-
-
 
 }
