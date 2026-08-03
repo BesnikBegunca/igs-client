@@ -1,3 +1,4 @@
+
 import {
     FiX
 } from "react-icons/fi";
@@ -79,7 +80,9 @@ const relationshipColors: Record<string, string> = {
 
 
 const getRelationshipColor = (
+
     relationship: string
+
 ) => {
 
     return (
@@ -96,12 +99,6 @@ const getRelationshipColor = (
 
 // ============================================================
 // CUSTOM EDGE
-//
-// Uses ReactFlow's native Bezier path.
-// No forced curve.
-// No relationship label.
-// Relationship is displayed ONLY in the small
-// relationship container.
 // ============================================================
 
 function EntityGraphEdge({
@@ -145,21 +142,6 @@ function EntityGraphEdge({
         );
 
 
-
-    /*
-     * ReactFlow calculates the natural Bezier
-     * connection depending on the position
-     * of the source and target.
-     *
-     * This means:
-     *
-     * Bottom -> Top
-     * Right  -> Left
-     * Top    -> Bottom
-     * Left   -> Right
-     *
-     * all behave naturally.
-     */
 
     const [
 
@@ -290,7 +272,9 @@ export default function EntityGraph({
     // ========================================================
 
     const getNodeName = (
+
         node: any
+
     ) =>
 
         String(
@@ -312,7 +296,9 @@ export default function EntityGraph({
 
 
     const getNodeType = (
+
         node: any
+
     ) =>
 
         String(
@@ -331,8 +317,14 @@ export default function EntityGraph({
 
 
 
+    // ========================================================
+    // SAME ENTITY
+    // ========================================================
+
     const isSameEntity = (
+
         node: any
+
     ) => {
 
         if (!node) {
@@ -430,7 +422,7 @@ export default function EntityGraph({
 
 
     // ========================================================
-    // FIND MAIN ENTITY INSTANCES
+    // ALL MAIN ENTITY INSTANCES
     // ========================================================
 
     const entityNodes =
@@ -447,24 +439,32 @@ export default function EntityGraph({
 
     const entityIds =
 
-        new Set<string>(
+        new Set<string>();
 
-            entityNodes.map(
 
-                (node: any) =>
 
-                    String(node.id)
+    entityNodes.forEach(
 
-            )
+        (node: any) => {
 
-        );
+            entityIds.add(
+
+                String(node.id)
+
+            );
+
+        }
+
+    );
 
 
 
     if (mainEntityId) {
 
         entityIds.add(
+
             mainEntityId
+
         );
 
     }
@@ -472,10 +472,24 @@ export default function EntityGraph({
 
 
     // ========================================================
-    // CONNECTED EDGES
+    // IMPORTANT FIX
+    //
+    // FIND EVERY EDGE CONNECTED TO ANY MAIN ENTITY INSTANCE.
+    //
+    // We do NOT depend on only one main node.
+    //
+    // This is what guarantees:
+    //
+    // Ardi
+    //   |
+    //   + Family -> Person 1
+    //   + Family -> Person 2
+    //   + Family -> Person 3
+    //
+    // ALL THREE ARE INCLUDED.
     // ========================================================
 
-    const graphEdges =
+    const directMainEdges =
 
         edges.filter(
 
@@ -483,8 +497,6 @@ export default function EntityGraph({
 
                 const source =
                     String(edge.source);
-
-
 
                 const target =
                     String(edge.target);
@@ -506,10 +518,11 @@ export default function EntityGraph({
 
 
     // ========================================================
-    // COLLECT NODE IDS
+    // COLLECT ALL CONNECTED NODE IDS
     // ========================================================
 
     const nodeIds =
+
         new Set<string>();
 
 
@@ -530,7 +543,7 @@ export default function EntityGraph({
 
 
 
-    graphEdges.forEach(
+    directMainEdges.forEach(
 
         (edge: any) => {
 
@@ -539,8 +552,6 @@ export default function EntityGraph({
                 String(edge.source)
 
             );
-
-
 
             nodeIds.add(
 
@@ -575,10 +586,17 @@ export default function EntityGraph({
 
 
     // ========================================================
-    // REMOVE DUPLICATES
+    // UNIQUE GRAPH NODES
+    //
+    // Main entity = one visual node.
+    //
+    // EVERY OTHER NODE = its own visual node.
+    //
+    // We NEVER use name/type for deduplication.
     // ========================================================
 
     const visualNodeMap =
+
         new Map<string, any>();
 
 
@@ -587,35 +605,53 @@ export default function EntityGraph({
 
         (node: any) => {
 
-            const nodeName =
-                getNodeName(node);
-
-
-
-            const nodeType =
-                getNodeType(node);
-
-
-
-            const key =
+            if (
 
                 isSameEntity(node)
 
-                    ? "__MAIN_ENTITY__"
+            ) {
 
-                    : `${nodeName}::${nodeType}`;
+                if (
+
+                    !visualNodeMap.has(
+
+                        "__MAIN_ENTITY__"
+
+                    )
+
+                ) {
+
+                    visualNodeMap.set(
+
+                        "__MAIN_ENTITY__",
+
+                        node
+
+                    );
+
+                }
+
+                return;
+
+            }
+
+
+
+            const id =
+
+                String(node.id);
 
 
 
             if (
 
-                !visualNodeMap.has(key)
+                !visualNodeMap.has(id)
 
             ) {
 
                 visualNodeMap.set(
 
-                    key,
+                    id,
 
                     node
 
@@ -640,7 +676,37 @@ export default function EntityGraph({
 
 
     // ========================================================
-    // MAP ORIGINAL IDS -> VISUAL IDS
+    // MAIN GRAPH NODE
+    // ========================================================
+
+    const mainGraphNode =
+
+        uniqueGraphNodes.find(
+
+            (node: any) =>
+
+                isSameEntity(node)
+
+        );
+
+
+
+    if (!mainGraphNode) {
+
+        return null;
+
+    }
+
+
+
+    const mainVisualId =
+
+        String(mainGraphNode.id);
+
+
+
+    // ========================================================
+    // ORIGINAL -> VISUAL ID
     // ========================================================
 
     const originalToVisualId =
@@ -649,37 +715,33 @@ export default function EntityGraph({
 
 
 
+    entityNodes.forEach(
+
+        (mainNode: any) => {
+
+            originalToVisualId.set(
+
+                String(mainNode.id),
+
+                mainVisualId
+
+            );
+
+        }
+
+    );
+
+
+
     uniqueGraphNodes.forEach(
 
         (node: any) => {
 
-            const nodeName =
-                getNodeName(node);
-
-
-
-            const nodeType =
-                getNodeType(node);
-
-
-
-            const key =
+            if (
 
                 isSameEntity(node)
 
-                    ? "__MAIN_ENTITY__"
-
-                    : `${nodeName}::${nodeType}`;
-
-
-
-            const visualNode =
-
-                visualNodeMap.get(key);
-
-
-
-            if (!visualNode) {
+            ) {
 
                 return;
 
@@ -687,63 +749,13 @@ export default function EntityGraph({
 
 
 
-            rawGraphNodes
+            originalToVisualId.set(
 
-                .filter(
+                String(node.id),
 
-                    (rawNode: any) => {
+                String(node.id)
 
-                        if (
-
-                            isSameEntity(rawNode) &&
-
-                            isSameEntity(node)
-
-                        ) {
-
-                            return true;
-
-                        }
-
-
-
-                        return (
-
-                            getNodeName(rawNode) ===
-                            nodeName &&
-
-                            getNodeType(rawNode) ===
-                            nodeType
-
-                        );
-
-                    }
-
-                )
-
-                .forEach(
-
-                    (rawNode: any) => {
-
-                        originalToVisualId.set(
-
-                            String(
-
-                                rawNode.id
-
-                            ),
-
-                            String(
-
-                                visualNode.id
-
-                            )
-
-                        );
-
-                    }
-
-                );
+            );
 
         }
 
@@ -752,26 +764,34 @@ export default function EntityGraph({
 
 
     // ========================================================
-    // NORMALIZE RELATIONSHIPS
+    // NORMALIZE DIRECT MAIN EDGES
     // ========================================================
 
     const normalizedEdges =
 
-        graphEdges
+        directMainEdges
 
             .map(
 
                 (edge: any) => {
 
+                    const originalSource =
+
+                        String(edge.source);
+
+
+
+                    const originalTarget =
+
+                        String(edge.target);
+
+
+
                     const source =
 
                         originalToVisualId.get(
 
-                            String(
-
-                                edge.source
-
-                            )
+                            originalSource
 
                         );
 
@@ -781,11 +801,7 @@ export default function EntityGraph({
 
                         originalToVisualId.get(
 
-                            String(
-
-                                edge.target
-
-                            )
+                            originalTarget
 
                         );
 
@@ -813,6 +829,11 @@ export default function EntityGraph({
 
                             edge.data
                                 ?.relationshipType ??
+
+                            edge.data
+                                ?.relationship ??
+
+                            edge.relationship ??
 
                             "Related"
 
@@ -854,49 +875,22 @@ export default function EntityGraph({
 
 
     // ========================================================
-    // MAIN NODE
-    // ========================================================
-
-    const mainGraphNode =
-
-        uniqueGraphNodes.find(
-
-            (node: any) =>
-
-                isSameEntity(node)
-
-        );
-
-
-
-    if (!mainGraphNode) {
-
-        return null;
-
-    }
-
-
-
-    const mainVisualId =
-        String(mainGraphNode.id);
-
-
-
-    // ========================================================
-    // GROUP DIRECT RELATIONSHIPS
+    // RELATIONSHIP GROUPS
     //
-    // MAIN
-    //   |
-    //   +--- Family
-    //   |      |
-    //   |      +--- Person A
-    //   |      +--- Person B
-    //   |
-    //   +--- Works For
-    //          |
-    //          +--- Police
+    // IMPORTANT:
     //
-    // Each relationship appears ONLY ONCE.
+    // We group ONLY by relationship type.
+    //
+    // Entities are added by THEIR ORIGINAL ID.
+    //
+    // Therefore:
+    //
+    // Family:
+    //   Person A
+    //   Person B
+    //   Person C
+    //
+    // all stay inside the same group.
     // ========================================================
 
     const relationshipGroups =
@@ -926,11 +920,13 @@ export default function EntityGraph({
             if (
 
                 edge.source ===
+
                 mainVisualId
 
             ) {
 
                 otherId =
+
                     edge.target;
 
             }
@@ -938,11 +934,13 @@ export default function EntityGraph({
             else if (
 
                 edge.target ===
+
                 mainVisualId
 
             ) {
 
                 otherId =
+
                     edge.source;
 
             }
@@ -956,6 +954,7 @@ export default function EntityGraph({
 
 
             const relationship =
+
                 edge.relationship;
 
 
@@ -979,6 +978,7 @@ export default function EntityGraph({
                         relationship,
 
                         color:
+
                             getRelationshipColor(
 
                                 relationship
@@ -1007,6 +1007,15 @@ export default function EntityGraph({
 
 
 
+            // =================================================
+            // FIND THE ACTUAL NODE BY ID
+            //
+            // NOT BY NAME.
+            // NOT BY TYPE.
+            //
+            // This is the important part for 3+ entities.
+            // =================================================
+
             const entityNode =
 
                 uniqueGraphNodes.find(
@@ -1014,6 +1023,7 @@ export default function EntityGraph({
                     (node: any) =>
 
                         String(node.id) ===
+
                         String(otherId)
 
                 );
@@ -1024,28 +1034,51 @@ export default function EntityGraph({
 
                 entityNode &&
 
-                !group.entities.some(
-
-                    (node: any) =>
-
-                        String(node.id) ===
-                        String(entityNode.id)
-
-                )
+                !isSameEntity(entityNode)
 
             ) {
 
-                group.entities.push(
+                const alreadyExists =
 
-                    entityNode
+                    group.entities.some(
 
-                );
+                        (existingNode: any) =>
+
+                            String(
+
+                                existingNode.id
+
+                            ) ===
+
+                            String(
+
+                                entityNode.id
+
+                            )
+
+                    );
+
+
+
+                if (!alreadyExists) {
+
+                    group.entities.push(
+
+                        entityNode
+
+                    );
+
+                }
 
             }
 
 
 
-            group.edges.push(edge);
+            group.edges.push(
+
+                edge
+
+            );
 
         }
 
@@ -1072,7 +1105,6 @@ export default function EntityGraph({
 
 
 
-    // Small relationship title
     const relationshipWidth =
         120;
 
@@ -1123,18 +1155,21 @@ export default function EntityGraph({
 
 
     // ========================================================
-    // CALCULATE GROUP WIDTH
+    // GROUP WIDTH
     // ========================================================
 
     const getGroupWidth = (
 
         group: {
+
             entities: any[];
+
         }
 
     ) => {
 
         const count =
+
             Math.max(
 
                 1,
@@ -1150,11 +1185,17 @@ export default function EntityGraph({
             relationshipWidth + 80,
 
             count *
+
             nodeWidth +
 
-            (
+            Math.max(
+
+                0,
+
                 count - 1
+
             ) *
+
             horizontalGap
 
         );
@@ -1167,7 +1208,13 @@ export default function EntityGraph({
 
         groups.reduce(
 
-            (sum, group) =>
+            (
+
+                sum,
+
+                group
+
+            ) =>
 
                 sum +
 
@@ -1220,6 +1267,7 @@ export default function EntityGraph({
         position: {
 
             x:
+
                 centerX -
 
                 nodeWidth / 2,
@@ -1239,19 +1287,15 @@ export default function EntityGraph({
 
             label:
 
-                `${
+                `${mainGraphNode.data?.icon ||
 
-                    mainGraphNode.data?.icon ||
+                "❓"
 
-                    "❓"
+                } ${mainGraphNode.data?.label ||
 
-                } ${
+                mainGraphNode.data?.name ||
 
-                    mainGraphNode.data?.label ||
-
-                    mainGraphNode.data?.name ||
-
-                    "Unknown"
+                "Unknown"
 
                 }`,
 
@@ -1338,9 +1382,16 @@ export default function EntityGraph({
 
     groups.forEach(
 
-        (group, groupIndex) => {
+        (
+
+            group,
+
+            groupIndex
+
+        ) => {
 
             const width =
+
                 getGroupWidth(group);
 
 
@@ -1355,15 +1406,7 @@ export default function EntityGraph({
 
             const relationshipNodeId =
 
-                `relationship-${
-
-                    groupIndex
-
-                }-${
-
-                    group.relationship
-
-                }`;
+                `relationship-${groupIndex}-${group.relationship}`;
 
 
 
@@ -1379,6 +1422,7 @@ export default function EntityGraph({
                     group.color,
 
                 x:
+
                     groupCenter -
 
                     relationshipWidth / 2,
@@ -1393,10 +1437,11 @@ export default function EntityGraph({
 
 
             // ==================================================
-            // ENTITIES UNDER RELATIONSHIP
+            // ALL ENTITIES
             // ==================================================
 
             const count =
+
                 group.entities.length;
 
 
@@ -1404,6 +1449,7 @@ export default function EntityGraph({
             const entitiesWidth =
 
                 count *
+
                 nodeWidth +
 
                 Math.max(
@@ -1413,6 +1459,7 @@ export default function EntityGraph({
                     count - 1
 
                 ) *
+
                 horizontalGap;
 
 
@@ -1436,7 +1483,12 @@ export default function EntityGraph({
                 ) => {
 
                     const entityId =
-                        String(entityNode.id);
+
+                        String(
+
+                            entityNode.id
+
+                        );
 
 
 
@@ -1488,9 +1540,57 @@ export default function EntityGraph({
 
 
     // ========================================================
-    // CREATE RELATIONSHIP CONTAINERS
-    //
-    // Relationship text appears ONLY HERE.
+    // ENTITY RELATIONSHIP COLORS
+    // ========================================================
+
+    const entityRelationshipColors =
+
+        new Map<string, string>();
+
+
+
+    groups.forEach(
+
+        (group) => {
+
+            group.entities.forEach(
+
+                (node: any) => {
+
+                    const id =
+
+                        String(node.id);
+
+
+
+                    if (
+
+                        !entityRelationshipColors.has(id)
+
+                    ) {
+
+                        entityRelationshipColors.set(
+
+                            id,
+
+                            group.color
+
+                        );
+
+                    }
+
+                }
+
+            );
+
+        }
+
+    );
+
+
+
+    // ========================================================
+    // RELATIONSHIP CONTAINERS
     // ========================================================
 
     relationshipNodes.forEach(
@@ -1546,21 +1646,15 @@ export default function EntityGraph({
                         relationshipHeight,
 
                     background:
-                        `${
 
-                            relationshipNode.color
-
-                        }18`,
+                        `${relationshipNode.color}18`,
 
                     color:
                         relationshipNode.color,
 
                     border:
-                        `1px solid ${
 
-                            relationshipNode.color
-
-                        }88`,
+                        `1px solid ${relationshipNode.color}88`,
 
                     borderRadius:
                         9,
@@ -1581,11 +1675,8 @@ export default function EntityGraph({
                         "0.2px",
 
                     boxShadow:
-                        `0 4px 14px ${
 
-                            relationshipNode.color
-
-                        }12`
+                        `0 4px 14px ${relationshipNode.color}12`
 
                 }
 
@@ -1598,7 +1689,7 @@ export default function EntityGraph({
 
 
     // ========================================================
-    // CREATE ENTITY NODES
+    // ENTITY NODES
     // ========================================================
 
     uniqueGraphNodes
@@ -1616,6 +1707,7 @@ export default function EntityGraph({
             (node: any) => {
 
                 const id =
+
                     String(node.id);
 
 
@@ -1631,6 +1723,14 @@ export default function EntityGraph({
                     return;
 
                 }
+
+
+
+                const relationshipColor =
+
+                    entityRelationshipColors.get(id) ??
+
+                    "#334155";
 
 
 
@@ -1653,19 +1753,15 @@ export default function EntityGraph({
 
                         label:
 
-                            `${
+                            `${node.data?.icon ||
 
-                                node.data?.icon ||
+                            "❓"
 
-                                "❓"
+                            } ${node.data?.label ||
 
-                            } ${
+                            node.data?.name ||
 
-                                node.data?.label ||
-
-                                node.data?.name ||
-
-                                "Unknown"
+                            "Unknown"
 
                             }`,
 
@@ -1689,7 +1785,8 @@ export default function EntityGraph({
                             "#ffffff",
 
                         border:
-                            "1px solid #334155",
+
+                            `1px solid ${relationshipColor}`,
 
                         borderRadius:
                             12,
@@ -1704,7 +1801,8 @@ export default function EntityGraph({
                             650,
 
                         boxShadow:
-                            "0 8px 25px rgba(0,0,0,0.35)"
+
+                            `0 8px 25px ${relationshipColor}22`
 
                     }
 
@@ -1717,13 +1815,7 @@ export default function EntityGraph({
 
 
     // ========================================================
-    // CREATE EDGES
-    //
-    // IMPORTANT:
-    // There are NO edge labels.
-    //
-    // Relationship is displayed only once inside
-    // the relationship node.
+    // FINAL EDGES
     // ========================================================
 
     const finalEdges: Edge[] = [];
@@ -1736,17 +1828,17 @@ export default function EntityGraph({
 
     relationshipNodes.forEach(
 
-        (relationshipNode) => {
+        (
+
+            relationshipNode
+
+        ) => {
 
             finalEdges.push({
 
                 id:
 
-                    `main-to-${
-
-                        relationshipNode.id
-
-                    }`,
+                    `main-to-${relationshipNode.id}`,
 
                 source:
                     mainVisualId,
@@ -1760,6 +1852,7 @@ export default function EntityGraph({
                 data: {
 
                     relationshipType:
+
                         relationshipNode.relationship
 
                 }
@@ -1773,7 +1866,19 @@ export default function EntityGraph({
 
 
     // ========================================================
-    // RELATIONSHIP -> ENTITIES
+    // RELATIONSHIP -> EVERY ENTITY
+    //
+    // If group.entities contains 3:
+    //
+    // Relationship
+    //     |
+    //     +---- Entity 1
+    //     |
+    //     +---- Entity 2
+    //     |
+    //     +---- Entity 3
+    //
+    // ALL THREE GET AN EDGE.
     // ========================================================
 
     groups.forEach(
@@ -1804,20 +1909,14 @@ export default function EntityGraph({
 
                         id:
 
-                            `${
-
-                                relationshipNode.id
-
-                            }-entity-${
-
-                                entityNode.id
-
-                            }`,
+                            `${relationshipNode.id}-entity-${entityNode.id}`,
 
                         source:
+
                             relationshipNode.id,
 
                         target:
+
                             String(entityNode.id),
 
                         type:
@@ -1826,6 +1925,7 @@ export default function EntityGraph({
                         data: {
 
                             relationshipType:
+
                                 group.relationship
 
                         }
@@ -1905,7 +2005,26 @@ export default function EntityGraph({
     ) {
 
         const startY =
+
             entityY + 230;
+
+
+
+        const totalWidth =
+
+            disconnectedNodes.length *
+
+            nodeWidth +
+
+            Math.max(
+
+                0,
+
+                disconnectedNodes.length - 1
+
+            ) *
+
+            horizontalGap;
 
 
 
@@ -1920,21 +2039,8 @@ export default function EntityGraph({
             ) => {
 
                 const id =
+
                     String(node.id);
-
-
-
-                const totalWidth =
-
-                    disconnectedNodes.length *
-
-                    (
-
-                        nodeWidth +
-
-                        horizontalGap
-
-                    );
 
 
 
@@ -2311,6 +2417,7 @@ export default function EntityGraph({
                         edgeTypes={{
 
                             entityGraphEdge:
+
                                 EntityGraphEdge
 
                         }}
@@ -2430,7 +2537,6 @@ export default function EntityGraph({
 
                                 (node: any) => {
 
-                                    // Relationship container
                                     if (
 
                                         node.data
@@ -2473,7 +2579,7 @@ export default function EntityGraph({
 
 
 
-                                    return (
+                                    if (
 
                                         originalNode &&
 
@@ -2483,11 +2589,25 @@ export default function EntityGraph({
 
                                         )
 
-                                    )
+                                    ) {
 
-                                        ? "#2563eb"
+                                        return "#2563eb";
 
-                                        : "#1f2937";
+                                    }
+
+
+
+                                    return (
+
+                                        entityRelationshipColors.get(
+
+                                            String(node.id)
+
+                                        ) ??
+
+                                        "#1f2937"
+
+                                    );
 
                                 }
 
@@ -2506,3 +2626,4 @@ export default function EntityGraph({
     );
 
 }
+
