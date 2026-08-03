@@ -2414,3 +2414,463 @@ export async function generateReport(
     }
 
 }
+// ============================================================
+// GENERATE TXT REPORT
+// ============================================================
+
+export function generateTXTReport(
+    entity: any,
+    data: ReportData
+) {
+
+    try {
+
+        const entityData =
+            entity?.data ??
+            entity ??
+            {};
+
+
+        const entityName =
+            String(
+                entityData?.name ??
+                entityData?.label ??
+                entity?.name ??
+                entity?.label ??
+                "Unknown Entity"
+            ).trim();
+
+
+        const entityType =
+            String(
+                entityData?.type ??
+                entityData?.entityType ??
+                entity?.type ??
+                "Entity"
+            ).trim();
+
+
+        const risk =
+            String(
+                entityData?.risk ??
+                "Low"
+            ).trim();
+
+
+        const details =
+            entityData?.details || {};
+
+
+        const relatedCases =
+            Array.isArray(data?.relatedCases)
+                ? data.relatedCases
+                : [];
+
+
+        const connectedEntities =
+            Array.isArray(data?.connectedEntities)
+                ? data.connectedEntities
+                : [];
+
+
+        const relations =
+            data?.relations || {};
+
+
+        const connections =
+            data?.connections ??
+            0;
+
+
+        // ========================================================
+        // BUILD TXT
+        // ========================================================
+
+        const lines: string[] = [];
+
+
+        lines.push(
+            "============================================================"
+        );
+
+        lines.push(
+            "                 INTELLIGENCE REPORT"
+        );
+
+        lines.push(
+            "============================================================"
+        );
+
+        lines.push("");
+
+
+        // ========================================================
+        // ENTITY INFORMATION
+        // ========================================================
+
+        lines.push(
+            "ENTITY INFORMATION"
+        );
+
+        lines.push(
+            "------------------------------------------------------------"
+        );
+
+        lines.push(
+            `Name: ${entityName}`
+        );
+
+        lines.push(
+            `Type: ${entityType}`
+        );
+
+        lines.push(
+            `Risk: ${risk}`
+        );
+
+        lines.push("");
+
+
+        // ========================================================
+        // DETAILS
+        // ========================================================
+
+        if (
+            Object.keys(details).length > 0
+        ) {
+
+            lines.push(
+                "DETAILS"
+            );
+
+            lines.push(
+                "------------------------------------------------------------"
+            );
+
+
+            Object.entries(
+                details
+            ).forEach(
+                (
+                    [
+                        key,
+                        value
+                    ]
+                ) => {
+
+                    lines.push(
+                        `${String(key)}: ${String(value)}`
+                    );
+
+                }
+            );
+
+
+            lines.push("");
+
+        }
+
+
+        // ========================================================
+        // INVESTIGATION SUMMARY
+        // ========================================================
+
+        lines.push(
+            "INVESTIGATION SUMMARY"
+        );
+
+        lines.push(
+            "------------------------------------------------------------"
+        );
+
+        lines.push(
+            `Cases Involved: ${data?.casesCount ?? relatedCases.length}`
+        );
+
+        lines.push(
+            `Direct Connections: ${connections}`
+        );
+
+        lines.push(
+            `Connected Entities: ${connectedEntities.length}`
+        );
+
+        lines.push("");
+
+
+        // ========================================================
+        // CASES INVOLVED
+        // ========================================================
+
+        lines.push(
+            "CASES INVOLVED"
+        );
+
+        lines.push(
+            "------------------------------------------------------------"
+        );
+
+
+        if (
+            relatedCases.length === 0
+        ) {
+
+            lines.push(
+                "No case information available."
+            );
+
+        }
+        else {
+
+            relatedCases.forEach(
+                (
+                    item: any,
+                    index: number
+                ) => {
+
+                    const caseName =
+                        item?.name ??
+                        item?.title ??
+                        "Investigation";
+
+
+                    lines.push(
+                        `${index + 1}. ${caseName}`
+                    );
+
+                }
+            );
+
+        }
+
+
+        lines.push("");
+
+
+        // ========================================================
+        // CONNECTED ENTITIES
+        // ========================================================
+
+        lines.push(
+            "CONNECTED ENTITIES"
+        );
+
+        lines.push(
+            "------------------------------------------------------------"
+        );
+
+
+        if (
+            connectedEntities.length === 0
+        ) {
+
+            lines.push(
+                "No direct connections found."
+            );
+
+        }
+        else {
+
+            connectedEntities.forEach(
+                (
+                    connected: any,
+                    index: number
+                ) => {
+
+                    const name =
+                        connected?.name ??
+                        "Unknown";
+
+
+                    const type =
+                        connected?.type ??
+                        "Entity";
+
+
+                    const relationship =
+                        Array.isArray(
+                            connected?.relationships
+                        )
+                            ? connected.relationships.join(
+                                ", "
+                            )
+                            : String(
+                                connected?.relationship ??
+                                "Related"
+                            );
+
+
+                    lines.push(
+                        `${index + 1}. ${name}`
+                    );
+
+                    lines.push(
+                        `   Type: ${type}`
+                    );
+
+                    lines.push(
+                        `   Relationship: ${relationship}`
+                    );
+
+                    lines.push("");
+
+                }
+            );
+
+        }
+
+
+        // ========================================================
+        // RELATIONSHIP ANALYSIS
+        // ========================================================
+
+        lines.push(
+            "RELATIONSHIP ANALYSIS"
+        );
+
+        lines.push(
+            "------------------------------------------------------------"
+        );
+
+
+        const relationEntries =
+            Object.entries(
+                relations
+            );
+
+
+        if (
+            relationEntries.length === 0
+        ) {
+
+            lines.push(
+                "No relationship statistics found."
+            );
+
+        }
+        else {
+
+            relationEntries.forEach(
+                (
+                    [
+                        relationship,
+                        count
+                    ]
+                ) => {
+
+                    lines.push(
+                        `${relationship}: ${count}`
+                    );
+
+                }
+            );
+
+        }
+
+
+        lines.push("");
+
+
+        // ========================================================
+        // FOOTER
+        // ========================================================
+
+        lines.push(
+            "============================================================"
+        );
+
+        lines.push(
+            `Generated Intelligence Report • ${entityName}`
+        );
+
+        lines.push(
+            "============================================================"
+        );
+
+
+        const content =
+            lines.join("\n");
+
+
+        // ========================================================
+        // DOWNLOAD TXT
+        // ========================================================
+
+        const blob =
+            new Blob(
+                [
+                    content
+                ],
+                {
+                    type:
+                        "text/plain;charset=utf-8"
+                }
+            );
+
+
+        const url =
+            URL.createObjectURL(
+                blob
+            );
+
+
+        const link =
+            document.createElement(
+                "a"
+            );
+
+
+        const safeName =
+            entityName
+                .replace(
+                    /[^a-z0-9]+/gi,
+                    "-"
+                )
+                .replace(
+                    /^-+|-+$/g,
+                    ""
+                )
+                .toLowerCase();
+
+
+        link.href =
+            url;
+
+
+        link.download =
+            `${safeName || "entity"}-intelligence-report.txt`;
+
+
+        document.body.appendChild(
+            link
+        );
+
+
+        link.click();
+
+
+        document.body.removeChild(
+            link
+        );
+
+
+        URL.revokeObjectURL(
+            url
+        );
+
+    }
+    catch (error) {
+
+        console.error(
+            "TXT EXPORT ERROR:",
+            error
+        );
+
+
+        alert(
+            "TXT export failed. Check the browser console for details."
+        );
+
+    }
+
+}

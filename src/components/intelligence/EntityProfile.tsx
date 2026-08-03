@@ -7,7 +7,8 @@ import {
 } from "react-icons/fi";
 
 import {
-    generateReport
+    generateReport,
+    generateTXTReport
 } from "../../utils/reportGenerator";
 
 import {
@@ -1021,136 +1022,225 @@ export default function EntityProfile({
                 {/* ==================================================
                     GENERATE GRAPH
                 ================================================== */}
-
-                <button
-                    className="generate-graph-btn"
-                    onClick={() =>
-                        setShowGraph(true)
-                    }
-                >
-
-                    🔗 Generate Connection Graph
-
-                </button>
+                <div className="profile-action-buttons">
 
 
-                {/* ==================================================
+                    <button
+                        className="generate-graph-btn"
+                        onClick={() =>
+                            setShowGraph(true)
+                        }
+                    >
+
+                        Generate Connection Graph
+
+                    </button>
+
+
+                    {/* ==================================================
                     PRINT TO PDF
                 ================================================== */}
 
-                <button
-                    className="report-btn"
-                    onClick={() =>
-                        generateReport(
-                            entity,
-                            {
-                                cases:
-                                    relatedCases.length,
+                    <button
+                        className="report-btn"
+                        onClick={() =>
+                            generateReport(
+                                entity,
+                                {
+                                    cases:
+                                        relatedCases.length,
 
-                                connections:
-                                    connections.length,
+                                    connections:
+                                        connections.length,
 
-                                relations:
-                                    relationStats,
+                                    relations:
+                                        relationStats,
 
-                                nodes:
-                                    allNodes,
+                                    nodes:
+                                        allNodes,
 
-                                edges:
-                                    allEdges,
+                                    edges:
+                                        allEdges,
 
-                                casesCount:
-                                    relatedCases.length,
+                                    casesCount:
+                                        relatedCases.length,
 
-                                // IMPORTANT:
-                                // Pass actual cases so PDF can list them
-                                relatedCases:
-                                    relatedCases,
+                                    // IMPORTANT:
+                                    // Pass actual cases so PDF can list them
+                                    relatedCases:
+                                        relatedCases,
 
-                                // IMPORTANT:
-                                // Pass actual connected entities
-                                connectedEntities:
-                                    connectedEntities.map(
-                                        (item: any) => {
+                                    // IMPORTANT:
+                                    // Pass actual connected entities
+                                    connectedEntities:
+                                        connectedEntities.map(
+                                            (item: any) => {
 
-                                            const node =
-                                                item?.node;
+                                                const node =
+                                                    item?.node;
 
-                                            const nodeData =
-                                                node?.data ??
-                                                node ??
-                                                {};
+                                                const nodeData =
+                                                    node?.data ??
+                                                    node ??
+                                                    {};
 
-                                            return {
+                                                return {
 
-                                                id:
-                                                    node?.id,
+                                                    id:
+                                                        node?.id,
 
-                                                name:
-                                                    nodeData?.name ??
-                                                    nodeData?.label ??
-                                                    nodeData?.entityName ??
-                                                    "Unknown",
+                                                    name:
+                                                        nodeData?.name ??
+                                                        nodeData?.label ??
+                                                        nodeData?.entityName ??
+                                                        "Unknown",
 
-                                                type:
-                                                    nodeData?.type ??
-                                                    nodeData?.entityType ??
-                                                    "Entity",
+                                                    type:
+                                                        nodeData?.type ??
+                                                        nodeData?.entityType ??
+                                                        "Entity",
 
-                                                relationship:
-                                                    item?.relationship ??
-                                                    "Related",
-
-                                                relationships:
-                                                    item?.relationships ??
-                                                    [
+                                                    relationship:
                                                         item?.relationship ??
-                                                        "Related"
-                                                    ]
+                                                        "Related",
 
-                                            };
+                                                    relationships:
+                                                        item?.relationships ??
+                                                        [
+                                                            item?.relationship ??
+                                                            "Related"
+                                                        ]
 
-                                        }
-                                    ),
+                                                };
 
-                                graphNodes:
-                                    globalGraphNodes,
+                                            }
+                                        ),
 
-                                graphEdges:
-                                    globalGraphEdges
+                                    graphNodes:
+                                        globalGraphNodes,
 
-                            }
-                        )
-                    }
-                >
-                    📄 Generate Intelligence Report
-                </button>
+                                    graphEdges:
+                                        globalGraphEdges
+
+                                }
+                            )
+                        }
+                    >
+                        Generate Intelligence Report
+                    </button>
 
 
-                {/* ==================================================
+                    <button
+                        className="report-btn"
+                        onClick={() =>
+                            generateTXTReport(
+                                entity,
+                                {
+                                    cases:
+                                        relatedCases.length,
+
+                                    connections:
+                                        connections.length,
+
+                                    relations:
+                                        relationStats,
+
+                                    nodes:
+                                        allNodes,
+
+                                    edges:
+                                        allEdges,
+
+                                    casesCount:
+                                        relatedCases.length,
+
+                                    relatedCases:
+                                        relatedCases,
+
+                                    connectedEntities:
+                                        connectedEntities.map(
+                                            (item: any) => {
+
+                                                const node =
+                                                    item?.node;
+
+                                                const nodeData =
+                                                    node?.data ??
+                                                    node ??
+                                                    {};
+
+                                                return {
+
+                                                    id:
+                                                        node?.id,
+
+                                                    name:
+                                                        nodeData?.name ??
+                                                        nodeData?.label ??
+                                                        nodeData?.entityName ??
+                                                        "Unknown",
+
+                                                    type:
+                                                        nodeData?.type ??
+                                                        nodeData?.entityType ??
+                                                        "Entity",
+
+                                                    relationship:
+                                                        item?.relationship ??
+                                                        "Related",
+
+                                                    relationships:
+                                                        item?.relationships ??
+                                                        [
+                                                            item?.relationship ??
+                                                            "Related"
+                                                        ]
+
+                                                };
+
+                                            }
+                                        ),
+
+                                    graphNodes:
+                                        globalGraphNodes,
+
+                                    graphEdges:
+                                        globalGraphEdges
+
+                                }
+                            )
+                        }
+                    >
+                        Generate TXT
+                    </button>
+
+
+
+                    {/* ==================================================
                     MONITOR
                 ================================================== */}
 
-                <button
-                    className={
-                        isMonitoring
-                            ? "monitor-active"
-                            : "monitor-btn"
-                    }
-                    onClick={() =>
-                        toggleMonitor(entity)
-                    }
-                >
+                    <button
+                        className={
+                            isMonitoring
+                                ? "monitor-active"
+                                : "monitor-btn"
+                        }
+                        onClick={() =>
+                            toggleMonitor(entity)
+                        }
+                    >
 
-                    <FiBell />
+                        <FiBell />
 
-                    {
-                        isMonitoring
-                            ? "Monitoring"
-                            : "Monitor Entity"
-                    }
+                        {
+                            isMonitoring
+                                ? "Monitoring"
+                                : "Monitor Entity"
+                        }
 
-                </button>
+                    </button>
+                </div>
 
 
                 {/* ==================================================

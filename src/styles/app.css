@@ -8526,3 +8526,98 @@ section h3 {
     }
 
 }
+.report-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+}
+
+.report-actions button {
+    width: 100%;
+}
+.profile-action-buttons {
+    width: 100%;
+
+    display: flex;
+    flex-direction: row;
+
+    gap: 8px;
+
+    margin-bottom: 12px;
+}
+
+.profile-action-buttons button {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ============================================================
+   ACTION BUTTONS - OVERRIDE DARK MODE
+============================================================ */
+
+.profile-action-buttons > button:nth-child(1) {
+    background: #2563eb !important;
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+    border: 1px solid #2563eb !important;
+    box-shadow: none !important;
+}
+
+.profile-action-buttons > button:nth-child(2) {
+    background: #7c3aed !important;
+    background-color: #7c3aed !important;
+    color: #ffffff !important;
+    border: 1px solid #7c3aed !important;
+    box-shadow: none !important;
+}
+
+.profile-action-buttons > button:nth-child(3) {
+    background: #16a34a !important;
+    background-color: #16a34a !important;
+    color: #ffffff !important;
+    border: 1px solid #16a34a !important;
+    box-shadow: none !important;
+}
+
+.profile-action-buttons > button:nth-child(4) {
+    background: #dc2626 !important;
+    background-color: #dc2626 !important;
+    color: #ffffff !important;
+    border: 1px solid #dc2626 !important;
+    box-shadow: none !important;
+}
+
+
+/* Hover */
+
+.profile-action-buttons > button:nth-child(1):hover {
+    background: #1d4ed8 !important;
+    box-shadow: none !important;
+}
+
+.profile-action-buttons > button:nth-child(2):hover {
+    background: #6d28d9 !important;
+    box-shadow: none !important;
+}
+
+.profile-action-buttons > button:nth-child(3):hover {
+    background: #15803d !important;
+    box-shadow: none !important;
+}
+
+.profile-action-buttons > button:nth-child(4):hover {
+    background: #b91c1c !important;
+    box-shadow: none !important;
+}
+
+
+/* Remove dark-mode effects */
+
+.profile-action-buttons > button {
+    background-image: none !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+}
