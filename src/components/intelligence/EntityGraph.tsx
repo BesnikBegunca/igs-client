@@ -2,18 +2,18 @@ import {
     FiX
 } from "react-icons/fi";
 
-
 import {
     ReactFlow,
     Background,
     Controls,
     MiniMap,
     BaseEdge,
-    EdgeLabelRenderer,
     getBezierPath,
-    Position
+    Position,
+    type Node,
+    type Edge,
+    type EdgeProps
 } from "@xyflow/react";
-
 
 import "@xyflow/react/dist/style.css";
 
@@ -37,7 +37,6 @@ interface Props {
 
 // ============================================================
 // RELATIONSHIP COLORS
-// SAME COLORS AS CustomEdge
 // ============================================================
 
 const relationshipColors: Record<string, string> = {
@@ -80,9 +79,7 @@ const relationshipColors: Record<string, string> = {
 
 
 const getRelationshipColor = (
-
     relationship: string
-
 ) => {
 
     return (
@@ -98,336 +95,13 @@ const getRelationshipColor = (
 
 
 // ============================================================
-// GET NODE CENTER
-// ============================================================
-
-const getNodeCenter = (
-
-    node: any
-
-) => {
-
-    const width =
-
-        Number(
-
-            node?.style?.width ??
-
-            node?.measured?.width ??
-
-            node?.width ??
-
-            180
-
-        );
-
-
-
-    const height =
-
-        Number(
-
-            node?.measured?.height ??
-
-            node?.height ??
-
-            80
-
-        );
-
-
-
-    const x =
-
-        Number(
-
-            node?.position?.x ?? 0
-
-        );
-
-
-
-    const y =
-
-        Number(
-
-            node?.position?.y ?? 0
-
-        );
-
-
-
-    return {
-
-        x: x + width / 2,
-
-        y: y + height / 2
-
-    };
-
-};
-
-
-
-// ============================================================
-// GET STRUCTURAL DIRECTION
+// CUSTOM EDGE
 //
-// IMPORTANT:
-//
-// This function determines the PHYSICAL direction of the
-// relationship based on where the nodes actually are.
-//
-// It does NOT care which node was originally source/target.
-//
-// Example:
-//
-// database:
-//      source = Ardi
-//      target = Besnik
-//
-// visual:
-//
-//      Besnik
-//        |
-//        |
-//       Ardi
-//
-// result:
-//
-//      source = Besnik
-//      target = Ardi
-//
-//      Bottom -> Top
-// ============================================================
-
-const getStructuralConnection = (
-
-    firstNode: any,
-
-    secondNode: any
-
-) => {
-
-    if (!firstNode || !secondNode) {
-
-        return {
-
-            sourceNode: firstNode,
-
-            targetNode: secondNode,
-
-            sourcePosition:
-                Position.Bottom,
-
-            targetPosition:
-                Position.Top
-
-        };
-
-    }
-
-
-
-    const firstCenter =
-
-        getNodeCenter(firstNode);
-
-
-
-    const secondCenter =
-
-        getNodeCenter(secondNode);
-
-
-
-    const dx =
-
-        secondCenter.x -
-
-        firstCenter.x;
-
-
-
-    const dy =
-
-        secondCenter.y -
-
-        firstCenter.y;
-
-
-
-    // ========================================================
-    // IMPORTANT:
-    //
-    // Y POSITION HAS PRIORITY.
-    //
-    // If the nodes are on different vertical levels,
-    // ALWAYS connect:
-    //
-    // ABOVE NODE  -> Bottom
-    // BELOW NODE  -> Top
-    //
-    // We DON'T compare absX with absY anymore.
-    // ========================================================
-
-    const verticalDifference =
-
-        Math.abs(dy);
-
-
-
-    // ========================================================
-    // DIFFERENT VERTICAL LEVELS
-    // ========================================================
-
-    if (verticalDifference > 20) {
-
-        // ====================================================
-        // FIRST NODE IS ABOVE SECOND NODE
-        // ====================================================
-
-        if (dy > 0) {
-
-            return {
-
-                sourceNode:
-                    firstNode,
-
-                targetNode:
-                    secondNode,
-
-                sourcePosition:
-                    Position.Bottom,
-
-                targetPosition:
-                    Position.Top
-
-            };
-
-        }
-
-
-
-        // ====================================================
-        // SECOND NODE IS ABOVE FIRST NODE
-        // ====================================================
-
-        return {
-
-            sourceNode:
-                secondNode,
-
-            targetNode:
-                firstNode,
-
-            sourcePosition:
-                Position.Bottom,
-
-            targetPosition:
-                Position.Top
-
-        };
-
-    }
-
-
-
-    // ========================================================
-    // SAME VERTICAL LEVEL
-    //
-    // Now and ONLY now use horizontal connections.
-    // ========================================================
-
-    if (dx > 0) {
-
-        return {
-
-            sourceNode:
-                firstNode,
-
-            targetNode:
-                secondNode,
-
-            sourcePosition:
-                Position.Right,
-
-            targetPosition:
-                Position.Left
-
-        };
-
-    }
-
-
-
-    return {
-
-        sourceNode:
-            secondNode,
-
-        targetNode:
-            firstNode,
-
-        sourcePosition:
-            Position.Right,
-
-        targetPosition:
-            Position.Left
-
-    };
-
-
-
-
-
-    // ========================================================
-    // HORIZONTAL CONNECTION
-    // ========================================================
-
-    if (dx > 0) {
-
-        return {
-
-            sourceNode:
-                firstNode,
-
-            targetNode:
-                secondNode,
-
-            sourcePosition:
-                Position.Right,
-
-            targetPosition:
-                Position.Left
-
-        };
-
-    }
-
-
-
-    return {
-
-        sourceNode:
-            secondNode,
-
-        targetNode:
-            firstNode,
-
-        sourcePosition:
-            Position.Right,
-
-        targetPosition:
-            Position.Left
-
-    };
-
-};
-
-
-
-// ============================================================
-// CUSTOM GRAPH EDGE
+// Uses ReactFlow's native Bezier path.
+// No forced curve.
+// No relationship label.
+// Relationship is displayed ONLY in the small
+// relationship container.
 // ============================================================
 
 function EntityGraphEdge({
@@ -448,14 +122,18 @@ function EntityGraphEdge({
 
     data
 
-}: any) {
-
+}: EdgeProps) {
 
     const relationship =
 
-        data?.relationshipType ||
+        String(
 
-        "Related";
+            data?.relationshipType ??
+
+            "Related"
+
+        );
+
 
 
     const color =
@@ -467,131 +145,25 @@ function EntityGraphEdge({
         );
 
 
-    const curveIndex =
 
-        Number(
-
-            data?.curveIndex || 0
-
-        );
-
-
-
-    // ========================================================
-    // DETERMINE IF THIS IS A VERTICAL CONNECTION
-    // ========================================================
-
-    const isVertical =
-
-        (
-
-            sourcePosition ===
-
-            Position.Top ||
-
-            sourcePosition ===
-
-            Position.Bottom
-
-        ) &&
-
-        (
-
-            targetPosition ===
-
-            Position.Top ||
-
-            targetPosition ===
-
-            Position.Bottom
-
-        );
-
-
-
-    // ========================================================
-    // VERTICAL CONNECTIONS
-    //
-    // Keep them structurally straight.
-    //
-    // This means:
-    //
-    // Bottom -> Top
-    //
-    // instead of making unnecessary curves.
-    // ========================================================
-
-    let curvature = 0;
-
-
-
-    if (!isVertical) {
-
-        const curvePattern = [
-
-            0.15,
-
-            0.3,
-
-            0.45,
-
-            0.6,
-
-            0.75,
-
-            0.9
-
-        ];
-
-
-
-        const patternIndex =
-
-            Math.abs(
-
-                curveIndex
-
-            ) %
-
-            curvePattern.length;
-
-
-
-        curvature =
-
-            curvePattern[
-
-            patternIndex
-
-            ];
-
-
-
-        if (
-
-            curveIndex % 2 !== 0
-
-        ) {
-
-            curvature *= -1;
-
-        }
-
-    }
-
-
-
-    // ========================================================
-    // CREATE BEZIER PATH
-    // ========================================================
+    /*
+     * ReactFlow calculates the natural Bezier
+     * connection depending on the position
+     * of the source and target.
+     *
+     * This means:
+     *
+     * Bottom -> Top
+     * Right  -> Left
+     * Top    -> Bottom
+     * Left   -> Right
+     *
+     * all behave naturally.
+     */
 
     const [
 
-        edgePath,
-
-        labelX,
-
-        labelY
+        path
 
     ] = getBezierPath({
 
@@ -607,7 +179,8 @@ function EntityGraphEdge({
 
         targetPosition,
 
-        curvature
+        curvature:
+            0.25
 
     });
 
@@ -615,86 +188,26 @@ function EntityGraphEdge({
 
     return (
 
-        <>
+        <BaseEdge
 
-            <BaseEdge
+            id={id}
 
-                id={id}
+            path={path}
 
-                path={edgePath}
+            style={{
 
-                style={{
+                stroke:
+                    color,
 
-                    stroke:
-                        color,
+                strokeWidth:
+                    2.2,
 
-                    strokeWidth:
-                        2,
+                opacity:
+                    0.9
 
-                    opacity:
-                        0.95
+            }}
 
-                }}
-
-            />
-
-
-
-            <EdgeLabelRenderer>
-
-                <div
-
-                    className="entity-graph-edge-label nodrag nopan"
-
-                    style={{
-
-                        position:
-                            "absolute",
-
-                        transform:
-                            `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
-
-                        background:
-                            "#0b0b0b",
-
-                        border:
-                            `1px solid ${color}`,
-
-                        color:
-                            color,
-
-                        padding:
-                            "4px 9px",
-
-                        borderRadius:
-                            "7px",
-
-                        fontSize:
-                            "11px",
-
-                        fontWeight:
-                            700,
-
-                        whiteSpace:
-                            "nowrap",
-
-                        pointerEvents:
-                            "none",
-
-                        boxShadow:
-                            `0 0 8px ${color}33`
-
-                    }}
-
-                >
-
-                    {relationship}
-
-                </div>
-
-            </EdgeLabelRenderer>
-
-        </>
+        />
 
     );
 
@@ -722,16 +235,20 @@ export default function EntityGraph({
 
 
 
-    // ============================================================
-    // MAIN ENTITY INFORMATION
-    // ============================================================
+    // ========================================================
+    // MAIN ENTITY
+    // ========================================================
 
     const mainName = String(
 
         entity?.data?.label ??
+
         entity?.data?.name ??
+
         entity?.label ??
+
         entity?.name ??
+
         ""
 
     )
@@ -743,8 +260,11 @@ export default function EntityGraph({
     const mainType = String(
 
         entity?.data?.type ??
+
         entity?.data?.entityType ??
+
         entity?.type ??
+
         ""
 
     )
@@ -756,25 +276,33 @@ export default function EntityGraph({
     const mainEntityId = String(
 
         entity?.id ??
+
         entity?.data?.id ??
+
         ""
 
     );
 
 
 
-    // ============================================================
-    // HELPERS
-    // ============================================================
+    // ========================================================
+    // NODE HELPERS
+    // ========================================================
 
-    const getNodeName = (node: any) =>
+    const getNodeName = (
+        node: any
+    ) =>
 
         String(
 
             node?.data?.label ??
+
             node?.data?.name ??
+
             node?.label ??
+
             node?.name ??
+
             ""
 
         )
@@ -783,13 +311,18 @@ export default function EntityGraph({
 
 
 
-    const getNodeType = (node: any) =>
+    const getNodeType = (
+        node: any
+    ) =>
 
         String(
 
             node?.data?.type ??
+
             node?.data?.entityType ??
+
             node?.type ??
+
             ""
 
         )
@@ -799,9 +332,7 @@ export default function EntityGraph({
 
 
     const isSameEntity = (
-
         node: any
-
     ) => {
 
         if (!node) {
@@ -815,24 +346,20 @@ export default function EntityGraph({
         const nodeId = String(
 
             node.id ??
+
             node.data?.id ??
+
             ""
 
         );
 
 
 
-        // ========================================================
-        // FIRST CHECK ID
-        // ========================================================
-
         if (
 
             mainEntityId &&
 
-            nodeId ===
-
-            mainEntityId
+            nodeId === mainEntityId
 
         ) {
 
@@ -842,26 +369,13 @@ export default function EntityGraph({
 
 
 
-        // ========================================================
-        // THEN CHECK REAL ENTITY IDENTITY
-        // ========================================================
-
         const nodeName =
+            getNodeName(node);
 
-            getNodeName(
-
-                node
-
-            );
 
 
         const nodeType =
-
-            getNodeType(
-
-                node
-
-            );
+            getNodeType(node);
 
 
 
@@ -881,9 +395,7 @@ export default function EntityGraph({
 
         if (
 
-            nodeName !==
-
-            mainName
+            nodeName !== mainName
 
         ) {
 
@@ -903,9 +415,7 @@ export default function EntityGraph({
 
             return (
 
-                nodeType ===
-
-                mainType
+                nodeType === mainType
 
             );
 
@@ -919,10 +429,9 @@ export default function EntityGraph({
 
 
 
-    // ============================================================
-    // FIND ALL VERSIONS OF THE ENTITY
-    // ACROSS ALL CASES
-    // ============================================================
+    // ========================================================
+    // FIND MAIN ENTITY INSTANCES
+    // ========================================================
 
     const entityNodes =
 
@@ -930,19 +439,11 @@ export default function EntityGraph({
 
             (node: any) =>
 
-                isSameEntity(
-
-                    node
-
-                )
+                isSameEntity(node)
 
         );
 
 
-
-    // ============================================================
-    // ALL ENTITY INSTANCE IDS
-    // ============================================================
 
     const entityIds =
 
@@ -952,11 +453,7 @@ export default function EntityGraph({
 
                 (node: any) =>
 
-                    String(
-
-                        node.id
-
-                    )
+                    String(node.id)
 
             )
 
@@ -967,19 +464,16 @@ export default function EntityGraph({
     if (mainEntityId) {
 
         entityIds.add(
-
             mainEntityId
-
         );
 
     }
 
 
 
-    // ============================================================
-    // FIND ALL CONNECTIONS
-    // FROM ALL CASES
-    // ============================================================
+    // ========================================================
+    // CONNECTED EDGES
+    // ========================================================
 
     const graphEdges =
 
@@ -988,37 +482,20 @@ export default function EntityGraph({
             (edge: any) => {
 
                 const source =
+                    String(edge.source);
 
-                    String(
-
-                        edge.source
-
-                    );
 
 
                 const target =
-
-                    String(
-
-                        edge.target
-
-                    );
+                    String(edge.target);
 
 
 
                 return (
 
-                    entityIds.has(
+                    entityIds.has(source) ||
 
-                        source
-
-                    ) ||
-
-                    entityIds.has(
-
-                        target
-
-                    )
+                    entityIds.has(target)
 
                 );
 
@@ -1028,12 +505,11 @@ export default function EntityGraph({
 
 
 
-    // ============================================================
-    // COLLECT ALL NODE IDS
-    // ============================================================
+    // ========================================================
+    // COLLECT NODE IDS
+    // ========================================================
 
     const nodeIds =
-
         new Set<string>();
 
 
@@ -1044,11 +520,7 @@ export default function EntityGraph({
 
             nodeIds.add(
 
-                String(
-
-                    node.id
-
-                )
+                String(node.id)
 
             );
 
@@ -1064,22 +536,15 @@ export default function EntityGraph({
 
             nodeIds.add(
 
-                String(
-
-                    edge.source
-
-                )
+                String(edge.source)
 
             );
 
 
+
             nodeIds.add(
 
-                String(
-
-                    edge.target
-
-                )
+                String(edge.target)
 
             );
 
@@ -1089,9 +554,9 @@ export default function EntityGraph({
 
 
 
-    // ============================================================
-    // GET ALL GRAPH NODES
-    // ============================================================
+    // ========================================================
+    // RAW GRAPH NODES
+    // ========================================================
 
     const rawGraphNodes =
 
@@ -1101,11 +566,7 @@ export default function EntityGraph({
 
                 nodeIds.has(
 
-                    String(
-
-                        node.id
-
-                    )
+                    String(node.id)
 
                 )
 
@@ -1113,12 +574,11 @@ export default function EntityGraph({
 
 
 
-    // ============================================================
-    // REMOVE DUPLICATE VISUAL ENTITIES
-    // ============================================================
+    // ========================================================
+    // REMOVE DUPLICATES
+    // ========================================================
 
     const visualNodeMap =
-
         new Map<string, any>();
 
 
@@ -1128,61 +588,28 @@ export default function EntityGraph({
         (node: any) => {
 
             const nodeName =
+                getNodeName(node);
 
-                getNodeName(
-
-                    node
-
-                );
 
 
             const nodeType =
-
-                getNodeType(
-
-                    node
-
-                );
+                getNodeType(node);
 
 
 
-            let key: string;
+            const key =
 
+                isSameEntity(node)
 
+                    ? "__MAIN_ENTITY__"
 
-            if (
-
-                isSameEntity(
-
-                    node
-
-                )
-
-            ) {
-
-                key =
-
-                    "__MAIN_ENTITY__";
-
-            }
-
-            else {
-
-                key =
-
-                    `${nodeName}::${nodeType}`;
-
-            }
+                    : `${nodeName}::${nodeType}`;
 
 
 
             if (
 
-                !visualNodeMap.has(
-
-                    key
-
-                )
+                !visualNodeMap.has(key)
 
             ) {
 
@@ -1212,9 +639,9 @@ export default function EntityGraph({
 
 
 
-    // ============================================================
-    // MAP ORIGINAL NODE IDS -> VISUAL NODE IDS
-    // ============================================================
+    // ========================================================
+    // MAP ORIGINAL IDS -> VISUAL IDS
+    // ========================================================
 
     const originalToVisualId =
 
@@ -1227,154 +654,96 @@ export default function EntityGraph({
         (node: any) => {
 
             const nodeName =
+                getNodeName(node);
 
-                getNodeName(
-
-                    node
-
-                );
 
 
             const nodeType =
-
-                getNodeType(
-
-                    node
-
-                );
+                getNodeType(node);
 
 
 
-            let key: string;
+            const key =
 
+                isSameEntity(node)
 
+                    ? "__MAIN_ENTITY__"
 
-            if (
-
-                isSameEntity(
-
-                    node
-
-                )
-
-            ) {
-
-                key =
-
-                    "__MAIN_ENTITY__";
-
-            }
-
-            else {
-
-                key =
-
-                    `${nodeName}::${nodeType}`;
-
-            }
+                    : `${nodeName}::${nodeType}`;
 
 
 
             const visualNode =
 
-                visualNodeMap.get(
-
-                    key
-
-                );
+                visualNodeMap.get(key);
 
 
 
-            if (visualNode) {
+            if (!visualNode) {
 
-                rawGraphNodes
-
-                    .filter(
-
-                        (rawNode: any) => {
-
-                            const rawName =
-
-                                getNodeName(
-
-                                    rawNode
-
-                                );
-
-
-                            const rawType =
-
-                                getNodeType(
-
-                                    rawNode
-
-                                );
-
-
-
-                            if (
-
-                                isSameEntity(
-
-                                    rawNode
-
-                                ) &&
-
-                                isSameEntity(
-
-                                    node
-
-                                )
-
-                            ) {
-
-                                return true;
-
-                            }
-
-
-
-                            return (
-
-                                rawName ===
-
-                                nodeName &&
-
-                                rawType ===
-
-                                nodeType
-
-                            );
-
-                        }
-
-                    )
-
-                    .forEach(
-
-                        (rawNode: any) => {
-
-                            originalToVisualId.set(
-
-                                String(
-
-                                    rawNode.id
-
-                                ),
-
-                                String(
-
-                                    visualNode.id
-
-                                )
-
-                            );
-
-                        }
-
-                    );
+                return;
 
             }
+
+
+
+            rawGraphNodes
+
+                .filter(
+
+                    (rawNode: any) => {
+
+                        if (
+
+                            isSameEntity(rawNode) &&
+
+                            isSameEntity(node)
+
+                        ) {
+
+                            return true;
+
+                        }
+
+
+
+                        return (
+
+                            getNodeName(rawNode) ===
+                            nodeName &&
+
+                            getNodeType(rawNode) ===
+                            nodeType
+
+                        );
+
+                    }
+
+                )
+
+                .forEach(
+
+                    (rawNode: any) => {
+
+                        originalToVisualId.set(
+
+                            String(
+
+                                rawNode.id
+
+                            ),
+
+                            String(
+
+                                visualNode.id
+
+                            )
+
+                        );
+
+                    }
+
+                );
 
         }
 
@@ -1382,220 +751,11 @@ export default function EntityGraph({
 
 
 
-    // ============================================================
-    // CREATE GRAPH NODES
-    // ============================================================
-
-    const otherNodes =
-
-        uniqueGraphNodes.filter(
-
-            (item: any) =>
-
-                !isSameEntity(
-
-                    item
-
-                )
-
-        );
-
-
-
-    const graphNodes =
-
-        uniqueGraphNodes.map(
-
-            (node: any) => {
-
-                const isMain =
-
-                    isSameEntity(
-
-                        node
-
-                    );
-
-
-
-                const otherIndex =
-
-                    otherNodes.findIndex(
-
-                        (item: any) =>
-
-                            String(
-
-                                item.id
-
-                            ) ===
-
-                            String(
-
-                                node.id
-
-                            )
-
-                    );
-
-
-
-                let x = 100;
-
-                let y = 450;
-
-
-
-                if (isMain) {
-
-                    x = 500;
-
-                    y = 100;
-
-                }
-
-                else {
-
-                    const columns = 4;
-
-                    const column =
-
-                        otherIndex %
-
-                        columns;
-
-                    const row =
-
-                        Math.floor(
-
-                            otherIndex /
-
-                            columns
-
-                        );
-
-
-
-                    x =
-
-                        100 +
-
-                        column *
-
-                        250;
-
-
-
-                    y =
-
-                        400 +
-
-                        row *
-
-                        180;
-
-                }
-
-
-
-                return {
-
-                    id:
-
-                        String(
-
-                            node.id
-
-                        ),
-
-
-
-                    position: {
-
-                        x,
-
-                        y
-
-                    },
-
-
-
-                    data: {
-
-                        label:
-
-                            `${node.data?.icon || "❓"} ${node.data?.label || node.data?.name || "Unknown"}`,
-
-                        original:
-
-                            node.data
-
-                    },
-
-
-
-                    style: {
-
-                        width: 180,
-
-                        background:
-
-                            isMain
-
-                                ? "#2563eb"
-
-                                : "#111827",
-
-                        color:
-                            "white",
-
-                        border:
-
-                            isMain
-
-                                ? "2px solid #60a5fa"
-
-                                : "1px solid #2563eb",
-
-                        borderRadius:
-                            "12px",
-
-                        padding:
-                            "15px",
-
-                        textAlign:
-                            "center" as const,
-
-                        fontWeight:
-                            700
-
-                    }
-
-                };
-
-            }
-
-        );
-
-
-
-    // ============================================================
-    // CREATE UNIQUE RELATIONSHIPS
-    // ============================================================
-
-    const relationshipKeys =
-
-        new Set<string>();
-
-
-
-    const pairCurveCounters =
-
-        new Map<string, number>();
-
-
-
-    const finalEdges =
+    // ========================================================
+    // NORMALIZE RELATIONSHIPS
+    // ========================================================
+
+    const normalizedEdges =
 
         graphEdges
 
@@ -1603,40 +763,29 @@ export default function EntityGraph({
 
                 (edge: any) => {
 
-                    const originalSourceId =
-
-                        String(
-
-                            edge.source
-
-                        );
-
-
-                    const originalTargetId =
-
-                        String(
-
-                            edge.target
-
-                        );
-
-
-
-                    const sourceVisualId =
+                    const source =
 
                         originalToVisualId.get(
 
-                            originalSourceId
+                            String(
+
+                                edge.source
+
+                            )
 
                         );
 
 
 
-                    const targetVisualId =
+                    const target =
 
                         originalToVisualId.get(
 
-                            originalTargetId
+                            String(
+
+                                edge.target
+
+                            )
 
                         );
 
@@ -1644,27 +793,11 @@ export default function EntityGraph({
 
                     if (
 
-                        !sourceVisualId ||
+                        !source ||
 
-                        !targetVisualId
+                        !target ||
 
-                    ) {
-
-                        return null;
-
-                    }
-
-
-
-                    // ====================================================
-                    // DON'T CREATE SELF RELATIONSHIPS
-                    // ====================================================
-
-                    if (
-
-                        sourceVisualId ===
-
-                        targetVisualId
+                        source === target
 
                     ) {
 
@@ -1678,276 +811,27 @@ export default function EntityGraph({
 
                         String(
 
-                            edge.data?.relationshipType ??
+                            edge.data
+                                ?.relationshipType ??
 
                             "Related"
 
-                        ).trim() ||
+                        )
+                            .trim() ||
 
                         "Related";
 
 
 
-                    // ====================================================
-                    // EXACT DUPLICATE CHECK
-                    // ====================================================
-
-                    const duplicateKey =
-
-                        [
-
-                            sourceVisualId,
-
-                            targetVisualId,
-
-                            relationship
-
-                        ]
-
-                            .sort()
-
-                            .join("::");
-
-
-
-                    if (
-
-                        relationshipKeys.has(
-
-                            duplicateKey
-
-                        )
-
-                    ) {
-
-                        return null;
-
-                    }
-
-
-
-                    relationshipKeys.add(
-
-                        duplicateKey
-
-                    );
-
-
-
-                    // ====================================================
-                    // PAIR KEY
-                    // ====================================================
-
-                    const pairKey =
-
-                        [
-
-                            sourceVisualId,
-
-                            targetVisualId
-
-                        ]
-
-                            .sort()
-
-                            .join("::");
-
-
-
-                    const currentCurveIndex =
-
-                        pairCurveCounters.get(
-
-                            pairKey
-
-                        ) || 0;
-
-
-
-                    pairCurveCounters.set(
-
-                        pairKey,
-
-                        currentCurveIndex + 1
-
-                    );
-
-
-
-                    // ====================================================
-                    // FIND ACTUAL VISUAL NODES
-                    // ====================================================
-
-                    const firstNode =
-
-                        graphNodes.find(
-
-                            (node: any) =>
-
-                                String(
-
-                                    node.id
-
-                                ) ===
-
-                                sourceVisualId
-
-                        );
-
-
-
-                    const secondNode =
-
-                        graphNodes.find(
-
-                            (node: any) =>
-
-                                String(
-
-                                    node.id
-
-                                ) ===
-
-                                targetVisualId
-
-                        );
-
-
-
-                    if (
-
-                        !firstNode ||
-
-                        !secondNode
-
-                    ) {
-
-                        return null;
-
-                    }
-
-
-
-                    // ====================================================
-                    // NORMALIZE EDGE DIRECTION
-                    //
-                    // THIS IS THE IMPORTANT PART.
-                    //
-                    // The original database direction is NOT used
-                    // for visual routing.
-                    //
-                    // We determine which node is physically above,
-                    // below, left or right.
-                    // ====================================================
-
-                    const structural =
-
-                        getStructuralConnection(
-
-                            firstNode,
-
-                            secondNode
-
-                        );
-
-
-
-                    const visualSourceId =
-
-                        String(
-
-                            structural.sourceNode.id
-
-                        );
-
-
-                    const visualTargetId =
-
-                        String(
-
-                            structural.targetNode.id
-
-                        );
-
-
-
-                    // ====================================================
-                    // RELATIONSHIP COLOR
-                    // ====================================================
-
-                    const color =
-
-                        getRelationshipColor(
-
-                            relationship
-
-                        );
-
-
-
                     return {
 
-                        id:
+                        ...edge,
 
-                            `${String(edge.id)}-structural`,
+                        source,
 
+                        target,
 
-
-                        // IMPORTANT:
-                        // Use the STRUCTURAL source/target,
-                        // not the original database direction.
-
-                        source:
-
-                            visualSourceId,
-
-
-
-                        target:
-
-                            visualTargetId,
-
-
-
-                        type:
-
-                            "entityGraphEdge",
-
-
-
-                        sourcePosition:
-
-                            structural.sourcePosition,
-
-
-
-                        targetPosition:
-
-                            structural.targetPosition,
-
-
-
-                        data: {
-
-                            relationshipType:
-                                relationship,
-
-                            curveIndex:
-                                currentCurveIndex
-
-                        },
-
-
-
-                        style: {
-
-                            stroke:
-                                color,
-
-                            strokeWidth:
-                                2
-
-                        }
+                        relationship
 
                     };
 
@@ -1957,29 +841,1338 @@ export default function EntityGraph({
 
             .filter(
 
-                Boolean
+                (
 
-            ) as any[];
+                    edge
+
+                ): edge is NonNullable<typeof edge> =>
+
+                    edge !== null
+
+            );
 
 
 
-    // ============================================================
+    // ========================================================
+    // MAIN NODE
+    // ========================================================
+
+    const mainGraphNode =
+
+        uniqueGraphNodes.find(
+
+            (node: any) =>
+
+                isSameEntity(node)
+
+        );
+
+
+
+    if (!mainGraphNode) {
+
+        return null;
+
+    }
+
+
+
+    const mainVisualId =
+        String(mainGraphNode.id);
+
+
+
+    // ========================================================
+    // GROUP DIRECT RELATIONSHIPS
+    //
+    // MAIN
+    //   |
+    //   +--- Family
+    //   |      |
+    //   |      +--- Person A
+    //   |      +--- Person B
+    //   |
+    //   +--- Works For
+    //          |
+    //          +--- Police
+    //
+    // Each relationship appears ONLY ONCE.
+    // ========================================================
+
+    const relationshipGroups =
+
+        new Map<string, {
+
+            relationship: string;
+
+            color: string;
+
+            entities: any[];
+
+            edges: any[];
+
+        }>();
+
+
+
+    normalizedEdges.forEach(
+
+        (edge: any) => {
+
+            let otherId = "";
+
+
+
+            if (
+
+                edge.source ===
+                mainVisualId
+
+            ) {
+
+                otherId =
+                    edge.target;
+
+            }
+
+            else if (
+
+                edge.target ===
+                mainVisualId
+
+            ) {
+
+                otherId =
+                    edge.source;
+
+            }
+
+            else {
+
+                return;
+
+            }
+
+
+
+            const relationship =
+                edge.relationship;
+
+
+
+            if (
+
+                !relationshipGroups.has(
+
+                    relationship
+
+                )
+
+            ) {
+
+                relationshipGroups.set(
+
+                    relationship,
+
+                    {
+
+                        relationship,
+
+                        color:
+                            getRelationshipColor(
+
+                                relationship
+
+                            ),
+
+                        entities: [],
+
+                        edges: []
+
+                    }
+
+                );
+
+            }
+
+
+
+            const group =
+
+                relationshipGroups.get(
+
+                    relationship
+
+                )!;
+
+
+
+            const entityNode =
+
+                uniqueGraphNodes.find(
+
+                    (node: any) =>
+
+                        String(node.id) ===
+                        String(otherId)
+
+                );
+
+
+
+            if (
+
+                entityNode &&
+
+                !group.entities.some(
+
+                    (node: any) =>
+
+                        String(node.id) ===
+                        String(entityNode.id)
+
+                )
+
+            ) {
+
+                group.entities.push(
+
+                    entityNode
+
+                );
+
+            }
+
+
+
+            group.edges.push(edge);
+
+        }
+
+    );
+
+
+
+    // ========================================================
+    // GRAPH DIMENSIONS
+    // ========================================================
+
+    const graphWidth =
+        3000;
+
+
+
+    const nodeWidth =
+        180;
+
+
+
+    const nodeHeight =
+        78;
+
+
+
+    // Small relationship title
+    const relationshipWidth =
+        120;
+
+
+
+    const relationshipHeight =
+        34;
+
+
+
+    const horizontalGap =
+        70;
+
+
+
+    const mainY =
+        70;
+
+
+
+    const relationshipY =
+        230;
+
+
+
+    const entityY =
+        380;
+
+
+
+    const centerX =
+        graphWidth / 2;
+
+
+
+    // ========================================================
+    // GROUP ARRAY
+    // ========================================================
+
+    const groups =
+
+        Array.from(
+
+            relationshipGroups.values()
+
+        );
+
+
+
+    // ========================================================
+    // CALCULATE GROUP WIDTH
+    // ========================================================
+
+    const getGroupWidth = (
+
+        group: {
+            entities: any[];
+        }
+
+    ) => {
+
+        const count =
+            Math.max(
+
+                1,
+
+                group.entities.length
+
+            );
+
+
+
+        return Math.max(
+
+            relationshipWidth + 80,
+
+            count *
+            nodeWidth +
+
+            (
+                count - 1
+            ) *
+            horizontalGap
+
+        );
+
+    };
+
+
+
+    const totalGroupsWidth =
+
+        groups.reduce(
+
+            (sum, group) =>
+
+                sum +
+
+                getGroupWidth(group),
+
+            0
+
+        ) +
+
+        Math.max(
+
+            0,
+
+            groups.length - 1
+
+        ) *
+
+        90;
+
+
+
+    let groupCursor =
+
+        centerX -
+
+        totalGroupsWidth / 2;
+
+
+
+    // ========================================================
+    // NODE LIST
+    // ========================================================
+
+    const graphNodes: Node[] = [];
+
+
+
+    // ========================================================
+    // MAIN NODE
+    // ========================================================
+
+    graphNodes.push({
+
+        id:
+            mainVisualId,
+
+        type:
+            "default",
+
+        position: {
+
+            x:
+                centerX -
+
+                nodeWidth / 2,
+
+            y:
+                mainY
+
+        },
+
+        sourcePosition:
+            Position.Bottom,
+
+        targetPosition:
+            Position.Top,
+
+        data: {
+
+            label:
+
+                `${
+
+                    mainGraphNode.data?.icon ||
+
+                    "❓"
+
+                } ${
+
+                    mainGraphNode.data?.label ||
+
+                    mainGraphNode.data?.name ||
+
+                    "Unknown"
+
+                }`,
+
+            original:
+                mainGraphNode.data
+
+        },
+
+        style: {
+
+            width:
+                nodeWidth,
+
+            minHeight:
+                nodeHeight,
+
+            background:
+                "#2563eb",
+
+            color:
+                "#ffffff",
+
+            border:
+                "2px solid #60a5fa",
+
+            borderRadius:
+                14,
+
+            padding:
+                15,
+
+            textAlign:
+                "center",
+
+            fontWeight:
+                700,
+
+            boxShadow:
+                "0 12px 35px rgba(37,99,235,0.32)"
+
+        }
+
+    });
+
+
+
+    // ========================================================
+    // RELATIONSHIP NODES
+    // ========================================================
+
+    const relationshipNodes: {
+
+        id: string;
+
+        relationship: string;
+
+        color: string;
+
+        x: number;
+
+        y: number;
+
+        width: number;
+
+    }[] = [];
+
+
+
+    const entityPositions =
+
+        new Map<string, {
+
+            x: number;
+
+            y: number;
+
+        }>();
+
+
+
+    // ========================================================
+    // POSITION GROUPS
+    // ========================================================
+
+    groups.forEach(
+
+        (group, groupIndex) => {
+
+            const width =
+                getGroupWidth(group);
+
+
+
+            const groupCenter =
+
+                groupCursor +
+
+                width / 2;
+
+
+
+            const relationshipNodeId =
+
+                `relationship-${
+
+                    groupIndex
+
+                }-${
+
+                    group.relationship
+
+                }`;
+
+
+
+            relationshipNodes.push({
+
+                id:
+                    relationshipNodeId,
+
+                relationship:
+                    group.relationship,
+
+                color:
+                    group.color,
+
+                x:
+                    groupCenter -
+
+                    relationshipWidth / 2,
+
+                y:
+                    relationshipY,
+
+                width
+
+            });
+
+
+
+            // ==================================================
+            // ENTITIES UNDER RELATIONSHIP
+            // ==================================================
+
+            const count =
+                group.entities.length;
+
+
+
+            const entitiesWidth =
+
+                count *
+                nodeWidth +
+
+                Math.max(
+
+                    0,
+
+                    count - 1
+
+                ) *
+                horizontalGap;
+
+
+
+            const entityStartX =
+
+                groupCenter -
+
+                entitiesWidth / 2;
+
+
+
+            group.entities.forEach(
+
+                (
+
+                    entityNode: any,
+
+                    entityIndex: number
+
+                ) => {
+
+                    const entityId =
+                        String(entityNode.id);
+
+
+
+                    const x =
+
+                        entityStartX +
+
+                        entityIndex *
+
+                        (
+
+                            nodeWidth +
+
+                            horizontalGap
+
+                        );
+
+
+
+                    entityPositions.set(
+
+                        entityId,
+
+                        {
+
+                            x,
+
+                            y:
+                                entityY
+
+                        }
+
+                    );
+
+                }
+
+            );
+
+
+
+            groupCursor +=
+
+                width + 90;
+
+        }
+
+    );
+
+
+
+    // ========================================================
+    // CREATE RELATIONSHIP CONTAINERS
+    //
+    // Relationship text appears ONLY HERE.
+    // ========================================================
+
+    relationshipNodes.forEach(
+
+        (relationshipNode) => {
+
+            graphNodes.push({
+
+                id:
+                    relationshipNode.id,
+
+                type:
+                    "default",
+
+                position: {
+
+                    x:
+                        relationshipNode.x,
+
+                    y:
+                        relationshipNode.y
+
+                },
+
+                sourcePosition:
+                    Position.Bottom,
+
+                targetPosition:
+                    Position.Top,
+
+                data: {
+
+                    label:
+                        relationshipNode.relationship,
+
+                    relationship:
+                        true,
+
+                    color:
+                        relationshipNode.color
+
+                },
+
+                style: {
+
+                    width:
+                        relationshipWidth,
+
+                    height:
+                        relationshipHeight,
+
+                    minHeight:
+                        relationshipHeight,
+
+                    background:
+                        `${
+
+                            relationshipNode.color
+
+                        }18`,
+
+                    color:
+                        relationshipNode.color,
+
+                    border:
+                        `1px solid ${
+
+                            relationshipNode.color
+
+                        }88`,
+
+                    borderRadius:
+                        9,
+
+                    padding:
+                        "7px 10px",
+
+                    textAlign:
+                        "center",
+
+                    fontSize:
+                        10,
+
+                    fontWeight:
+                        800,
+
+                    letterSpacing:
+                        "0.2px",
+
+                    boxShadow:
+                        `0 4px 14px ${
+
+                            relationshipNode.color
+
+                        }12`
+
+                }
+
+            });
+
+        }
+
+    );
+
+
+
+    // ========================================================
+    // CREATE ENTITY NODES
+    // ========================================================
+
+    uniqueGraphNodes
+
+        .filter(
+
+            (node: any) =>
+
+                !isSameEntity(node)
+
+        )
+
+        .forEach(
+
+            (node: any) => {
+
+                const id =
+                    String(node.id);
+
+
+
+                const position =
+
+                    entityPositions.get(id);
+
+
+
+                if (!position) {
+
+                    return;
+
+                }
+
+
+
+                graphNodes.push({
+
+                    id,
+
+                    type:
+                        "default",
+
+                    position,
+
+                    sourcePosition:
+                        Position.Bottom,
+
+                    targetPosition:
+                        Position.Top,
+
+                    data: {
+
+                        label:
+
+                            `${
+
+                                node.data?.icon ||
+
+                                "❓"
+
+                            } ${
+
+                                node.data?.label ||
+
+                                node.data?.name ||
+
+                                "Unknown"
+
+                            }`,
+
+                        original:
+                            node.data
+
+                    },
+
+                    style: {
+
+                        width:
+                            nodeWidth,
+
+                        minHeight:
+                            nodeHeight,
+
+                        background:
+                            "#111827",
+
+                        color:
+                            "#ffffff",
+
+                        border:
+                            "1px solid #334155",
+
+                        borderRadius:
+                            12,
+
+                        padding:
+                            15,
+
+                        textAlign:
+                            "center",
+
+                        fontWeight:
+                            650,
+
+                        boxShadow:
+                            "0 8px 25px rgba(0,0,0,0.35)"
+
+                    }
+
+                });
+
+            }
+
+        );
+
+
+
+    // ========================================================
+    // CREATE EDGES
+    //
+    // IMPORTANT:
+    // There are NO edge labels.
+    //
+    // Relationship is displayed only once inside
+    // the relationship node.
+    // ========================================================
+
+    const finalEdges: Edge[] = [];
+
+
+
+    // ========================================================
+    // MAIN -> RELATIONSHIP
+    // ========================================================
+
+    relationshipNodes.forEach(
+
+        (relationshipNode) => {
+
+            finalEdges.push({
+
+                id:
+
+                    `main-to-${
+
+                        relationshipNode.id
+
+                    }`,
+
+                source:
+                    mainVisualId,
+
+                target:
+                    relationshipNode.id,
+
+                type:
+                    "entityGraphEdge",
+
+                data: {
+
+                    relationshipType:
+                        relationshipNode.relationship
+
+                }
+
+            });
+
+        }
+
+    );
+
+
+
+    // ========================================================
+    // RELATIONSHIP -> ENTITIES
+    // ========================================================
+
+    groups.forEach(
+
+        (
+
+            group,
+
+            groupIndex
+
+        ) => {
+
+            const relationshipNode =
+
+                relationshipNodes[groupIndex];
+
+
+
+            group.entities.forEach(
+
+                (
+
+                    entityNode: any
+
+                ) => {
+
+                    finalEdges.push({
+
+                        id:
+
+                            `${
+
+                                relationshipNode.id
+
+                            }-entity-${
+
+                                entityNode.id
+
+                            }`,
+
+                        source:
+                            relationshipNode.id,
+
+                        target:
+                            String(entityNode.id),
+
+                        type:
+                            "entityGraphEdge",
+
+                        data: {
+
+                            relationshipType:
+                                group.relationship
+
+                        }
+
+                    });
+
+                }
+
+            );
+
+        }
+
+    );
+
+
+
+    // ========================================================
+    // DIRECT ENTITY IDS
+    // ========================================================
+
+    const directEntityIds =
+
+        new Set<string>();
+
+
+
+    groups.forEach(
+
+        (group) => {
+
+            group.entities.forEach(
+
+                (node: any) => {
+
+                    directEntityIds.add(
+
+                        String(node.id)
+
+                    );
+
+                }
+
+            );
+
+        }
+
+    );
+
+
+
+    // ========================================================
+    // DISCONNECTED NODES
+    // ========================================================
+
+    const disconnectedNodes =
+
+        uniqueGraphNodes.filter(
+
+            (node: any) =>
+
+                !isSameEntity(node) &&
+
+                !directEntityIds.has(
+
+                    String(node.id)
+
+                )
+
+        );
+
+
+
+    if (
+
+        disconnectedNodes.length > 0
+
+    ) {
+
+        const startY =
+            entityY + 230;
+
+
+
+        disconnectedNodes.forEach(
+
+            (
+
+                node: any,
+
+                index: number
+
+            ) => {
+
+                const id =
+                    String(node.id);
+
+
+
+                const totalWidth =
+
+                    disconnectedNodes.length *
+
+                    (
+
+                        nodeWidth +
+
+                        horizontalGap
+
+                    );
+
+
+
+                const x =
+
+                    centerX -
+
+                    totalWidth / 2 +
+
+                    index *
+
+                    (
+
+                        nodeWidth +
+
+                        horizontalGap
+
+                    );
+
+
+
+                const existingNode =
+
+                    graphNodes.find(
+
+                        (item) =>
+
+                            item.id === id
+
+                    );
+
+
+
+                if (existingNode) {
+
+                    existingNode.position = {
+
+                        x,
+
+                        y:
+                            startY
+
+                    };
+
+                }
+
+            }
+
+        );
+
+    }
+
+
+
+    // ========================================================
+    // CONNECTION EDGE STYLING
+    // ========================================================
+
+    const styledEdges: Edge[] =
+
+        finalEdges.map(
+
+            (edge) => {
+
+                const relationship =
+
+                    String(
+
+                        edge.data
+                            ?.relationshipType ??
+
+                        "Related"
+
+                    );
+
+
+
+                const color =
+
+                    getRelationshipColor(
+
+                        relationship
+
+                    );
+
+
+
+                return {
+
+                    ...edge,
+
+                    style: {
+
+                        stroke:
+                            color,
+
+                        strokeWidth:
+                            2.2,
+
+                        opacity:
+                            0.9
+
+                    }
+
+                };
+
+            }
+
+        );
+
+
+
+    // ========================================================
     // RENDER
-    // ============================================================
+    // ========================================================
 
     return (
 
-        <div className="graph-page-overlay">
+        <div
 
+            className="graph-page-overlay"
 
-            <div className="graph-page">
+            style={{
 
+                position:
+                    "fixed",
+
+                inset:
+                    0,
+
+                zIndex:
+                    9999,
+
+                background:
+                    "rgba(0,0,0,0.82)",
+
+                backdropFilter:
+                    "blur(8px)"
+
+            }}
+
+        >
+
+            <div
+
+                className="graph-page"
+
+                style={{
+
+                    position:
+                        "relative",
+
+                    width:
+                        "94vw",
+
+                    height:
+                        "92vh",
+
+                    margin:
+                        "4vh auto",
+
+                    background:
+                        "#080b12",
+
+                    border:
+                        "1px solid #1e293b",
+
+                    borderRadius:
+                        18,
+
+                    overflow:
+                        "hidden",
+
+                    boxShadow:
+                        "0 30px 100px rgba(0,0,0,0.65)"
+
+                }}
+
+            >
+
+                {/* ==================================================
+                    CLOSE
+                ================================================== */}
 
                 <button
 
                     className="graph-close"
 
                     onClick={onClose}
+
+                    style={{
+
+                        position:
+                            "absolute",
+
+                        top:
+                            18,
+
+                        right:
+                            18,
+
+                        zIndex:
+                            20,
+
+                        width:
+                            38,
+
+                        height:
+                            38,
+
+                        border:
+                            "1px solid #334155",
+
+                        borderRadius:
+                            10,
+
+                        background:
+                            "#111827",
+
+                        color:
+                            "#cbd5e1",
+
+                        display:
+                            "flex",
+
+                        alignItems:
+                            "center",
+
+                        justifyContent:
+                            "center",
+
+                        cursor:
+                            "pointer",
+
+                        fontSize:
+                            18
+
+                    }}
 
                 >
 
@@ -1989,9 +2182,54 @@ export default function EntityGraph({
 
 
 
-                <div className="graph-header">
+                {/* ==================================================
+                    HEADER
+                ================================================== */}
 
-                    <h2>
+                <div
+
+                    className="graph-header"
+
+                    style={{
+
+                        position:
+                            "absolute",
+
+                        top:
+                            22,
+
+                        left:
+                            28,
+
+                        zIndex:
+                            10,
+
+                        pointerEvents:
+                            "none"
+
+                    }}
+
+                >
+
+                    <h2
+
+                        style={{
+
+                            margin:
+                                0,
+
+                            color:
+                                "#f8fafc",
+
+                            fontSize:
+                                20,
+
+                            fontWeight:
+                                750
+
+                        }}
+
+                    >
 
                         🔗 Connection Map
 
@@ -1999,7 +2237,22 @@ export default function EntityGraph({
 
 
 
-                    <p>
+                    <p
+
+                        style={{
+
+                            margin:
+                                "5px 0 0",
+
+                            color:
+                                "#64748b",
+
+                            fontSize:
+                                12
+
+                        }}
+
+                    >
 
                         {
 
@@ -2015,7 +2268,9 @@ export default function EntityGraph({
 
                         }
 
-                        {" "}network analysis
+                        {" "}
+
+                        network analysis
 
                     </p>
 
@@ -2023,18 +2278,39 @@ export default function EntityGraph({
 
 
 
-                <div className="graph-container">
+                {/* ==================================================
+                    GRAPH
+                ================================================== */}
+
+                <div
+
+                    className="graph-container"
+
+                    style={{
+
+                        width:
+                            "100%",
+
+                        height:
+                            "100%"
+
+                    }}
+
+                >
 
                     <ReactFlow
 
-                        nodes={graphNodes}
+                        nodes={
+                            graphNodes
+                        }
 
-                        edges={finalEdges}
+                        edges={
+                            styledEdges
+                        }
 
                         edgeTypes={{
 
                             entityGraphEdge:
-
                                 EntityGraphEdge
 
                         }}
@@ -2043,11 +2319,43 @@ export default function EntityGraph({
 
                         fitViewOptions={{
 
-                            padding: 0.3
+                            padding:
+                                0.15,
+
+                            minZoom:
+                                0.25,
+
+                            maxZoom:
+                                1.15
 
                         }}
 
+                        minZoom={
+                            0.2
+                        }
 
+                        maxZoom={
+                            2
+                        }
+
+                        defaultEdgeOptions={{
+
+                            type:
+                                "entityGraphEdge"
+
+                        }}
+
+                        nodesDraggable={
+                            true
+                        }
+
+                        nodesConnectable={
+                            false
+                        }
+
+                        elementsSelectable={
+                            true
+                        }
 
                         onNodeClick={
 
@@ -2075,7 +2383,14 @@ export default function EntityGraph({
 
 
 
-                                if (selected) {
+                                if (
+
+                                    selected &&
+
+                                    !node.data
+                                        ?.relationship
+
+                                ) {
 
                                     onSelectEntity(
 
@@ -2091,17 +2406,98 @@ export default function EntityGraph({
 
                     >
 
-                        <Background />
+                        <Background
+
+                            gap={
+                                24
+                            }
+
+                            size={
+                                1
+                            }
+
+                        />
+
+
 
                         <Controls />
 
-                        <MiniMap />
+
+
+                        <MiniMap
+
+                            nodeColor={
+
+                                (node: any) => {
+
+                                    // Relationship container
+                                    if (
+
+                                        node.data
+                                            ?.relationship
+
+                                    ) {
+
+                                        return (
+
+                                            node.data
+                                                ?.color ??
+
+                                            "#64748b"
+
+                                        );
+
+                                    }
+
+
+
+                                    const originalNode =
+
+                                        uniqueGraphNodes.find(
+
+                                            (item: any) =>
+
+                                                String(
+
+                                                    item.id
+
+                                                ) ===
+
+                                                String(
+
+                                                    node.id
+
+                                                )
+
+                                        );
+
+
+
+                                    return (
+
+                                        originalNode &&
+
+                                        isSameEntity(
+
+                                            originalNode
+
+                                        )
+
+                                    )
+
+                                        ? "#2563eb"
+
+                                        : "#1f2937";
+
+                                }
+
+                            }
+
+                        />
 
                     </ReactFlow>
 
                 </div>
-
-
 
             </div>
 
