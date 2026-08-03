@@ -670,7 +670,10 @@ export default function EntityProfile({
                                     connections.length,
 
                                 relations:
-                                    relationStats
+                                    relationStats,
+                                nodes: allNodes,
+                                edges: allEdges,
+                                casesCount: relatedCases.length
                             }
                         )
                     }
