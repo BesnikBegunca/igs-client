@@ -1,4 +1,3 @@
-
 import {
     FiX,
     FiLink,
@@ -37,6 +36,239 @@ interface Props {
 }
 
 
+// ============================================================
+// SAFE VALUE
+// ============================================================
+
+const cleanValue = (value: any): string => {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+
+        return "";
+
+    }
+
+    if (
+        typeof value === "string" ||
+        typeof value === "number"
+    ) {
+
+        return String(value).trim();
+
+    }
+
+    return "";
+
+};
+
+
+// ============================================================
+// GET NODE DATA
+// ============================================================
+
+const getNodeData = (node: any) => {
+
+    return (
+        node?.data ??
+        node?.original ??
+        node ??
+        {}
+    );
+
+};
+
+
+// ============================================================
+// GET ENTITY NAME
+//
+// We check many possible places so that
+// "Unknown" is only used when there is genuinely
+// no name available.
+// ============================================================
+
+const getEntityName = (node: any): string => {
+
+    if (!node) {
+
+        return "";
+
+    }
+
+
+    const data =
+        node?.data ?? {};
+
+
+    const original =
+        data?.original ??
+        node?.original ??
+        {};
+
+
+    const candidates = [
+
+        node?.name,
+
+        node?.label,
+
+        node?.entityName,
+
+        node?.title,
+
+        data?.name,
+
+        data?.label,
+
+        data?.entityName,
+
+        data?.title,
+
+        data?.fullName,
+
+        data?.displayName,
+
+        original?.name,
+
+        original?.label,
+
+        original?.entityName,
+
+        original?.title,
+
+        original?.fullName,
+
+        original?.displayName
+
+    ];
+
+
+    for (
+        const value of candidates
+    ) {
+
+        const result =
+            cleanValue(value);
+
+
+        if (
+            result &&
+            result.toLowerCase() !== "unknown"
+        ) {
+
+            return result;
+
+        }
+
+    }
+
+
+    return "";
+
+};
+
+
+// ============================================================
+// GET ENTITY TYPE
+// ============================================================
+
+const getEntityType = (node: any): string => {
+
+    if (!node) {
+
+        return "Entity";
+
+    }
+
+
+    const data =
+        node?.data ?? {};
+
+
+    const original =
+        data?.original ??
+        node?.original ??
+        {};
+
+
+    const candidates = [
+
+        node?.type,
+
+        node?.entityType,
+
+        data?.type,
+
+        data?.entityType,
+
+        data?.category,
+
+        original?.type,
+
+        original?.entityType,
+
+        original?.category
+
+    ];
+
+
+    for (
+        const value of candidates
+    ) {
+
+        const result =
+            cleanValue(value);
+
+
+        if (result) {
+
+            return result;
+
+        }
+
+    }
+
+
+    return "Entity";
+
+};
+
+
+// ============================================================
+// GET RELATIONSHIP
+// ============================================================
+
+const getRelationship = (edge: any): string => {
+
+    const relationship =
+
+        edge?.data?.relationshipType ??
+
+        edge?.data?.relationship ??
+
+        edge?.relationshipType ??
+
+        edge?.relationship ??
+
+        edge?.label ??
+
+        edge?.type;
+
+
+    return (
+        cleanValue(relationship) ||
+        "Related"
+    );
+
+};
+
+
+// ============================================================
+// ENTITY PROFILE
+// ============================================================
+
 export default function EntityProfile({
 
     entity,
@@ -59,158 +291,209 @@ export default function EntityProfile({
     } = useMonitor();
 
 
-    const [showGraph, setShowGraph] = useState(false);
+    const [
+        showGraph,
+        setShowGraph
+    ] = useState(false);
 
 
-    // ============================================================
-    // CURRENT ENTITY INFORMATION
-    // ============================================================
+    // ========================================================
+    // CURRENT ENTITY
+    // ========================================================
 
-    const entityData = entity?.data ?? entity ?? {};
+    const entityData =
+        entity?.data ??
+        entity ??
+        {};
+
 
     const entityId =
+
         entity?.id ??
+
         entityData?.id ??
+
         entityData?.entityId ??
+
         "";
 
 
-    const entityName = String(
-        entityData?.name ??
-        entityData?.label ??
-        entity?.name ??
-        entity?.label ??
-        ""
-    ).trim();
+    const entityName =
+
+        getEntityName(entity) ||
+
+        "Unknown Entity";
 
 
     const entityNameNormalized =
-        entityName.toLowerCase();
+        entityName
+            .trim()
+            .toLowerCase();
 
 
-    // ============================================================
+    const entityType =
+        getEntityType(entity);
+
+
+    // ========================================================
     // MONITOR
-    // ============================================================
+    // ========================================================
 
-    const isMonitoring = monitoredEntities.some(
-        (item: any) =>
-            String(item?.id) === String(entityId)
-    );
+    const isMonitoring =
+        monitoredEntities.some(
+            (item: any) =>
+                String(item?.id) ===
+                String(entityId)
+        );
 
 
-    // ============================================================
+    // ========================================================
     // ALL CASE NODES
-    // ============================================================
+    // ========================================================
 
-    const allNodes = (cases || [])
-        .flatMap(
-            (item: any) =>
-                item?.nodes || []
-        );
-
-
-    // ============================================================
-    // ALL CASE EDGES
-    // ============================================================
-
-    const allEdges = (cases || [])
-        .flatMap(
-            (item: any) =>
-                item?.edges || []
-        );
-
-
-    // ============================================================
-    // FIND ALL REPRESENTATIONS OF THIS ENTITY
-    //
-    // IMPORTANT:
-    //
-    // The same person can have different node IDs
-    // in different cases.
-    //
-    // Example:
-    //
-    // Case 1 -> node-123 -> Ardi Begunca
-    // Case 2 -> node-987 -> Ardi Begunca
-    //
-    // We must treat both as the SAME ENTITY.
-    // ============================================================
-
-    const matchingNodes = allNodes.filter(
-        (node: any) => {
-
-            const nodeData =
-                node?.data ?? node ?? {};
-
-            const nodeName = String(
-                nodeData?.name ??
-                nodeData?.label ??
-                nodeData?.entityName ??
-                ""
-            )
-                .trim()
-                .toLowerCase();
-
-
-            const nodeEntityId = String(
-                nodeData?.entityId ??
-                node?.entityId ??
-                ""
+    const allNodes =
+        (cases || [])
+            .flatMap(
+                (item: any) =>
+                    Array.isArray(item?.nodes)
+                        ? item.nodes
+                        : []
             );
 
 
-            // Match by entity ID first
-            if (
-                entityId &&
-                nodeEntityId &&
-                nodeEntityId === String(entityId)
-            ) {
+    // ========================================================
+    // ALL CASE EDGES
+    // ========================================================
 
-                return true;
+    const allEdges =
+        (cases || [])
+            .flatMap(
+                (item: any) =>
+                    Array.isArray(item?.edges)
+                        ? item.edges
+                        : []
+            );
+
+
+    // ========================================================
+    // FIND ALL REPRESENTATIONS OF ENTITY
+    // ========================================================
+
+    const matchingNodes =
+        allNodes.filter(
+            (node: any) => {
+
+                const nodeData =
+                    getNodeData(node);
+
+
+                const nodeName =
+                    getEntityName(node)
+                        .trim()
+                        .toLowerCase();
+
+
+                const nodeEntityId =
+                    String(
+
+                        nodeData?.entityId ??
+
+                        node?.entityId ??
+
+                        nodeData?.id ??
+
+                        ""
+
+                    );
+
+
+                // --------------------------------------------
+                // MATCH BY ENTITY ID
+                // --------------------------------------------
+
+                if (
+
+                    entityId &&
+
+                    nodeEntityId &&
+
+                    nodeEntityId ===
+                    String(entityId)
+
+                ) {
+
+                    return true;
+
+                }
+
+
+                // --------------------------------------------
+                // MATCH BY NODE ID
+                // --------------------------------------------
+
+                if (
+
+                    entityId &&
+
+                    String(node?.id) ===
+                    String(entityId)
+
+                ) {
+
+                    return true;
+
+                }
+
+
+                // --------------------------------------------
+                // MATCH BY NAME
+                // --------------------------------------------
+
+                if (
+
+                    entityNameNormalized &&
+
+                    nodeName &&
+
+                    nodeName ===
+                    entityNameNormalized
+
+                ) {
+
+                    return true;
+
+                }
+
+
+                return false;
 
             }
+        );
 
 
-            if (
-                entityId &&
-                String(node?.id) === String(entityId)
-            ) {
+    // ========================================================
+    // ALL NODE IDS REPRESENTING ENTITY
+    // ========================================================
 
-                return true;
+    const entityNodeIds =
+        new Set<string>();
+
+
+    matchingNodes.forEach(
+        (node: any) => {
+
+            if (node?.id !== undefined) {
+
+                entityNodeIds.add(
+                    String(node.id)
+                );
 
             }
-
-
-            // Match the same real entity by name
-            if (
-                entityNameNormalized &&
-                nodeName === entityNameNormalized
-            ) {
-
-                return true;
-
-            }
-
-
-            return false;
 
         }
     );
 
 
-    // ============================================================
-    // ALL NODE IDS THAT REPRESENT THIS ENTITY
-    // ============================================================
-
-    const entityNodeIds = new Set(
-        matchingNodes.map(
-            (node: any) =>
-                String(node.id)
-        )
-    );
-
-
-    // Also include the selected entity ID
     if (entityId) {
 
         entityNodeIds.add(
@@ -220,88 +503,95 @@ export default function EntityProfile({
     }
 
 
-    // ============================================================
+    // ========================================================
     // RELATED CASES
-    //
-    // A case belongs to this entity if ANY node inside
-    // that case represents the same entity.
-    // ============================================================
+    // ========================================================
 
-    const relatedCases = (cases || [])
-        .filter(
-            (item: any) => {
+    const relatedCases =
+        (cases || [])
+            .filter(
+                (item: any) => {
 
-                return (item?.nodes || [])
-                    .some(
-                        (node: any) => {
+                    return (
+                        item?.nodes || []
+                    )
+                        .some(
+                            (node: any) => {
 
-                            const nodeData =
-                                node?.data ?? node ?? {};
-
-                            const nodeName = String(
-                                nodeData?.name ??
-                                nodeData?.label ??
-                                nodeData?.entityName ??
-                                ""
-                            )
-                                .trim()
-                                .toLowerCase();
+                                const nodeData =
+                                    getNodeData(node);
 
 
-                            const nodeEntityId = String(
-                                nodeData?.entityId ??
-                                node?.entityId ??
-                                ""
-                            );
+                                const nodeName =
+                                    getEntityName(node)
+                                        .trim()
+                                        .toLowerCase();
 
 
-                            return (
+                                const nodeEntityId =
+                                    String(
 
-                                entityNodeIds.has(
-                                    String(node.id)
-                                )
+                                        nodeData?.entityId ??
 
-                                ||
+                                        node?.entityId ??
 
-                                (
-                                    entityNameNormalized &&
-                                    nodeName ===
-                                    entityNameNormalized
-                                )
+                                        nodeData?.id ??
 
-                                ||
+                                        ""
 
-                                (
-                                    entityId &&
-                                    nodeEntityId ===
-                                    String(entityId)
-                                )
-
-                            );
-
-                        }
-                    );
-
-            }
-        );
+                                    );
 
 
-    // ============================================================
-    // ALL ENTITY NODE IDS FROM ALL CASES
-    //
-    // Recalculate this from related cases so that every
-    // representation of Ardi is included.
-    // ============================================================
+                                return (
 
-    const allEntityNodeIds = new Set<string>();
+                                    entityNodeIds.has(
+                                        String(node.id)
+                                    )
+
+                                    ||
+
+                                    (
+                                        entityNameNormalized &&
+                                        nodeName &&
+                                        nodeName ===
+                                        entityNameNormalized
+                                    )
+
+                                    ||
+
+                                    (
+                                        entityId &&
+                                        nodeEntityId ===
+                                        String(entityId)
+                                    )
+
+                                );
+
+                            }
+                        );
+
+                }
+            );
+
+
+    // ========================================================
+    // ALL ENTITY NODE IDS
+    // ========================================================
+
+    const allEntityNodeIds =
+        new Set<string>();
 
 
     matchingNodes.forEach(
         (node: any) => {
 
-            allEntityNodeIds.add(
-                String(node.id)
-            );
+            if (node?.id !== undefined) {
+
+                allEntityNodeIds.add(
+                    String(node.id)
+                );
+
+            }
 
         }
     );
@@ -310,34 +600,41 @@ export default function EntityProfile({
     relatedCases.forEach(
         (item: any) => {
 
-            (item?.nodes || [])
+            (
+                item?.nodes || []
+            )
                 .forEach(
                     (node: any) => {
 
                         const nodeData =
-                            node?.data ?? node ?? {};
-
-                        const nodeName = String(
-                            nodeData?.name ??
-                            nodeData?.label ??
-                            nodeData?.entityName ??
-                            ""
-                        )
-                            .trim()
-                            .toLowerCase();
+                            getNodeData(node);
 
 
-                        const nodeEntityId = String(
-                            nodeData?.entityId ??
-                            node?.entityId ??
-                            ""
-                        );
+                        const nodeName =
+                            getEntityName(node)
+                                .trim()
+                                .toLowerCase();
+
+
+                        const nodeEntityId =
+                            String(
+
+                                nodeData?.entityId ??
+
+                                node?.entityId ??
+
+                                nodeData?.id ??
+
+                                ""
+
+                            );
 
 
                         if (
 
                             (
                                 entityNameNormalized &&
+                                nodeName &&
                                 nodeName ===
                                 entityNameNormalized
                             )
@@ -365,67 +662,97 @@ export default function EntityProfile({
     );
 
 
-    // ============================================================
-    // ALL CONNECTIONS ACROSS ALL CASES
-    // ============================================================
+    // ========================================================
+    // ALL CONNECTIONS
+    // ========================================================
 
-    const connections = allEdges.filter(
-        (edge: any) => {
+    const connections =
+        allEdges.filter(
+            (edge: any) => {
 
-            return (
+                return (
 
-                allEntityNodeIds.has(
-                    String(edge.source)
-                )
+                    allEntityNodeIds.has(
+                        String(edge.source)
+                    )
 
-                ||
+                    ||
 
-                allEntityNodeIds.has(
-                    String(edge.target)
-                )
+                    allEntityNodeIds.has(
+                        String(edge.target)
+                    )
 
-            );
+                );
 
-        }
-    );
+            }
+        );
 
 
-    // ============================================================
-    // BUILD CONNECTED ENTITIES
-    //
-    // Deduplicate by real entity name.
-    // This prevents the same person from appearing twice
-    // just because they exist in two cases.
-    // ============================================================
+    // ========================================================
+    // CONNECTED ENTITIES
+    // ========================================================
 
-    const connectedMap = new Map<string, any>();
+    const connectedMap =
+        new Map<string, any>();
 
 
     connections.forEach(
         (edge: any) => {
 
+            const source =
+                String(edge.source);
+
+
+            const target =
+                String(edge.target);
+
+
             const sourceIsEntity =
                 allEntityNodeIds.has(
-                    String(edge.source)
+                    source
                 );
 
 
             const targetIsEntity =
                 allEntityNodeIds.has(
-                    String(edge.target)
+                    target
                 );
 
 
-            const connectedId = sourceIsEntity
-                ? String(edge.target)
-                : String(edge.source);
+            let connectedId = "";
 
 
-            const node = allNodes.find(
-                (n: any) =>
-                    String(n.id) ===
-                    connectedId
-            );
+            if (sourceIsEntity) {
+
+                connectedId =
+                    target;
+
+            }
+            else if (targetIsEntity) {
+
+                connectedId =
+                    source;
+
+            }
+
+
+            if (!connectedId) {
+
+                return;
+
+            }
+
+
+            // ------------------------------------------------
+            // FIND CONNECTED NODE
+            // ------------------------------------------------
+
+            const node =
+                allNodes.find(
+                    (n: any) =>
+                        String(n?.id) ===
+                        connectedId
+                );
 
 
             if (!node) {
@@ -435,35 +762,49 @@ export default function EntityProfile({
             }
 
 
-            const nodeData =
-                node?.data ?? node ?? {};
+            const connectedName =
+                getEntityName(node);
 
 
-            const connectedName = String(
-                nodeData?.name ??
-                nodeData?.label ??
-                connectedId
-            )
-                .trim();
+            // IMPORTANT:
+            // Never use "Unknown" as a deduplication key.
+            // If the node has no name, use its ID.
+            const safeName =
+                connectedName ||
+                `Entity ${connectedId}`;
 
 
             const key =
-                connectedName.toLowerCase();
+                safeName
+                    .trim()
+                    .toLowerCase();
 
 
             const relationship =
-                edge?.data?.relationshipType ||
-                "Related";
+                getRelationship(edge);
 
 
-            if (!connectedMap.has(key)) {
+            if (
+                !connectedMap.has(key)
+            ) {
 
                 connectedMap.set(
                     key,
                     {
+
                         node,
+
+                        name:
+                            safeName,
+
+                        type:
+                            getEntityType(node),
+
                         relationship,
-                        relationships: [relationship]
+
+                        relationships:
+                            [relationship]
+
                     }
                 );
 
@@ -498,83 +839,127 @@ export default function EntityProfile({
         );
 
 
-    // ============================================================
+    // ========================================================
     // RELATIONSHIP STATISTICS
-    //
-    // Count relationships from ALL cases.
-    // ============================================================
+    // ========================================================
 
-    const relationStats: Record<string, number> = {};
+    const relationStats:
+        Record<string, number> = {};
 
 
     connections.forEach(
         (edge: any) => {
 
             const type =
-                edge?.data?.relationshipType ||
-                "Related";
+                getRelationship(edge);
 
 
             relationStats[type] =
                 (
-                    relationStats[type] || 0
+                    relationStats[type] ||
+                    0
                 ) + 1;
 
         }
     );
 
 
-    // ============================================================
-    // GENERATE GLOBAL ENTITY GRAPH
-    //
-    // We pass ALL nodes and ALL edges belonging to the
-    // selected entity across every case.
-    //
-    // EntityGraph can then construct one combined network.
-    // ============================================================
+    // ========================================================
+    // GLOBAL GRAPH NODES
+    // ========================================================
 
-    const globalGraphNodes = (() => {
+    const globalGraphNodes =
+        (() => {
 
-        const usedNodeIds = new Set<string>();
+            const usedNodeIds =
+                new Set<string>();
 
 
-        connections.forEach(
-            (edge: any) => {
+            connections.forEach(
+                (edge: any) => {
 
-                usedNodeIds.add(
-                    String(edge.source)
-                );
+                    usedNodeIds.add(
+                        String(edge.source)
+                    );
 
-                usedNodeIds.add(
-                    String(edge.target)
-                );
+                    usedNodeIds.add(
+                        String(edge.target)
+                    );
 
-            }
-        );
+                }
+            );
 
 
-        return allNodes.filter(
-            (node: any) =>
-                usedNodeIds.has(
-                    String(node.id)
-                )
-        );
+            // Always include the selected entity.
+            allEntityNodeIds.forEach(
+                (id) => {
 
-    })();
+                    usedNodeIds.add(id);
+
+                }
+            );
+
+
+            return allNodes.filter(
+                (node: any) =>
+                    usedNodeIds.has(
+                        String(node.id)
+                    )
+            );
+
+        })();
 
 
     const globalGraphEdges =
         connections;
 
 
-    // ============================================================
+    // ========================================================
+    // PDF DATA
+    // ========================================================
+
+    const handlePrintToPDF = () => {
+
+        generateReport(
+
+            entity,
+
+            {
+
+                cases:
+                    relatedCases.length,
+
+                connections:
+                    connections.length,
+
+                relations:
+                    relationStats,
+
+                nodes:
+                    globalGraphNodes,
+
+                edges:
+                    globalGraphEdges,
+
+                casesCount:
+                    relatedCases.length,
+
+                connectedEntities
+
+            }
+
+        );
+
+    };
+
+
+    // ========================================================
     // RENDER
-    // ============================================================
+    // ========================================================
 
     return (
 
         <div className="entity-overlay">
-
 
             <div className="entity-profile">
 
@@ -599,7 +984,6 @@ export default function EntityProfile({
 
                 <div className="entity-main">
 
-
                     <div className="big-icon">
 
                         {
@@ -615,8 +999,7 @@ export default function EntityProfile({
                         <h1>
 
                             {
-                                entityName ||
-                                "Unknown"
+                                entityName
                             }
 
                         </h1>
@@ -625,9 +1008,7 @@ export default function EntityProfile({
                         <span>
 
                             {
-                                entityData?.type ||
-                                entityData?.entityType ||
-                                "Entity"
+                                entityType
                             }
 
                         </span>
@@ -638,7 +1019,7 @@ export default function EntityProfile({
 
 
                 {/* ==================================================
-                    GENERATE GLOBAL GRAPH
+                    GENERATE GRAPH
                 ================================================== */}
 
                 <button
@@ -654,7 +1035,7 @@ export default function EntityProfile({
 
 
                 {/* ==================================================
-                    REPORT
+                    PRINT TO PDF
                 ================================================== */}
 
                 <button
@@ -671,16 +1052,78 @@ export default function EntityProfile({
 
                                 relations:
                                     relationStats,
-                                nodes: allNodes,
-                                edges: allEdges,
-                                casesCount: relatedCases.length
+
+                                nodes:
+                                    allNodes,
+
+                                edges:
+                                    allEdges,
+
+                                casesCount:
+                                    relatedCases.length,
+
+                                // IMPORTANT:
+                                // Pass actual cases so PDF can list them
+                                relatedCases:
+                                    relatedCases,
+
+                                // IMPORTANT:
+                                // Pass actual connected entities
+                                connectedEntities:
+                                    connectedEntities.map(
+                                        (item: any) => {
+
+                                            const node =
+                                                item?.node;
+
+                                            const nodeData =
+                                                node?.data ??
+                                                node ??
+                                                {};
+
+                                            return {
+
+                                                id:
+                                                    node?.id,
+
+                                                name:
+                                                    nodeData?.name ??
+                                                    nodeData?.label ??
+                                                    nodeData?.entityName ??
+                                                    "Unknown",
+
+                                                type:
+                                                    nodeData?.type ??
+                                                    nodeData?.entityType ??
+                                                    "Entity",
+
+                                                relationship:
+                                                    item?.relationship ??
+                                                    "Related",
+
+                                                relationships:
+                                                    item?.relationships ??
+                                                    [
+                                                        item?.relationship ??
+                                                        "Related"
+                                                    ]
+
+                                            };
+
+                                        }
+                                    ),
+
+                                graphNodes:
+                                    globalGraphNodes,
+
+                                graphEdges:
+                                    globalGraphEdges
+
                             }
                         )
                     }
                 >
-
                     📄 Generate Intelligence Report
-
                 </button>
 
 
@@ -798,21 +1241,22 @@ export default function EntityProfile({
 
                     <div className="case-grid">
 
-
                         {
                             relatedCases.map(
                                 (item: any) => (
 
                                     <div
                                         className="info-card"
-                                        key={item.id}
+                                        key={
+                                            item.id
+                                        }
                                     >
 
                                         📂{" "}
 
                                         {
-                                            item.name ||
-                                            item.title ||
+                                            item.name ??
+                                            item.title ??
                                             "Investigation"
                                         }
 
@@ -821,7 +1265,6 @@ export default function EntityProfile({
                                 )
                             )
                         }
-
 
                     </div>
 
@@ -842,92 +1285,110 @@ export default function EntityProfile({
 
 
                     {
-                        connectedEntities.map(
-                            (
-                                item: any,
-                                index: number
-                            ) => {
+                        connectedEntities.length === 0 ? (
 
-                                const node =
-                                    item.node;
+                            <div className="info-card">
 
-                                const nodeData =
-                                    node?.data ??
-                                    node ??
-                                    {};
+                                No direct connections found.
 
-                                return (
+                            </div>
 
-                                    <div
-                                        className="connection-card"
-                                        key={
-                                            `${String(
-                                                node?.id
-                                            )}-${index}`
-                                        }
-                                        onClick={() =>
-                                            onSelectEntity(
-                                                node
-                                            )
-                                        }
-                                    >
+                        ) : (
+
+                            connectedEntities.map(
+                                (
+                                    item: any,
+                                    index: number
+                                ) => {
+
+                                    const node =
+                                        item.node;
 
 
-                                        <div>
+                                    const nodeData =
+                                        getNodeData(node);
 
 
-                                            <span>
+                                    const displayName =
+                                        item.name ||
+                                        getEntityName(node) ||
+                                        `Entity ${node?.id}`;
+
+
+                                    const displayType =
+                                        item.type ||
+                                        getEntityType(node);
+
+
+                                    return (
+
+                                        <div
+                                            className="connection-card"
+                                            key={
+                                                `${String(
+                                                    node?.id
+                                                )}-${index}`
+                                            }
+                                            onClick={() =>
+                                                onSelectEntity(
+                                                    node
+                                                )
+                                            }
+                                        >
+
+                                            <div>
+
+                                                <span>
+
+                                                    {
+                                                        nodeData?.icon ||
+                                                        "❓"
+                                                    }
+
+                                                </span>
+
+
+                                                <b>
+
+                                                    {
+                                                        displayName
+                                                    }
+
+                                                </b>
+
+
+                                                <small>
+
+                                                    {
+                                                        displayType
+                                                    }
+
+                                                </small>
+
+                                            </div>
+
+
+                                            <strong>
 
                                                 {
-                                                    nodeData?.icon ||
-                                                    "❓"
+                                                    item.relationships?.join(
+                                                        " / "
+                                                    ) ||
+                                                    item.relationship ||
+                                                    "Related"
                                                 }
 
-                                            </span>
-
-
-                                            <b>
-
-                                                {
-                                                    nodeData?.label ||
-                                                    nodeData?.name ||
-                                                    "Unknown"
-                                                }
-
-                                            </b>
-
-
-                                            <small>
-
-                                                {
-                                                    nodeData?.type ||
-                                                    nodeData?.entityType ||
-                                                    "Entity"
-                                                }
-
-                                            </small>
-
+                                            </strong>
 
                                         </div>
 
+                                    );
 
-                                        <strong>
+                                }
+                            )
 
-                                            {
-                                                item.relationship
-                                            }
-
-                                        </strong>
-
-
-                                    </div>
-
-                                );
-
-                            }
                         )
                     }
-
 
                 </section>
 
@@ -948,38 +1409,61 @@ export default function EntityProfile({
                     {
                         Object.entries(
                             relationStats
-                        )
-                            .map(
-                                (
-                                    [
-                                        key,
-                                        value
-                                    ]: any
-                                ) => (
+                        ).length === 0 ? (
 
-                                    <div
-                                        className="detail-row"
-                                        key={key}
-                                    >
+                            <div className="detail-row">
 
-                                        <b>
+                                <b>
+                                    No relationships
+                                </b>
 
-                                            {key}
+                                <span>
+                                    0
+                                </span>
 
-                                        </b>
+                            </div>
 
-                                        <span>
+                        ) : (
 
-                                            {value}
-
-                                        </span>
-
-                                    </div>
-
-                                )
+                            Object.entries(
+                                relationStats
                             )
-                    }
+                                .map(
+                                    (
+                                        [
+                                            key,
+                                            value
+                                        ]: any
+                                    ) => (
 
+                                        <div
+                                            className="detail-row"
+                                            key={key}
+                                        >
+
+                                            <b>
+
+                                                {
+                                                    key
+                                                }
+
+                                            </b>
+
+                                            <span>
+
+                                                {
+                                                    value
+                                                }
+
+                                            </span>
+
+                                        </div>
+
+                                    )
+                                )
+
+                        )
+                    }
 
                 </section>
 
@@ -1016,13 +1500,17 @@ export default function EntityProfile({
 
                                         <b>
 
-                                            {key}
+                                            {
+                                                key
+                                            }
 
                                         </b>
 
                                         <span>
 
-                                            {String(value)}
+                                            {
+                                                String(value)
+                                            }
 
                                         </span>
 
@@ -1032,12 +1520,11 @@ export default function EntityProfile({
                             )
                     }
 
-
                 </section>
 
 
                 {/* ==================================================
-                    GLOBAL ENTITY GRAPH
+                    GRAPH
                 ================================================== */}
 
                 {
@@ -1045,7 +1532,9 @@ export default function EntityProfile({
 
                         <EntityGraph
 
-                            entity={entity}
+                            entity={
+                                entity
+                            }
 
                             nodes={
                                 globalGraphNodes
@@ -1063,7 +1552,9 @@ export default function EntityProfile({
                                 item: any
                             ) => {
 
-                                setShowGraph(false);
+                                setShowGraph(
+                                    false
+                                );
 
                                 onSelectEntity(
                                     item
@@ -1076,7 +1567,6 @@ export default function EntityProfile({
                     )
                 }
 
-
             </div>
 
         </div>
@@ -1084,4 +1574,3 @@ export default function EntityProfile({
     );
 
 }
-
